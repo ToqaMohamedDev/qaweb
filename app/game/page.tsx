@@ -56,14 +56,19 @@ export default function GameLobbyPage() {
                     body: JSON.stringify({})
                 });
 
-                if (!guestResponse.ok) {
-                    throw new Error('Failed to create guest session');
+                const guestData = await guestResponse.json();
+
+                if (!guestResponse.ok || !guestData.success) {
+                    console.error('Guest session error:', guestData);
+                    throw new Error(guestData.error || 'Failed to create guest session - check if Redis is running');
                 }
 
-                const guestData = await guestResponse.json();
                 authToken = guestData.token;
                 if (authToken) {
                     localStorage.setItem('game_token', authToken);
+                    if (guestData.user?.id) {
+                        localStorage.setItem('game_user_id', guestData.user.id);
+                    }
                 }
             }
 
