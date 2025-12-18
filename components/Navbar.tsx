@@ -142,9 +142,11 @@ export function Navbar() {
     useEffect(() => {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('[Navbar] User:', user?.email, user?.id);
             setUser(user);
             if (user) {
                 const adminStatus = await isAdmin(user.id);
+                console.log('[Navbar] Admin status for', user.email, ':', adminStatus);
                 setIsUserAdmin(adminStatus);
             }
         };
@@ -153,8 +155,14 @@ export function Navbar() {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
-            if (!session) {
-                // Optional: redirect to login if session expires
+            if (session?.user) {
+                // Recheck admin status on auth change
+                isAdmin(session.user.id).then(status => {
+                    console.log('[Navbar] Auth change - Admin status:', status);
+                    setIsUserAdmin(status);
+                });
+            } else {
+                setIsUserAdmin(false);
             }
         });
 

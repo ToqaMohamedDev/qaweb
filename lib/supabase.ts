@@ -132,11 +132,13 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         // PGRST116: JSON object requested, multiple (or no) rows returned
         // This effectively means "Not Found" when using .single()
         if (error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', JSON.stringify(error, null, 2));
+            console.error('[getUserProfile] Error fetching profile:', JSON.stringify(error, null, 2));
         }
+        console.log('[getUserProfile] No profile found for userId:', userId);
         return null;
     }
 
+    console.log('[getUserProfile] Found profile:', data?.email, 'role:', data?.role);
     return data as UserProfile;
 }
 
@@ -165,7 +167,9 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 // دوال التحقق من الدور
 export async function isAdmin(userId: string): Promise<boolean> {
     const profile = await getUserProfile(userId);
-    return profile?.role === 'admin';
+    const isAdminResult = profile?.role === 'admin';
+    console.log('[isAdmin] Check for userId:', userId, '- role:', profile?.role, '- isAdmin:', isAdminResult);
+    return isAdminResult;
 }
 
 export async function isTeacher(userId: string): Promise<boolean> {

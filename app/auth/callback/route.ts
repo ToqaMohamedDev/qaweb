@@ -1,6 +1,50 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { UAParser } from 'ua-parser-js';
+
+// Helper function to track device
+async function trackUserDevice(supabase: any, userId: string, request: Request) {
+    try {
+        const headersList = await headers();
+        const userAgent = headersList.get('user-agent') || '';
+
+        // Parse device info (ua-parser-js v2.x API)
+        const parser = new UAParser(userAgent);
+        const result = parser.getResult();
+
+        // Determine device type
+        let deviceType = 'unknown';
+        const deviceTypeRaw = result.device.type?.toLowerCase();
+        if (deviceTypeRaw === 'mobile') deviceType = 'mobile';
+        else if (deviceTypeRaw === 'tablet') deviceType = 'tablet';
+        else deviceType = 'desktop';
+
+        // Get IP address
+        const forwardedFor = headersList.get('x-forwarded-for');
+        const ipAddress = forwardedFor?.split(',')[0].trim() ||
+            headersList.get('x-real-ip') ||
+            headersList.get('cf-connecting-ip') ||
+            '0.0.0.0';
+
+        // Call the upsert function
+        await supabase.rpc('upsert_user_device', {
+            p_user_id: userId,
+            p_device_type: deviceType,
+            p_os_name: result.os.name || null,
+            p_os_version: result.os.version || null,
+            p_browser: result.browser.name || null,
+            p_browser_version: result.browser.version || null,
+            p_ip_address: ipAddress,
+            p_user_agent: userAgent,
+            p_country: null,
+            p_city: null,
+        });
+    } catch (error) {
+        console.error('Failed to track device:', error);
+        // Don't fail the login if device tracking fails
+    }
+}
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -54,6 +98,9 @@ export async function GET(request: Request) {
                 });
             }
 
+            // 📱 تتبع الجهاز
+            await trackUserDevice(supabase, data.user.id, request);
+
             // الجلسة محفوظة الآن! يمكننا تحويل المستخدم
             return NextResponse.redirect(`${origin}${next}`);
         }
@@ -62,3 +109,4 @@ export async function GET(request: Request) {
     // في حال حدوث خطأ، أعد المستخدم لصفحة تسجيل الدخول مع رسالة خطأ
     return NextResponse.redirect(`${origin}/login?error=auth_code_error`);
 }
+

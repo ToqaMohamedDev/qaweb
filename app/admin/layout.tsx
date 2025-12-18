@@ -25,6 +25,7 @@ import {
     Shield,
     Sparkles,
     Layers,
+    Smartphone,
 } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { supabase, isAdmin } from "@/lib/supabase";
@@ -53,6 +54,7 @@ const sidebarItems = [
     {
         title: "النظام",
         items: [
+            { href: "/admin/devices", label: "الأجهزة", icon: Smartphone },
             { href: "/admin/support", label: "محادثات الدعم", icon: MessageSquare },
             { href: "/admin/notifications", label: "الإشعارات", icon: Bell },
             { href: "/admin/messages", label: "الرسائل", icon: MessageSquare },

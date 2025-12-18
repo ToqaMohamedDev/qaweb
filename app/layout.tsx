@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Inter, Cairo } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ChatWidget from "@/components/ChatWidget";
+import { VisitorTracker } from "@/components/VisitorTracker";
 import { homeMetadata } from "@/lib/metadata";
 import "./globals.css";
 
@@ -88,6 +89,7 @@ export default function RootLayout({
           </div>
           {/* Chat Widget */}
           <ChatWidget />
+          <VisitorTracker />
         </ThemeProvider>
       </body>
     </html>
