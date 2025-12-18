@@ -122,6 +122,7 @@ export default function ArabicPage() {
 
                 setLessons(lessonsData || []);
 
+                // Fetch exams (exam_templates)
                 const { data: examsData } = await supabase
                     .from("exam_templates")
                     .select("id, title, description, duration_minutes")
@@ -130,7 +131,14 @@ export default function ArabicPage() {
                     .eq("is_active", true)
                     .order("created_at", { ascending: false });
 
-                setExams(examsData || []);
+                // Convert exams data to proper types
+                const formattedExams = (examsData || []).map(e => ({
+                    id: e.id,
+                    title: typeof e.title === 'object' ? String((e.title as any)?.ar || (e.title as any)?.en || '') : String(e.title || ''),
+                    description: typeof e.description === 'object' ? String((e.description as any)?.ar || (e.description as any)?.en || '') : String(e.description || ''),
+                    duration_minutes: e.duration_minutes
+                }));
+                setExams(formattedExams);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
