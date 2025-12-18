@@ -9,7 +9,7 @@ import {
     GameResults,
     PlayerResult,
 } from './types';
-import { supabase } from '../supabase';
+import { createClient } from '../supabase';
 
 /**
  * Game Engine - Handles game flow, questions, and scoring
@@ -28,6 +28,7 @@ export async function loadQuestionsForGame(
     difficulty: string
 ): Promise<GameQuestion[]> {
     // Fetch questions from Supabase (adjust table name as needed)
+    const supabase = createClient();
     let query = supabase
         .from('questions')
         .select('*')

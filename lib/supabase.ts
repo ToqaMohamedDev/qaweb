@@ -5,16 +5,35 @@ import { UserRole, UserProfile } from './definitions';
 // تصدير الأنواع لتكون متاحة للاستخدام في ملفات أخرى
 export type { UserRole, UserProfile };
 
-// 1. إنشاء Client للمتصفح (يستخدم Cookies)
+// Cached client instance
+let _supabaseClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
+// 1. إنشاء Client للمتصفح (يستخدم Cookies) - Lazy initialization
 export function createClient() {
-    return createBrowserClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    if (typeof window === 'undefined') {
+        // Server-side: always create new instance (but this shouldn't be used on server)
+        return createBrowserClient<Database>(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+    }
+
+    // Client-side: reuse instance
+    if (!_supabaseClient) {
+        _supabaseClient = createBrowserClient<Database>(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+    }
+    return _supabaseClient;
 }
 
-// إنشاء نسخة client global للاستخدام المباشر
-export const supabase = createClient();
+// Getter function للـ supabase - يتم استدعاؤه عند الاستخدام فقط
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+    get(_, prop) {
+        return (createClient() as any)[prop];
+    }
+});
 
 /**
  * تسجيل حساب جديد بالبريد الإلكتروني

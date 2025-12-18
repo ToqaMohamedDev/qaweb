@@ -2,7 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, getPlayer, getPlayersInRoom } from '@/lib/game/room-manager';
 import { submitAnswer, endQuestion, startQuestion } from '@/lib/game/game-engine';
 import { playerAnsweredEvent, questionResultEvent, questionStartEvent, gameEndedEvent } from '@/lib/game/event-manager';
-import { supabase } from '@/lib/supabase';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+// Helper to create supabase client for API routes
+async function createSupabaseClient() {
+    const cookieStore = await cookies();
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value;
+                },
+                set() { },
+                remove() { },
+            },
+        }
+    );
+}
 
 // POST - Submit answer
 export async function POST(
@@ -22,6 +41,7 @@ export async function POST(
         }
 
         const token = authHeader.replace('Bearer ', '');
+        const supabase = await createSupabaseClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
         if (authError || !user) {
