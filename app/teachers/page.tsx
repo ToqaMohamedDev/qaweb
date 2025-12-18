@@ -368,12 +368,12 @@ export default function TeachersPage() {
                 <main className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'lg:mr-[72px]' : 'lg:mr-[240px]'}`}>
                     {/* Categories */}
                     <div className="sticky top-[64px] z-20 bg-white dark:bg-[#0f0f0f] border-b border-gray-200 dark:border-[#272727]">
-                        <div className="flex items-center gap-3 px-4 py-3 overflow-x-auto scrollbar-hide">
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 overflow-x-auto scrollbar-hide">
                             {categories.map((cat) => (
                                 <button
                                     key={cat.id}
                                     onClick={() => setSelectedCategory(cat.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat.id
+                                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat.id
                                         ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
                                         : "bg-gray-100 dark:bg-[#272727] text-gray-700 dark:text-gray-300 hover:bg-gray-200"
                                         }`}
@@ -385,23 +385,23 @@ export default function TeachersPage() {
                     </div>
 
                     {/* Search */}
-                    <div className="px-4 py-4">
+                    <div className="px-3 sm:px-4 py-3 sm:py-4">
                         <div className="relative max-w-2xl">
-                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <Search className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="ابحث عن معلم..."
-                                className="w-full pr-12 pl-4 py-2.5 rounded-full bg-gray-100 dark:bg-[#121212] border border-gray-200 dark:border-[#303030] outline-none text-sm focus:border-primary-500"
+                                className="w-full pr-10 sm:pr-12 pl-3 sm:pl-4 py-2 sm:py-2.5 rounded-full bg-gray-100 dark:bg-[#121212] border border-gray-200 dark:border-[#303030] outline-none text-xs sm:text-sm focus:border-primary-500"
                             />
                         </div>
                     </div>
 
                     {/* Content */}
-                    <div className="px-4 pb-8">
+                    <div className="px-3 sm:px-4 pb-8">
                         {loading ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                                 {/* Skeleton Cards */}
                                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                                     <div key={i} className="animate-pulse">
@@ -470,7 +470,7 @@ export default function TeachersPage() {
                                 <p className="text-gray-500">جرب البحث بكلمات مختلفة</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                                 {filteredTeachers.map((teacher, index) => (
                                     <TeacherCard
                                         key={teacher.id}
@@ -519,52 +519,58 @@ function TeacherCard({ teacher, index, isSubscribed, onSubscribe }: {
         >
             <div className="group">
                 <Link href={`/teachers/${teacher.id}`}>
-                    <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 mb-3">
+                    {/* Banner - أصغر على الموبايل */}
+                    <div className="relative aspect-[2/1] sm:aspect-[16/9] rounded-lg sm:rounded-xl overflow-hidden bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 mb-2 sm:mb-3">
                         {teacher.coverImageURL ? (
                             <img src={teacher.coverImageURL} alt={teacher.displayName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                             <div className="absolute inset-0 bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600" />
                         )}
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                        <div className="absolute bottom-2 right-2 flex gap-1.5">
-                            <span className="px-2 py-0.5 rounded bg-black/70 text-white text-xs flex items-center gap-1">
-                                <Video className="h-3 w-3" /> {teacher.stats.totalLessons}
+                        <div className="absolute bottom-1.5 sm:bottom-2 right-1.5 sm:right-2 flex gap-1">
+                            <span className="px-1.5 sm:px-2 py-0.5 rounded bg-black/70 text-white text-[10px] sm:text-xs flex items-center gap-0.5 sm:gap-1">
+                                <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {teacher.stats.totalLessons}
                             </span>
-                            <span className="px-2 py-0.5 rounded bg-black/70 text-white text-xs flex items-center gap-1">
-                                <FileText className="h-3 w-3" /> {teacher.stats.totalExams}
+                            <span className="px-1.5 sm:px-2 py-0.5 rounded bg-black/70 text-white text-[10px] sm:text-xs flex items-center gap-0.5 sm:gap-1">
+                                <FileText className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {teacher.stats.totalExams}
                             </span>
                         </div>
+                        {/* Featured Badge */}
+                        {teacher.isFeatured && (
+                            <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px] sm:text-xs font-medium flex items-center gap-0.5">
+                                <Star className="h-2.5 w-2.5 fill-white" /> مميز
+                            </div>
+                        )}
                     </div>
                 </Link>
 
-                <div className="flex gap-3">
-                    <Link href={`/teachers/${teacher.id}`}>
-                        <div className="relative shrink-0">
-                            {teacher.photoURL ? (
-                                <img src={teacher.photoURL} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-[#0f0f0f]" />
-                            ) : (
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-bold ring-2 ring-white dark:ring-[#0f0f0f]">
-                                    {teacher.displayName.charAt(0)}
-                                </div>
-                            )}
-                        </div>
+                {/* Info Section - تصميم محسن للموبايل */}
+                <div className="flex gap-2 sm:gap-3">
+                    <Link href={`/teachers/${teacher.id}`} className="shrink-0">
+                        {teacher.photoURL ? (
+                            <img src={teacher.photoURL} alt="" className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-white dark:ring-[#0f0f0f]" />
+                        ) : (
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold ring-2 ring-white dark:ring-[#0f0f0f]">
+                                {teacher.displayName.charAt(0)}
+                            </div>
+                        )}
                     </Link>
                     <div className="flex-1 min-w-0">
                         <Link href={`/teachers/${teacher.id}`}>
-                            <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 mb-0.5 group-hover:text-primary-600">
+                            <h3 className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm line-clamp-1 mb-0.5 group-hover:text-primary-600">
                                 {teacher.displayName}
-                                {teacher.isVerified && <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 inline mr-1" />}
+                                {teacher.isVerified && <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500 inline mr-1" />}
                             </h3>
                         </Link>
                         {teacher.teacherTitle && (
-                            <p className="text-xs text-primary-600 dark:text-primary-400 mb-0.5 font-medium">{teacher.teacherTitle}</p>
+                            <p className="text-[10px] sm:text-xs text-primary-600 dark:text-primary-400 font-medium truncate">{teacher.teacherTitle}</p>
                         )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{teacher.specialty}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{formatSubscribers(teacher.subscriberCount)} مشترك</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{teacher.specialty}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400">{formatSubscribers(teacher.subscriberCount)} مشترك</p>
                     </div>
                     <button
-                        onClick={onSubscribe}
-                        className={`h-8 px-3 rounded-full text-xs font-medium transition-all self-start mt-1 ${isSubscribed
+                        onClick={(e) => { e.preventDefault(); onSubscribe(); }}
+                        className={`h-6 sm:h-8 px-2 sm:px-3 rounded-full text-[10px] sm:text-xs font-medium transition-all self-start mt-0.5 sm:mt-1 shrink-0 ${isSubscribed
                             ? "bg-gray-100 dark:bg-[#272727] text-gray-700 dark:text-gray-300"
                             : "bg-black dark:bg-white text-white dark:text-black"
                             }`}
