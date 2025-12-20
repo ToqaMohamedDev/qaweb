@@ -125,6 +125,7 @@ export async function startQuestion(code: string): Promise<{
     success: boolean;
     question?: GameQuestion;
     questionNumber?: number;
+    endsAt?: number;
     error?: string;
 }> {
     const room = await getRoom(code);
@@ -165,7 +166,7 @@ export async function startQuestion(code: string): Promise<{
         await updateRoomStatus(code, 'playing');
     }
 
-    return { success: true, question, questionNumber };
+    return { success: true, question, questionNumber, endsAt };
 }
 
 // Submit an answer
