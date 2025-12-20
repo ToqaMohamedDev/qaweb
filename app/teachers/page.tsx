@@ -213,6 +213,12 @@ export default function TeachersPage() {
             return;
         }
 
+        // Prevent self-subscription
+        if (currentUserId === teacherId) {
+            console.log('Cannot subscribe to yourself');
+            return;
+        }
+
         // Prevent double clicks
         if (subscribingTo === teacherId) return;
         setSubscribingTo(teacherId);
@@ -257,38 +263,51 @@ export default function TeachersPage() {
                 }
             } else {
                 // Subscribe
-                const { error } = await supabase
+                const { error, data } = await supabase
                     .from("teacher_subscriptions")
                     .insert({
                         user_id: currentUserId,
                         teacher_id: teacherId
-                    });
+                    })
+                    .select();
 
+                // Handle errors
                 if (error) {
-                    console.error('Subscribe error:', error);
-                    throw error;
-                }
+                    // Ignore duplicate key error (user already subscribed)
+                    if (error.message?.includes('duplicate') || error.code === '23505') {
+                        console.log('Already subscribed, updating local state');
+                        setSubscriptions(prev => new Set(prev).add(teacherId));
+                    } else {
+                        // Log full error details
+                        console.error('Subscribe error details:', {
+                            message: error.message,
+                            code: error.code,
+                            details: error.details,
+                            hint: error.hint,
+                            fullError: JSON.stringify(error, null, 2)
+                        });
+                        throw error;
+                    }
+                } else {
+                    console.log('Subscription successful:', data);
+                    // Update local state
+                    setSubscriptions(prev => new Set(prev).add(teacherId));
 
-                // Update local state
-                setSubscriptions(prev => new Set(prev).add(teacherId));
-
-                // Fetch updated subscriber count from database
-                const { data: teacherData } = await supabase
-                    .from("profiles")
-                    .select("subscriber_count")
-                    .eq("id", teacherId)
-                    .single();
-
-                if (teacherData) {
+                    // Update subscriber count locally (+1)
                     setTeachers(prev => prev.map(t =>
                         t.id === teacherId
-                            ? { ...t, subscriberCount: teacherData.subscriber_count || 0 }
+                            ? { ...t, subscriberCount: t.subscriberCount + 1 }
                             : t
                     ));
                 }
             }
-        } catch (err) {
-            console.error('Subscription error:', err);
+        } catch (err: any) {
+            console.error('Subscription error:', {
+                message: err?.message,
+                code: err?.code,
+                details: err?.details,
+                fullError: JSON.stringify(err, null, 2)
+            });
             // Refetch data on error to sync state
             await fetchData();
         } finally {
@@ -689,6 +708,7 @@ export default function TeachersPage() {
                                                     onSubscribe={() => handleSubscribe(teacher.id)}
                                                     isLoading={subscribingTo === teacher.id}
                                                     featured
+                                                    currentUserId={currentUserId}
                                                 />
                                             ))}
                                         </motion.div>
@@ -724,6 +744,7 @@ export default function TeachersPage() {
                                                 isSubscribed={subscriptions.has(teacher.id)}
                                                 onSubscribe={() => handleSubscribe(teacher.id)}
                                                 isLoading={subscribingTo === teacher.id}
+                                                currentUserId={currentUserId}
                                             />
                                         ))}
                                     </motion.div>
@@ -786,9 +807,11 @@ function SidebarLink({ icon: Icon, label, href, active, collapsed }: {
 }
 
 // YouTube Video-Style Teacher Card Component
-function ChannelCard({ teacher, index, isSubscribed, onSubscribe, isLoading, featured }: {
-    teacher: Teacher; index: number; isSubscribed: boolean; onSubscribe: () => void; isLoading?: boolean; featured?: boolean
+function ChannelCard({ teacher, index, isSubscribed, onSubscribe, isLoading, featured, currentUserId }: {
+    teacher: Teacher; index: number; isSubscribed: boolean; onSubscribe: () => void; isLoading?: boolean; featured?: boolean; currentUserId?: string | null
 }) {
+    // Check if this is the user's own profile
+    const isOwnProfile = currentUserId === teacher.id;
     return (
         <motion.div
             variants={itemVariants}
@@ -901,31 +924,39 @@ function ChannelCard({ teacher, index, isSubscribed, onSubscribe, isLoading, fea
                             <span>{formatCount(teacher.subscriberCount)} مشترك</span>
                         </div>
 
-                        {/* Subscribe Button */}
-                        <motion.button
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSubscribe(); }}
-                            whileHover={{ scale: isLoading ? 1 : 1.03 }}
-                            whileTap={{ scale: isLoading ? 1 : 0.97 }}
-                            disabled={isLoading}
-                            className={`mt-2 px-4 py-1.5 rounded-full font-semibold text-xs transition-all duration-200 flex items-center gap-1.5 ${isLoading
-                                ? "bg-gray-100 dark:bg-[#2a2a30] text-gray-400 dark:text-gray-500 cursor-wait"
-                                : isSubscribed
-                                    ? "bg-gray-100 dark:bg-[#2a2a30] text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#3a3a40]"
-                                    : "bg-violet-600 dark:bg-violet-500 text-white hover:bg-violet-700 dark:hover:bg-violet-600 shadow-md shadow-violet-500/20"
-                                }`}
-                        >
-                            {isLoading ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : isSubscribed ? (
-                                <>
-                                    <UserCheck className="h-3.5 w-3.5" />
-                                    <span>مُشترك</span>
-                                    <ChevronDown className="h-3 w-3" />
-                                </>
-                            ) : (
-                                <span>اشتراك</span>
-                            )}
-                        </motion.button>
+                        {/* Subscribe Button - Hidden for own profile */}
+                        {!isOwnProfile && (
+                            <motion.button
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSubscribe(); }}
+                                whileHover={{ scale: isLoading ? 1 : 1.03 }}
+                                whileTap={{ scale: isLoading ? 1 : 0.97 }}
+                                disabled={isLoading}
+                                className={`mt-2 px-4 py-1.5 rounded-full font-semibold text-xs transition-all duration-200 flex items-center gap-1.5 ${isLoading
+                                    ? "bg-gray-100 dark:bg-[#2a2a30] text-gray-400 dark:text-gray-500 cursor-wait"
+                                    : isSubscribed
+                                        ? "bg-gray-100 dark:bg-[#2a2a30] text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#3a3a40]"
+                                        : "bg-violet-600 dark:bg-violet-500 text-white hover:bg-violet-700 dark:hover:bg-violet-600 shadow-md shadow-violet-500/20"
+                                    }`}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : isSubscribed ? (
+                                    <>
+                                        <UserCheck className="h-3.5 w-3.5" />
+                                        <span>مُشترك</span>
+                                        <ChevronDown className="h-3 w-3" />
+                                    </>
+                                ) : (
+                                    <span>اشتراك</span>
+                                )}
+                            </motion.button>
+                        )}
+                        {/* Show "أنت" badge for own profile */}
+                        {isOwnProfile && (
+                            <div className="mt-2 px-4 py-1.5 rounded-full font-semibold text-xs bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-500/20 dark:to-purple-500/20 text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
+                                <span>أنت</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
