@@ -736,6 +736,7 @@ export default function TeachersPage() {
                                             </div>
                                         </div>
                                         <motion.div
+                                            key={`featured-${selectedCategory}-${searchQuery}`}
                                             className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"
                                             variants={containerVariants}
                                             initial="hidden"
@@ -773,6 +774,7 @@ export default function TeachersPage() {
                                         </div>
                                     </div>
                                     <motion.div
+                                        key={`regular-${selectedCategory}-${searchQuery}`}
                                         className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5"
                                         variants={containerVariants}
                                         initial="hidden"
