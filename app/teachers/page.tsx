@@ -24,6 +24,7 @@ interface Teacher {
     subscriberCount: number;
     examsCount: number;
     isFeatured: boolean;
+    subjects: string[]; // Array of subject names
 }
 
 interface Subject {
@@ -118,7 +119,7 @@ export default function TeachersPage() {
             // Fetch teachers with their exam counts
             const { data: teachersData, error: teachersError } = await supabase
                 .from("profiles")
-                .select("id, name, specialization, avatar_url, cover_image_url, is_verified, is_featured")
+                .select("id, name, specialization, avatar_url, cover_image_url, is_verified, is_featured, subjects")
                 .eq("role", "teacher");
 
             if (teachersError) {
@@ -172,9 +173,10 @@ export default function TeachersPage() {
                     photoURL: t.avatar_url,
                     coverImageURL: t.cover_image_url,
                     isVerified: t.is_verified || false,
-                    subscriberCount: subscriberCountMap[t.id] || 0, // Real count from subscriptions!
+                    subscriberCount: subscriberCountMap[t.id] || 0,
                     examsCount: examCountMap[t.id] || 0,
                     isFeatured: t.is_featured || false,
+                    subjects: t.subjects || [], // Get subjects array from database
                 }));
 
                 // Sort by subscriber count
@@ -317,16 +319,21 @@ export default function TeachersPage() {
 
     const filteredTeachers = teachers.filter((t) => {
         const matchesSearch = t.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            t.specialty?.toLowerCase().includes(searchQuery.toLowerCase());
+            t.specialty?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            t.subjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+
         if (selectedCategory === 'all') return matchesSearch;
 
         // Find the selected subject from subjects array
         const selectedSubject = subjects.find(s => s.id === selectedCategory);
         if (!selectedSubject) return matchesSearch;
 
-        // Match teacher specialty with subject name
+        // Match teacher subjects array with selected subject name
         const subjectName = selectedSubject.name.toLowerCase();
-        return matchesSearch && t.specialty?.toLowerCase().includes(subjectName);
+        const teacherHasSubject = t.subjects.some(s => s.toLowerCase() === subjectName) ||
+            t.specialty?.toLowerCase().includes(subjectName);
+
+        return matchesSearch && teacherHasSubject;
     });
 
     const featuredTeachers = filteredTeachers.filter(t => t.isFeatured);

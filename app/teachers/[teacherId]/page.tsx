@@ -8,9 +8,10 @@ import { Navbar } from "@/components/Navbar";
 import {
     ArrowRight, Star, Users, FileText, CheckCircle2, Clock,
     Play, Bell, BellOff, Video, Share2, MoreVertical,
-    UserPlus, UserCheck, Home, Compass, PlaySquare, History,
+    UserPlus, UserCheck, Compass, PlaySquare, History,
     ListVideo, ThumbsUp, Flag, ChevronDown, Search, Loader2, Flame,
-    GraduationCap, BookOpen, Award
+    GraduationCap, BookOpen, Award, Globe, Phone, MapPin, Calendar,
+    ExternalLink, Eye, Briefcase, Youtube, Facebook, Instagram, MessageCircle
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
@@ -25,6 +26,24 @@ interface Teacher {
     subscriberCount: number;
     teacherTitle: string | null;
     stats: { exams: number; lessons: number; rating: number };
+    // New fields
+    yearsOfExperience: number;
+    education: string | null;
+    teachingStyle: string | null;
+    subjects: string[];
+    stages: string[];
+    phone: string | null;
+    website: string | null;
+    socialLinks: {
+        tiktok?: string;
+        youtube?: string;
+        facebook?: string;
+        instagram?: string;
+        whatsapp?: string;
+    };
+    totalViews: number;
+    ratingAverage: number;
+    ratingCount: number;
 }
 
 interface Exam {
@@ -72,7 +91,7 @@ export default function TeacherPage() {
     const [exams, setExams] = useState<Exam[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<"home" | "exams" | "about">("home");
+    const [activeTab, setActiveTab] = useState<"exams" | "about">("exams");
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -117,7 +136,19 @@ export default function TeacherPage() {
                     verified: teacherData.is_verified || false,
                     subscriberCount: subscribersCount || 0,
                     teacherTitle: teacherData.teacher_title,
-                    stats: { exams: examsCount || 0, lessons: 0, rating: 4.8 }
+                    stats: { exams: examsCount || 0, lessons: 0, rating: teacherData.rating_average || 4.8 },
+                    // New fields
+                    yearsOfExperience: teacherData.years_of_experience || 0,
+                    education: teacherData.education || null,
+                    teachingStyle: teacherData.teaching_style || null,
+                    subjects: teacherData.subjects || [],
+                    stages: teacherData.stages || [],
+                    phone: teacherData.phone || null,
+                    website: teacherData.website || null,
+                    socialLinks: (teacherData.social_links as Teacher['socialLinks']) || {},
+                    totalViews: teacherData.total_views || 0,
+                    ratingAverage: teacherData.rating_average || 0,
+                    ratingCount: teacherData.rating_count || 0,
                 });
 
                 const { data: examsData } = await supabase
@@ -268,8 +299,13 @@ export default function TeacherPage() {
                                         )}
                                     </div>
 
+                                    {/* Teacher Title */}
+                                    {teacher.teacherTitle && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{teacher.teacherTitle}</p>
+                                    )}
+
                                     {/* Stats - Inline */}
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <div className="flex items-center gap-3 sm:gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
                                         <span className="flex items-center gap-1">
                                             <Users className="h-4 w-4 text-violet-500" />
                                             <strong className="text-gray-900 dark:text-white">{formatCount(teacher.subscriberCount)}</strong>
@@ -280,6 +316,13 @@ export default function TeacherPage() {
                                             <strong className="text-gray-900 dark:text-white">{teacher.stats.exams}</strong>
                                             امتحان
                                         </span>
+                                        {teacher.yearsOfExperience > 0 && (
+                                            <span className="flex items-center gap-1">
+                                                <Calendar className="h-4 w-4 text-green-500" />
+                                                <strong className="text-gray-900 dark:text-white">{teacher.yearsOfExperience}</strong>
+                                                سنة خبرة
+                                            </span>
+                                        )}
                                         {teacher.specialty && (
                                             <span className="flex items-center gap-1 text-violet-600 dark:text-violet-400">
                                                 <BookOpen className="h-4 w-4" />
@@ -343,7 +386,6 @@ export default function TeacherPage() {
 
                     {/* Tabs */}
                     <div className="flex gap-1 mt-4 border-b border-gray-200 dark:border-[#2e2e3a] overflow-x-auto scrollbar-hide">
-                        <TabButton active={activeTab === "home"} onClick={() => setActiveTab("home")} label="الرئيسية" icon={Home} />
                         <TabButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} label="الامتحانات" icon={FileText} />
                         <TabButton active={activeTab === "about"} onClick={() => setActiveTab("about")} label="حول" icon={Users} />
                     </div>
@@ -354,67 +396,6 @@ export default function TeacherPage() {
             <div className="bg-gray-50 dark:bg-[#0f0f14] min-h-[400px]">
                 <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
                     <AnimatePresence mode="wait">
-                        {activeTab === "home" && (
-                            <motion.div
-                                key="home"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {/* Featured Section */}
-                                {exams.length > 0 && (
-                                    <div className="mb-10">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 dark:from-violet-500/10 dark:to-purple-500/10">
-                                                <Flame className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                                            </div>
-                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">أحدث الامتحانات</h2>
-                                            <span className="px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-xs font-semibold">{Math.min(exams.length, 4)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                            {exams.slice(0, 4).map((exam, i) => (
-                                                <VideoCard key={exam.id} exam={exam} teacher={teacher} index={i} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* All Exams */}
-                                {exams.length > 4 && (
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-2.5 rounded-xl bg-gray-100 dark:bg-[#1c1c24]">
-                                                <FileText className="h-5 w-5 text-amber-500" />
-                                            </div>
-                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">جميع الامتحانات</h2>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                            {exams.slice(4).map((exam, i) => (
-                                                <VideoCard key={exam.id} exam={exam} teacher={teacher} index={i} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {exams.length === 0 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="text-center py-20"
-                                    >
-                                        <div className="relative inline-block">
-                                            <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1c1c24] dark:to-[#252530] flex items-center justify-center shadow-inner">
-                                                <Video className="h-14 w-14 text-gray-400 dark:text-gray-500" />
-                                            </div>
-                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-violet-500/30 rounded-full animate-ping" />
-                                        </div>
-                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">لا يوجد محتوى بعد</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">هذا المعلم لم ينشر أي امتحانات حتى الآن. تابعه ليصلك إشعار عند إضافة محتوى جديد!</p>
-                                    </motion.div>
-                                )}
-                            </motion.div>
-                        )}
 
                         {activeTab === "exams" && (
                             <motion.div
@@ -459,9 +440,9 @@ export default function TeacherPage() {
 
                         {activeTab === "about" && (
                             <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                <div className="max-w-3xl">
+                                <div className="max-w-4xl space-y-6">
                                     {/* Description */}
-                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a] mb-6">
+                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
                                         <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                             <BookOpen className="h-5 w-5 text-violet-500" />
                                             الوصف
@@ -471,13 +452,94 @@ export default function TeacherPage() {
                                         </p>
                                     </div>
 
+                                    {/* Professional Info */}
+                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
+                                        <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                                            <GraduationCap className="h-5 w-5 text-blue-500" />
+                                            المعلومات المهنية
+                                        </h2>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {teacher.teacherTitle && (
+                                                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252530] rounded-xl">
+                                                    <Briefcase className="h-5 w-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">اللقب المهني</p>
+                                                        <p className="text-gray-900 dark:text-white font-medium">{teacher.teacherTitle}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {teacher.yearsOfExperience > 0 && (
+                                                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252530] rounded-xl">
+                                                    <Calendar className="h-5 w-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">سنوات الخبرة</p>
+                                                        <p className="text-gray-900 dark:text-white font-medium">{teacher.yearsOfExperience} سنة</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {teacher.education && (
+                                                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252530] rounded-xl col-span-full">
+                                                    <GraduationCap className="h-5 w-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">المؤهل العلمي</p>
+                                                        <p className="text-gray-900 dark:text-white font-medium">{teacher.education}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Teaching Style */}
+                                        {teacher.teachingStyle && (
+                                            <div className="mt-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
+                                                <p className="text-xs text-violet-600 dark:text-violet-400 font-medium mb-2">أسلوب التدريس</p>
+                                                <p className="text-gray-700 dark:text-gray-300">{teacher.teachingStyle}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Subjects & Stages */}
+                                    {(teacher.subjects.length > 0 || teacher.stages.length > 0) && (
+                                        <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
+                                            <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                                                <BookOpen className="h-5 w-5 text-green-500" />
+                                                المواد والمراحل
+                                            </h2>
+                                            <div className="space-y-4">
+                                                {teacher.subjects.length > 0 && (
+                                                    <div>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">المواد الدراسية</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {teacher.subjects.map((subject, i) => (
+                                                                <span key={i} className="px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-sm font-medium">
+                                                                    {subject}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {teacher.stages.length > 0 && (
+                                                    <div>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">المراحل الدراسية</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {teacher.stages.map((stage, i) => (
+                                                                <span key={i} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium">
+                                                                    {stage}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Stats Card */}
-                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a] mb-6">
+                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
                                         <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                             <Award className="h-5 w-5 text-amber-500" />
                                             الإحصائيات
                                         </h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                             <div className="flex items-center gap-3 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
                                                 <Users className="h-6 w-6 text-violet-600 dark:text-violet-400" />
                                                 <div>
@@ -492,8 +554,86 @@ export default function TeacherPage() {
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">امتحان</p>
                                                 </div>
                                             </div>
+                                            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                                <Eye className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCount(teacher.totalViews)}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">مشاهدة</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                                                <Star className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{teacher.ratingAverage.toFixed(1)}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">تقييم ({teacher.ratingCount})</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    {/* Contact & Social Links */}
+                                    {(teacher.phone || teacher.website || Object.values(teacher.socialLinks || {}).some(v => v)) && (
+                                        <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
+                                            <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                                                <Globe className="h-5 w-5 text-cyan-500" />
+                                                معلومات التواصل
+                                            </h2>
+                                            <div className="space-y-4">
+                                                {/* Contact Info */}
+                                                <div className="flex flex-wrap gap-3">
+                                                    {teacher.phone && (
+                                                        <a href={`tel:${teacher.phone}`} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[#252530] rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors">
+                                                            <Phone className="h-4 w-4" />
+                                                            <span className="text-sm" dir="ltr">{teacher.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {teacher.website && (
+                                                        <a href={teacher.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[#252530] rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors">
+                                                            <Globe className="h-4 w-4" />
+                                                            <span className="text-sm">الموقع الإلكتروني</span>
+                                                            <ExternalLink className="h-3 w-3" />
+                                                        </a>
+                                                    )}
+                                                </div>
+
+                                                {/* Social Links */}
+                                                {Object.values(teacher.socialLinks || {}).some(v => v) && (
+                                                    <div>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">حسابات التواصل الاجتماعي</p>
+                                                        <div className="flex flex-wrap gap-3">
+                                                            {teacher.socialLinks?.youtube && (
+                                                                <a href={teacher.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
+                                                                    <Youtube className="h-6 w-6" />
+                                                                </a>
+                                                            )}
+                                                            {teacher.socialLinks?.facebook && (
+                                                                <a href={teacher.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                                                                    <Facebook className="h-6 w-6" />
+                                                                </a>
+                                                            )}
+                                                            {teacher.socialLinks?.tiktok && (
+                                                                <a href={teacher.socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 bg-gray-900 dark:bg-gray-800 rounded-xl text-white hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors">
+                                                                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                                                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                                                                    </svg>
+                                                                </a>
+                                                            )}
+                                                            {teacher.socialLinks?.instagram && (
+                                                                <a href={teacher.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-xl text-pink-600 dark:text-pink-400 hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors">
+                                                                    <Instagram className="h-6 w-6" />
+                                                                </a>
+                                                            )}
+                                                            {teacher.socialLinks?.whatsapp && (
+                                                                <a href={`https://wa.me/${teacher.socialLinks.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
+                                                                    <MessageCircle className="h-6 w-6" />
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Actions */}
                                     <div className="flex items-center gap-3 flex-wrap">

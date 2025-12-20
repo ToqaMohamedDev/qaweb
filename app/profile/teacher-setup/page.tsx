@@ -28,11 +28,10 @@ import {
     Zap,
     TrendingUp,
     ExternalLink,
-    Twitter,
     Youtube,
     Facebook,
     Instagram,
-    Linkedin,
+    MessageCircle,
     Image as ImageIcon,
     FileText,
     Target,
@@ -61,11 +60,11 @@ interface TeacherProfile {
     phone: string | null;
     website: string | null;
     social_links: {
-        twitter?: string;
+        tiktok?: string;
         youtube?: string;
         facebook?: string;
         instagram?: string;
-        linkedin?: string;
+        whatsapp?: string;
     };
     subjects: string[];
     stages: string[];
@@ -117,11 +116,11 @@ export default function TeacherSetupPage() {
         teaching_style: "",
         is_teacher_profile_public: false,
         social_links: {
-            twitter: "",
+            tiktok: "",
             youtube: "",
             facebook: "",
             instagram: "",
-            linkedin: "",
+            whatsapp: "",
         },
         subject: "",  // Single subject - required
         stages: [] as string[],
@@ -695,12 +694,18 @@ export default function TeacherSetupPage() {
                                             {[
                                                 { key: 'youtube', icon: Youtube, label: 'YouTube', color: 'text-red-500' },
                                                 { key: 'facebook', icon: Facebook, label: 'Facebook', color: 'text-blue-600' },
-                                                { key: 'twitter', icon: Twitter, label: 'Twitter', color: 'text-sky-500' },
+                                                { key: 'tiktok', icon: null, label: 'TikTok', color: 'text-gray-900 dark:text-white' },
                                                 { key: 'instagram', icon: Instagram, label: 'Instagram', color: 'text-pink-500' },
-                                                { key: 'linkedin', icon: Linkedin, label: 'LinkedIn', color: 'text-blue-700' },
+                                                { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp', color: 'text-green-500' },
                                             ].map((social) => (
                                                 <div key={social.key} className="relative">
-                                                    <social.icon className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 ${social.color}`} />
+                                                    {social.icon ? (
+                                                        <social.icon className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 ${social.color}`} />
+                                                    ) : (
+                                                        <svg className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 ${social.color}`} viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                                                        </svg>
+                                                    )}
                                                     <input
                                                         type="url"
                                                         value={(formData.social_links as any)[social.key] || ""}
@@ -846,6 +851,62 @@ export default function TeacherSetupPage() {
                                     </div>
                                 </div>
 
+                                {/* Exams Management Section */}
+                                <div className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30">
+                                                <FileText className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white">إدارة الامتحانات</h3>
+                                                <p className="text-sm text-gray-500">أنشئ امتحانات جديدة وأدرها</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Link
+                                            href="/admin/exams"
+                                            className="flex items-center gap-4 p-4 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl text-white hover:from-violet-600 hover:to-purple-700 transition-all shadow-lg shadow-violet-500/25 group"
+                                        >
+                                            <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors">
+                                                <FileText className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold">إنشاء امتحان جديد</p>
+                                                <p className="text-sm text-white/80">أضف امتحان أو اختبار جديد</p>
+                                            </div>
+                                        </Link>
+
+                                        <Link
+                                            href="/admin/questions"
+                                            className="flex items-center gap-4 p-4 bg-gray-100 dark:bg-[#252530] rounded-xl text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-all group"
+                                        >
+                                            <div className="p-3 bg-gray-200 dark:bg-gray-700 rounded-xl group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-colors">
+                                                <BookOpen className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold">بنك الأسئلة</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">إدارة الأسئلة</p>
+                                            </div>
+                                        </Link>
+                                    </div>
+
+                                    {/* Teacher Profile Link */}
+                                    {profile && (
+                                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                            <Link
+                                                href={`/teachers/${profile.id}`}
+                                                className="flex items-center gap-2 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                                معاينة ملفك الشخصي العام
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Premium Section */}
                                 <div className="relative overflow-hidden bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600 rounded-2xl p-6 text-white">
                                     <div className="absolute top-0 left-0 w-full h-full opacity-20">
@@ -906,8 +967,8 @@ export default function TeacherSetupPage() {
                                 onClick={handleSave}
                                 disabled={isSaving || !formData.subject}
                                 className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg ${formData.subject
-                                        ? "bg-gradient-to-r from-primary-500 to-purple-500 hover:from-primary-600 hover:to-purple-600 text-white shadow-primary-500/25"
-                                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                    ? "bg-gradient-to-r from-primary-500 to-purple-500 hover:from-primary-600 hover:to-purple-600 text-white shadow-primary-500/25"
+                                    : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                     } disabled:opacity-50`}
                             >
                                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
