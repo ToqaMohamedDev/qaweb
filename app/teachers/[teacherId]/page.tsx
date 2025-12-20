@@ -5,13 +5,12 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import {
-    ArrowRight, Star, Users, FileText, CheckCircle2, Clock, Play,
-    BookOpen, Trophy, Heart, Share2, MessageSquare, ChevronLeft,
-    Loader2, Bell, BellOff, Video, Grid3X3, MoreVertical, Flag,
-    UserPlus, UserCheck, Home, Compass, Flame, Settings, HelpCircle,
-    ChevronDown, Zap, Sparkles, AlertCircle
+    ArrowRight, Star, Users, FileText, CheckCircle2, Clock,
+    Play, Bell, BellOff, Video, Share2, MoreVertical,
+    UserPlus, UserCheck, Home, Compass, PlaySquare, History,
+    ListVideo, ThumbsUp, Flag, ChevronDown, Search, Loader2, Flame,
+    GraduationCap, BookOpen, Award
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
@@ -25,52 +24,43 @@ interface Teacher {
     verified: boolean;
     subscriberCount: number;
     teacherTitle: string | null;
-    yearsOfExperience: number;
-    education: string | null;
-    website: string | null;
-    teachingStyle: string | null;
-    stats: { exams: number; lessons: number; students: number; rating: number };
+    stats: { exams: number; lessons: number; rating: number };
 }
 
 interface Exam {
     id: string;
     title: string;
     description: string;
-    questions_count: number;
     duration: number;
     created_at: string;
 }
 
-interface SubscribedTeacher {
-    id: string;
-    name: string;
-    photoURL: string | null;
-}
-
-const formatSubscribers = (count: number): string => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+const formatCount = (count: number): string => {
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)} مليون`;
+    if (count >= 1000) return `${(count / 1000).toFixed(0)} ألف`;
     return count.toString();
+};
+
+const formatDate = (date: string): string => {
+    const d = new Date(date);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return "اليوم";
+    if (days === 1) return "أمس";
+    if (days < 7) return `منذ ${days} أيام`;
+    if (days < 30) return `منذ ${Math.floor(days / 7)} أسابيع`;
+    if (days < 365) return `منذ ${Math.floor(days / 30)} أشهر`;
+    return `منذ ${Math.floor(days / 365)} سنوات`;
 };
 
 const handleShare = async (teacher: { name: string; id: string }) => {
     const url = `${window.location.origin}/teachers/${teacher.id}`;
-    const title = `معلم: ${teacher.name}`;
-
     if (navigator.share) {
-        try {
-            await navigator.share({ title, url });
-        } catch (err) {
-            // User cancelled
-        }
+        try { await navigator.share({ title: teacher.name, url }); } catch { }
     } else {
-        // Fallback: copy to clipboard
-        try {
-            await navigator.clipboard.writeText(url);
-            alert('تم نسخ الرابط!');
-        } catch (err) {
-            console.error('Failed to copy:', err);
-        }
+        await navigator.clipboard.writeText(url);
+        alert('تم نسخ الرابط!');
     }
 };
 
@@ -80,10 +70,9 @@ export default function TeacherPage() {
 
     const [teacher, setTeacher] = useState<Teacher | null>(null);
     const [exams, setExams] = useState<Exam[]>([]);
-    const [subscribedTeachers, setSubscribedTeachers] = useState<SubscribedTeacher[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<"exams" | "about">("exams");
+    const [activeTab, setActiveTab] = useState<"home" | "exams" | "about">("home");
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -94,37 +83,29 @@ export default function TeacherPage() {
 
     const fetchData = async () => {
         setIsLoading(true);
-        setError(null);
-
         try {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             setCurrentUserId(user?.id || null);
 
-            // جلب بيانات المعلم من Supabase فقط
             const { data: teacherData, error: teacherError } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", teacherId)
-                .single();
+                .from("profiles").select("*").eq("id", teacherId).single();
 
-            if (teacherError) {
-                console.error("Teacher error:", teacherError);
-                setError("لم يتم العثور على المعلم");
-                setTeacher(null);
-            } else if (!teacherData) {
-                setError("المعلم غير موجود");
-                setTeacher(null);
+            if (teacherError || !teacherData) {
+                setError("الملف الشخصي غير موجود");
             } else {
-                // جلب عدد الامتحانات والدروس
+                // Get real exams count
                 const { count: examsCount } = await supabase
                     .from("exam_templates")
                     .select("*", { count: "exact", head: true })
-                    .eq("created_by", teacherId);
+                    .eq("created_by", teacherId)
+                    .eq("is_active", true);
 
-                const { count: lessonsCount } = await supabase
-                    .from("lessons")
-                    .select("*", { count: "exact", head: true });
+                // Get real subscribers count
+                const { count: subscribersCount } = await supabase
+                    .from("teacher_subscriptions")
+                    .select("*", { count: "exact", head: true })
+                    .eq("teacher_id", teacherId);
 
                 setTeacher({
                     id: teacherData.id,
@@ -132,199 +113,108 @@ export default function TeacherPage() {
                     specialty: teacherData.specialization || "عام",
                     bio: teacherData.bio || "",
                     photoURL: teacherData.avatar_url,
-                    coverImageURL: teacherData.cover_image_url || null,
+                    coverImageURL: teacherData.cover_image_url,
                     verified: teacherData.is_verified || false,
-                    subscriberCount: teacherData.subscriber_count || 0,
+                    subscriberCount: subscribersCount || 0,
                     teacherTitle: teacherData.teacher_title,
-                    yearsOfExperience: teacherData.years_of_experience || 0,
-                    education: teacherData.education,
-                    website: teacherData.website,
-                    teachingStyle: teacherData.teaching_style,
-                    stats: {
-                        exams: examsCount || 0,
-                        lessons: lessonsCount || 0,
-                        students: teacherData.subscriber_count || 0,
-                        rating: 4.8
-                    }
+                    stats: { exams: examsCount || 0, lessons: 0, rating: 4.8 }
                 });
 
-                // جلب امتحانات المعلم
-                const { data: examsData, error: examsError } = await supabase
+                const { data: examsData } = await supabase
                     .from("exam_templates")
                     .select("id, title, description, duration_minutes, created_at")
-                    .eq("created_by", teacherId)
-                    .eq("is_active", true)
+                    .eq("created_by", teacherId).eq("is_active", true)
                     .order("created_at", { ascending: false });
 
-                if (!examsError && examsData) {
-                    setExams(examsData.map(e => {
-                        // Handle title that might be JSON or string
-                        let title = '';
-                        if (typeof e.title === 'object' && e.title !== null) {
-                            title = String((e.title as any).ar || (e.title as any).en || '');
-                        } else {
-                            title = String(e.title || '');
-                        }
-
-                        let description = '';
-                        if (typeof e.description === 'object' && e.description !== null) {
-                            description = String((e.description as any).ar || (e.description as any).en || '');
-                        } else {
-                            description = String(e.description || '');
-                        }
-
-                        return {
-                            id: e.id,
-                            title,
-                            description,
-                            questions_count: 0,
-                            duration: e.duration_minutes || 30,
-                            created_at: e.created_at
-                        };
-                    }));
-                } else {
-                    setExams([]);
+                if (examsData) {
+                    setExams(examsData.map(e => ({
+                        id: e.id,
+                        title: typeof e.title === 'object' ? String((e.title as any).ar || '') : String(e.title || ''),
+                        description: typeof e.description === 'object' ? String((e.description as any).ar || '') : String(e.description || ''),
+                        duration: e.duration_minutes || 30,
+                        created_at: e.created_at
+                    })));
                 }
             }
 
-            // جلب حالة الاشتراك
             if (user) {
                 const { data: subData } = await supabase
                     .from("teacher_subscriptions")
                     .select("notifications_enabled")
-                    .eq("user_id", user.id)
-                    .eq("teacher_id", teacherId)
-                    .single();
-
+                    .eq("user_id", user.id).eq("teacher_id", teacherId).single();
                 if (subData) {
                     setIsSubscribed(true);
                     setNotificationsEnabled(subData.notifications_enabled);
-                } else {
-                    setIsSubscribed(false);
-                }
-
-                // جلب كل الاشتراكات للـ sidebar
-                const { data: allSubs } = await supabase
-                    .from("teacher_subscriptions")
-                    .select(`
-                        teacher_id,
-                        profiles!teacher_subscriptions_teacher_id_fkey (id, name, avatar_url)
-                    `)
-                    .eq("user_id", user.id);
-
-                if (allSubs) {
-                    setSubscribedTeachers(allSubs.map(s => ({
-                        id: s.teacher_id,
-                        name: (s.profiles as any)?.name || "معلم",
-                        photoURL: (s.profiles as any)?.avatar_url
-                    })));
                 }
             }
         } catch (err) {
-            console.error("Fetch error:", err);
-            setError("حدث خطأ في جلب البيانات");
-            setTeacher(null);
+            setError("حدث خطأ");
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleSubscribe = async () => {
-        if (!currentUserId) {
-            window.location.href = "/login";
-            return;
-        }
-
+        if (!currentUserId) { window.location.href = "/login"; return; }
         const supabase = createClient();
-
         try {
             if (isSubscribed) {
-                const { error } = await supabase
-                    .from("teacher_subscriptions")
-                    .delete()
-                    .eq("user_id", currentUserId)
-                    .eq("teacher_id", teacherId);
-
-                if (!error) {
-                    setIsSubscribed(false);
-                    if (teacher) {
-                        setTeacher({ ...teacher, subscriberCount: Math.max(0, teacher.subscriberCount - 1) });
-                    }
-                    setSubscribedTeachers(prev => prev.filter(t => t.id !== teacherId));
-                }
+                await supabase.from("teacher_subscriptions").delete().eq("user_id", currentUserId).eq("teacher_id", teacherId);
+                setIsSubscribed(false);
+                if (teacher) setTeacher({ ...teacher, subscriberCount: Math.max(0, teacher.subscriberCount - 1) });
             } else {
-                const { error } = await supabase
-                    .from("teacher_subscriptions")
-                    .insert({ user_id: currentUserId, teacher_id: teacherId });
-
-                if (!error) {
-                    setIsSubscribed(true);
-                    setNotificationsEnabled(true);
-                    if (teacher) {
-                        setTeacher({ ...teacher, subscriberCount: teacher.subscriberCount + 1 });
-                        setSubscribedTeachers(prev => [...prev, {
-                            id: teacher.id,
-                            name: teacher.name,
-                            photoURL: teacher.photoURL
-                        }]);
-                    }
-                }
+                await supabase.from("teacher_subscriptions").insert({ user_id: currentUserId, teacher_id: teacherId });
+                setIsSubscribed(true);
+                if (teacher) setTeacher({ ...teacher, subscriberCount: teacher.subscriberCount + 1 });
             }
-        } catch (err) {
-            console.error("Subscribe error:", err);
-        }
+        } catch { }
     };
 
     const handleToggleNotifications = async () => {
         if (!currentUserId || !isSubscribed) return;
-
         const supabase = createClient();
         const newValue = !notificationsEnabled;
-
-        try {
-            const { error } = await supabase
-                .from("teacher_subscriptions")
-                .update({ notifications_enabled: newValue })
-                .eq("user_id", currentUserId)
-                .eq("teacher_id", teacherId);
-
-            if (!error) {
-                setNotificationsEnabled(newValue);
-            }
-        } catch (err) {
-            console.error("Notification toggle error:", err);
-        }
+        await supabase.from("teacher_subscriptions").update({ notifications_enabled: newValue })
+            .eq("user_id", currentUserId).eq("teacher_id", teacherId);
+        setNotificationsEnabled(newValue);
     };
 
-    // Loading state
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0f0f0f]" dir="rtl">
+            <div className="min-h-screen bg-white dark:bg-[#121218] transition-colors duration-300" dir="rtl">
                 <Navbar />
-                <div className="flex items-center justify-center py-40">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+                <div className="flex flex-col items-center justify-center py-40">
+                    <div className="relative">
+                        <div className="w-20 h-20 rounded-full border-4 border-gray-100 dark:border-[#2e2e3a]" />
+                        <div className="absolute inset-0">
+                            <div className="w-20 h-20 rounded-full border-4 border-transparent border-t-violet-500 animate-spin" />
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <GraduationCap className="h-8 w-8 text-violet-500" />
+                        </div>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 mt-6 text-lg font-medium">جاري تحميل الملف الشخصي...</p>
                 </div>
             </div>
         );
     }
 
-    // Error or not found state
     if (error || !teacher) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#0f0f0f]" dir="rtl">
+            <div className="min-h-screen bg-white dark:bg-[#121218] transition-colors duration-300" dir="rtl">
                 <Navbar />
-                <div className="container mx-auto px-4 py-20 text-center">
-                    <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                        {error || "المعلم غير موجود"}
-                    </h1>
-                    <p className="text-gray-500 mb-6">تأكد من صحة الرابط أو جرب البحث عن معلم آخر</p>
+                <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#1c1c24] dark:to-[#252530] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <Search className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{error || "الملف الشخصي غير موجود"}</h1>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">عذراً، لم نتمكن من العثور على هذا المعلم</p>
                     <Link
                         href="/teachers"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors shadow-lg shadow-violet-500/20"
                     >
                         <ArrowRight className="h-4 w-4" />
-                        العودة للمعلمين
+                        العودة للتصفح
                     </Link>
                 </div>
             </div>
@@ -332,372 +222,382 @@ export default function TeacherPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#0f0f0f]" dir="rtl">
+        <div className="min-h-screen bg-white dark:bg-[#121218] transition-colors duration-300" dir="rtl">
             <Navbar />
 
-            <div className="flex">
-                {/* Sidebar */}
-                <aside className="fixed right-0 top-[64px] h-[calc(100vh-64px)] w-[240px] bg-white dark:bg-[#0f0f0f] border-l border-gray-200 dark:border-[#272727] z-30 overflow-y-auto py-3 hidden lg:block scrollbar-hide">
-                    <div className="px-3 mb-3">
-                        <SidebarItem icon={Home} label="الرئيسية" href="/" />
-                        <SidebarItem icon={Compass} label="استكشاف" href="/teachers" />
-                        <SidebarItem icon={Flame} label="الأكثر شعبية" href="/teachers?filter=trending" />
-                    </div>
+            {/* Simple Header Bar */}
+            <div className="h-[60px] sm:h-[80px] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-800 dark:via-purple-900 dark:to-indigo-900" />
 
-                    <div className="h-px bg-gray-200 dark:bg-[#272727] mx-3 my-2" />
+            {/* Profile Header */}
+            <div className="relative bg-white dark:bg-[#121218]">
+                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
+                    <div className="flex flex-col sm:flex-row gap-5 sm:gap-8">
+                        {/* Avatar */}
+                        <div className="shrink-0 -mt-12 sm:-mt-14 relative z-10">
+                            <div className="relative">
+                                {teacher.photoURL ? (
+                                    <img
+                                        src={teacher.photoURL}
+                                        alt=""
+                                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white dark:border-[#121218] shadow-xl"
+                                    />
+                                ) : (
+                                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold border-4 border-white dark:border-[#121218] shadow-xl">
+                                        {teacher.name.charAt(0)}
+                                    </div>
+                                )}
+                                {teacher.verified && (
+                                    <div className="absolute bottom-1 right-1 w-7 h-7 bg-violet-500 rounded-full flex items-center justify-center border-2 border-white dark:border-[#121218] shadow-lg">
+                                        <CheckCircle2 className="h-4 w-4 text-white" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
-                    <div className="px-3">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 px-3 py-2">
-                            الاشتراكات ({subscribedTeachers.length})
-                        </h3>
-                        {subscribedTeachers.length === 0 ? (
-                            <p className="text-xs text-gray-400 px-3 py-2">
-                                {currentUserId ? "لا توجد اشتراكات" : "سجل دخول"}
-                            </p>
-                        ) : (
-                            subscribedTeachers.map(t => (
-                                <Link
-                                    key={t.id}
-                                    href={`/teachers/${t.id}`}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${t.id === teacherId ? "bg-gray-100 dark:bg-[#272727]" : "hover:bg-gray-100 dark:hover:bg-[#272727]"
-                                        }`}
-                                >
-                                    {t.photoURL ? (
-                                        <img src={t.photoURL} alt="" className="w-6 h-6 rounded-full object-cover" />
-                                    ) : (
-                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold">
-                                            {t.name.charAt(0)}
-                                        </div>
-                                    )}
-                                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{t.name}</span>
-                                </Link>
-                            ))
-                        )}
-                    </div>
+                        {/* Info */}
+                        <div className="flex-1 pt-0 sm:pt-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div className="flex-1">
+                                    {/* Name & Handle */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                                            {teacher.name}
+                                        </h1>
+                                        {teacher.verified && (
+                                            <CheckCircle2 className="h-5 w-5 text-violet-500" />
+                                        )}
+                                    </div>
 
-                    <div className="h-px bg-gray-200 dark:bg-[#272727] mx-3 my-2" />
-
-                    <div className="px-3">
-                        <SidebarItem icon={Settings} label="الإعدادات" href="/profile" />
-                        <SidebarItem icon={HelpCircle} label="المساعدة" href="#" />
-                    </div>
-                </aside>
-
-                {/* Main Content */}
-                <main className="flex-1 lg:mr-[240px]">
-                    {/* Channel Banner */}
-                    <div className="relative h-32 sm:h-48 overflow-hidden bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600">
-                        {teacher.coverImageURL ? (
-                            <img src={teacher.coverImageURL} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="absolute inset-0 bg-black/10" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                    </div>
-
-                    {/* Channel Info */}
-                    <div className="bg-white dark:bg-[#0f0f0f] border-b border-gray-200 dark:border-[#272727]">
-                        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
-                            <div className="flex flex-col sm:flex-row gap-4 py-4 sm:py-6">
-                                {/* Avatar */}
-                                <div className="shrink-0 -mt-12 sm:-mt-16 z-10">
-                                    {teacher.photoURL ? (
-                                        <img
-                                            src={teacher.photoURL}
-                                            alt=""
-                                            className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-4 border-white dark:border-[#0f0f0f] object-cover ring-1 ring-gray-100 dark:ring-gray-800"
-                                        />
-                                    ) : (
-                                        <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold border-4 border-white dark:border-[#0f0f0f] ring-1 ring-gray-100 dark:ring-gray-800">
-                                            {teacher.name.charAt(0)}
-                                        </div>
-                                    )}
+                                    {/* Stats - Inline */}
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <span className="flex items-center gap-1">
+                                            <Users className="h-4 w-4 text-violet-500" />
+                                            <strong className="text-gray-900 dark:text-white">{formatCount(teacher.subscriberCount)}</strong>
+                                            مشترك
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <FileText className="h-4 w-4 text-amber-500" />
+                                            <strong className="text-gray-900 dark:text-white">{teacher.stats.exams}</strong>
+                                            امتحان
+                                        </span>
+                                        {teacher.specialty && (
+                                            <span className="flex items-center gap-1 text-violet-600 dark:text-violet-400">
+                                                <BookOpen className="h-4 w-4" />
+                                                {teacher.specialty}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Info */}
-                                <div className="flex-1">
-                                    <div className="flex flex-col gap-1 mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                                                {teacher.name}
-                                            </h1>
-                                            {teacher.verified && <CheckCircle2 className="h-5 w-5 text-blue-500" />}
-                                        </div>
-                                        {teacher.teacherTitle && (
-                                            <p className="text-sm font-medium text-primary-600 dark:text-primary-400">
-                                                {teacher.teacherTitle}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-mono" dir="ltr">
-                                        @{teacher.name.replace(/\s/g, '_').toLowerCase()}
-                                    </p>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4 flex-wrap">
-                                        <span>{formatSubscribers(teacher.subscriberCount)} مشترك</span>
-                                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700 mx-1"></span>
-                                        <span>{teacher.stats.exams} امتحان</span>
-                                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700 mx-1"></span>
-                                        <span>{teacher.stats.lessons} درس</span>
-                                        {teacher.yearsOfExperience > 0 && (
-                                            <>
-                                                <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700 mx-1"></span>
-                                                <span>خبرة {teacher.yearsOfExperience} سنوات</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    {teacher.bio && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 max-w-2xl">
-                                            {teacher.bio}
-                                        </p>
-                                    )}
-
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={handleSubscribe}
-                                            className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all shadow-sm ${isSubscribed
-                                                ? "bg-gray-100 dark:bg-[#272727] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#323232]"
-                                                : "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-200"
-                                                }`}
-                                        >
-                                            {isSubscribed ? (
-                                                <><UserCheck className="h-4 w-4" />مشترك</>
-                                            ) : (
-                                                <><UserPlus className="h-4 w-4" />اشتراك</>
-                                            )}
-                                        </button>
-                                        {isSubscribed && (
-                                            <button
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {isSubscribed ? (
+                                        <>
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={handleToggleNotifications}
-                                                className={`p-2.5 rounded-full transition-all border ${notificationsEnabled
-                                                    ? "bg-gray-100 dark:bg-[#272727] border-gray-200 dark:border-gray-800"
-                                                    : "bg-transparent border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]"
+                                                className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 border ${notificationsEnabled
+                                                    ? "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-800/30 text-violet-600 dark:text-violet-400"
+                                                    : "bg-gray-50 dark:bg-[#1c1c24] border-gray-200 dark:border-[#2e2e3a] text-gray-400 dark:text-gray-500"
                                                     }`}
                                             >
-                                                {notificationsEnabled
-                                                    ? <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                                                    : <BellOff className="h-5 w-5 text-gray-400" />
-                                                }
-                                            </button>
-                                        )}
-                                        <button
-                                            onClick={() => handleShare(teacher)}
-                                            className="p-2.5 rounded-full bg-transparent border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]"
-                                        >
-                                            <Share2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                                        </button>
-                                        {teacher.website && (
-                                            <a
-                                                href={teacher.website.startsWith('http') ? teacher.website : `https://${teacher.website}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-2.5 rounded-full bg-transparent border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]"
+                                                {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={handleSubscribe}
+                                                className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-[#1c1c24] hover:bg-gray-200 dark:hover:bg-[#252530] text-gray-900 dark:text-white rounded-full text-sm font-medium transition-all duration-200 border border-gray-200 dark:border-[#2e2e3a]"
                                             >
-                                                <Compass className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                                                <UserCheck className="h-4 w-4 text-green-500" />
+                                                متابَع
+                                                <ChevronDown className="h-4 w-4 text-gray-400" />
+                                            </motion.button>
+                                        </>
+                                    ) : (
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={handleSubscribe}
+                                            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-full text-sm font-semibold transition-all duration-200 shadow-lg shadow-violet-500/25"
+                                        >
+                                            <UserPlus className="h-4 w-4" />
+                                            متابعة
+                                        </motion.button>
+                                    )}
 
-                            {/* Tabs */}
-                            <div className="flex gap-8 border-t border-gray-200 dark:border-[#272727] -mx-4 px-4 sm:-mx-6 sm:px-6 overflow-x-auto scrollbar-hide">
-                                <button
-                                    onClick={() => setActiveTab("exams")}
-                                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "exams"
-                                        ? "border-gray-900 dark:border-white text-gray-900 dark:text-white"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                                        }`}
-                                >
-                                    الامتحانات ({exams.length})
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("about")}
-                                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "about"
-                                        ? "border-gray-900 dark:border-white text-gray-900 dark:text-white"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                                        }`}
-                                >
-                                    حول المعلم
-                                </button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleShare(teacher)}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[#1c1c24] hover:bg-gray-200 dark:hover:bg-[#252530] text-gray-700 dark:text-white rounded-full text-sm font-medium transition-all duration-200 border border-gray-200 dark:border-[#2e2e3a]"
+                                    >
+                                        <Share2 className="h-4 w-4" />
+                                        مشاركة
+                                    </motion.button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl py-6">
-                        <AnimatePresence mode="wait">
-                            {activeTab === "exams" ? (
-                                <motion.div
-                                    key="exams"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                >
-                                    {exams.length === 0 ? (
-                                        <div className="text-center py-20 bg-gray-50 dark:bg-[#1a1a1a] rounded-2xl">
-                                            <div className="w-16 h-16 bg-gray-100 dark:bg-[#272727] rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <FileText className="h-8 w-8 text-gray-400" />
+                    {/* Tabs */}
+                    <div className="flex gap-1 mt-4 border-b border-gray-200 dark:border-[#2e2e3a] overflow-x-auto scrollbar-hide">
+                        <TabButton active={activeTab === "home"} onClick={() => setActiveTab("home")} label="الرئيسية" icon={Home} />
+                        <TabButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} label="الامتحانات" icon={FileText} />
+                        <TabButton active={activeTab === "about"} onClick={() => setActiveTab("about")} label="حول" icon={Users} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="bg-gray-50 dark:bg-[#0f0f14] min-h-[400px]">
+                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
+                    <AnimatePresence mode="wait">
+                        {activeTab === "home" && (
+                            <motion.div
+                                key="home"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {/* Featured Section */}
+                                {exams.length > 0 && (
+                                    <div className="mb-10">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 dark:from-violet-500/10 dark:to-purple-500/10">
+                                                <Flame className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                                             </div>
-                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">لا توجد امتحانات</h3>
-                                            <p className="text-gray-500 max-w-sm mx-auto">لم يقم المعلم بنشر أي امتحانات عامة حتى الآن</p>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">أحدث الامتحانات</h2>
+                                            <span className="px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-xs font-semibold">{Math.min(exams.length, 4)}</span>
                                         </div>
-                                    ) : (
-                                        <div className="grid gap-3">
-                                            {exams.map((exam, i) => (
-                                                <motion.div
-                                                    key={exam.id}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: i * 0.05 }}
-                                                >
-                                                    <Link href={`/arabic/exam/${exam.id}`} className="block group">
-                                                        <div className="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#272727] hover:border-primary-500 dark:hover:border-primary-500 transition-colors">
-                                                            <div className="w-16 sm:w-24 h-16 sm:h-20 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0 shadow-sm">
-                                                                <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1 group-hover:text-primary-600 transition-colors line-clamp-1">
-                                                                    {exam.title}
-                                                                </h3>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
-                                                                    {exam.description || "امتحان تفاعلي لاختبار مستواك وتطوير مهاراتك"}
-                                                                </p>
-                                                                <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-                                                                    <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-[#272727] px-2 py-1 rounded">
-                                                                        <Clock className="h-3 w-3" /> {exam.duration} دقيقة
-                                                                    </span>
-                                                                    <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-[#272727] px-2 py-1 rounded">
-                                                                        <Trophy className="h-3 w-3" /> شهادة إتمام
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="self-center hidden sm:block">
-                                                                <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-[#272727] flex items-center justify-center group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 group-hover:text-primary-600 transition-colors">
-                                                                    <ArrowRight className="h-4 w-4" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </Link>
-                                                </motion.div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            {exams.slice(0, 4).map((exam, i) => (
+                                                <VideoCard key={exam.id} exam={exam} teacher={teacher} index={i} />
                                             ))}
                                         </div>
-                                    )}
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="about"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                >
-                                    <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#272727] rounded-2xl p-6 sm:p-8">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                                            <div className="md:col-span-2 space-y-8">
-                                                <section>
-                                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">نبذة عن المعلم</h3>
-                                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">
-                                                        {teacher.bio || "لا توجد نبذة متاحة حالياً."}
-                                                    </p>
-                                                </section>
+                                    </div>
+                                )}
 
-                                                {teacher.teachingStyle && (
-                                                    <section>
-                                                        <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">أسلوب التدريس</h3>
-                                                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">
-                                                            {teacher.teachingStyle}
-                                                        </p>
-                                                    </section>
-                                                )}
-
-                                                <section>
-                                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">التفاصيل</h3>
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-[#272727]">
-                                                            <div className="p-2.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
-                                                                <Star className="h-5 w-5" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-medium text-gray-900 dark:text-white">التخصص</div>
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{teacher.specialty}</div>
-                                                            </div>
-                                                        </div>
-
-                                                        {teacher.education && (
-                                                            <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-[#272727]">
-                                                                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                                                                    <BookOpen className="h-5 w-5" />
-                                                                </div>
-                                                                <div>
-                                                                    <div className="font-medium text-gray-900 dark:text-white">المؤهل العلمي</div>
-                                                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{teacher.education}</div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-[#272727]">
-                                                            <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
-                                                                <Clock className="h-5 w-5" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-medium text-gray-900 dark:text-white">سنوات الخبرة</div>
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{teacher.yearsOfExperience} سنوات</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </section>
+                                {/* All Exams */}
+                                {exams.length > 4 && (
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-2.5 rounded-xl bg-gray-100 dark:bg-[#1c1c24]">
+                                                <FileText className="h-5 w-5 text-amber-500" />
                                             </div>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">جميع الامتحانات</h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            {exams.slice(4).map((exam, i) => (
+                                                <VideoCard key={exam.id} exam={exam} teacher={teacher} index={i} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
-                                            <div className="md:col-span-1 border-t md:border-t-0 md:border-r border-gray-100 dark:border-[#323232] pt-8 md:pt-0 md:pr-8">
-                                                <h3 className="font-bold text-gray-900 dark:text-white mb-6">إحصائيات</h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-1 gap-4">
-                                                    <div className="bg-gray-50 dark:bg-[#272727] p-4 rounded-xl text-center">
-                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                                            {formatSubscribers(teacher.subscriberCount)}
-                                                        </div>
-                                                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">مشترك</div>
-                                                    </div>
-                                                    <div className="bg-gray-50 dark:bg-[#272727] p-4 rounded-xl text-center">
-                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                                            {teacher.stats.exams}
-                                                        </div>
-                                                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">امتحان منشور</div>
-                                                    </div>
-                                                    <div className="bg-gray-50 dark:bg-[#272727] p-4 rounded-xl text-center">
-                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                                            {teacher.stats.lessons}
-                                                        </div>
-                                                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">درس تعليمي</div>
-                                                    </div>
-                                                    <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl text-center">
-                                                        <div className="flex items-center justify-center gap-1.5 text-3xl font-bold text-amber-500 mb-1">
-                                                            {teacher.stats.rating} <Star className="h-6 w-6 fill-amber-500" />
-                                                        </div>
-                                                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">تقييم عام</div>
-                                                    </div>
+                                {exams.length === 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="text-center py-20"
+                                    >
+                                        <div className="relative inline-block">
+                                            <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1c1c24] dark:to-[#252530] flex items-center justify-center shadow-inner">
+                                                <Video className="h-14 w-14 text-gray-400 dark:text-gray-500" />
+                                            </div>
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-violet-500/30 rounded-full animate-ping" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">لا يوجد محتوى بعد</h3>
+                                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">هذا المعلم لم ينشر أي امتحانات حتى الآن. تابعه ليصلك إشعار عند إضافة محتوى جديد!</p>
+                                    </motion.div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {activeTab === "exams" && (
+                            <motion.div
+                                key="exams"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {exams.length === 0 ? (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="text-center py-20"
+                                    >
+                                        <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1c1c24] dark:to-[#252530] flex items-center justify-center shadow-inner">
+                                            <FileText className="h-14 w-14 text-gray-400 dark:text-gray-500" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">لا توجد امتحانات</h3>
+                                        <p className="text-gray-500 dark:text-gray-400">لم يتم نشر أي امتحانات بعد</p>
+                                    </motion.div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2.5 rounded-xl bg-gray-100 dark:bg-[#1c1c24]">
+                                                    <FileText className="h-5 w-5 text-amber-500" />
+                                                </div>
+                                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">جميع الامتحانات</h2>
+                                                <span className="px-2.5 py-1 bg-gray-100 dark:bg-[#1c1c24] rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300">{exams.length}</span>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            {exams.map((exam, i) => (
+                                                <VideoCard key={exam.id} exam={exam} teacher={teacher} index={i} />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {activeTab === "about" && (
+                            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <div className="max-w-3xl">
+                                    {/* Description */}
+                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a] mb-6">
+                                        <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                                            <BookOpen className="h-5 w-5 text-violet-500" />
+                                            الوصف
+                                        </h2>
+                                        <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                                            {teacher.bio || "لا يوجد وصف متاح."}
+                                        </p>
+                                    </div>
+
+                                    {/* Stats Card */}
+                                    <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a] mb-6">
+                                        <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                                            <Award className="h-5 w-5 text-amber-500" />
+                                            الإحصائيات
+                                        </h2>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex items-center gap-3 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
+                                                <Users className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCount(teacher.subscriberCount)}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">مشترك</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                                                <FileText className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{teacher.stats.exams}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">امتحان</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </main>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        <button
+                                            onClick={() => handleShare(teacher)}
+                                            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1c1c24] border border-gray-200 dark:border-[#2e2e3a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252530] rounded-xl text-sm font-medium transition-colors"
+                                        >
+                                            <Share2 className="h-4 w-4" />
+                                            مشاركة الملف الشخصي
+                                        </button>
+                                        <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1c1c24] border border-gray-200 dark:border-[#2e2e3a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#252530] rounded-xl text-sm font-medium transition-colors">
+                                            <Flag className="h-4 w-4" />
+                                            الإبلاغ
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </div>
     );
 }
 
-function SidebarItem({ icon: Icon, label, href }: { icon: any; label: string; href: string }) {
+function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; onClick: () => void; label: string; icon?: any }) {
     return (
-        <Link
-            href={href}
-            className="flex items-center gap-6 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#272727] transition-colors"
+        <button
+            onClick={onClick}
+            className={`relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-all duration-200 ${active
+                ? "text-violet-600 dark:text-violet-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
         >
-            <Icon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
-        </Link>
+            {Icon && <Icon className={`h-4 w-4 ${active ? "text-violet-500" : ""}`} />}
+            {label}
+            {active && (
+                <motion.div
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+            )}
+        </button>
+    );
+}
+
+function VideoCard({ exam, teacher, index }: { exam: Exam; teacher: Teacher; index: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05, duration: 0.3 }}
+            whileHover={{ y: -4 }}
+            className="group"
+        >
+            <Link href={`/arabic/exam/${exam.id}`} className="block">
+                <div className="bg-white dark:bg-[#1c1c24] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#2e2e3a] hover:border-violet-200 dark:hover:border-violet-800/50 transition-all duration-300 shadow-sm hover:shadow-lg dark:shadow-none">
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-violet-100 via-purple-50 to-indigo-100 dark:from-violet-950/50 dark:via-purple-950/30 dark:to-indigo-950/50 flex items-center justify-center">
+                            {/* Pattern */}
+                            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08]" style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`
+                            }} />
+                            <FileText className="h-12 w-12 text-violet-400/40 dark:text-violet-300/20" />
+                        </div>
+
+                        {/* Hover Play Button */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
+                            <div className="w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                                <Play className="h-6 w-6 text-violet-600 mr-[-2px]" fill="currentColor" />
+                            </div>
+                        </div>
+
+                        {/* Duration Badge */}
+                        <div className="absolute bottom-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm rounded-lg text-xs text-white font-medium flex items-center gap-1.5">
+                            <Clock className="h-3 w-3" />
+                            {exam.duration} دقيقة
+                        </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-4">
+                        <h3 className="text-gray-900 dark:text-white font-semibold text-sm leading-5 line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors mb-3">
+                            {exam.title || "امتحان"}
+                        </h3>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                {teacher.photoURL ? (
+                                    <img src={teacher.photoURL} alt="" className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-100 dark:ring-[#2e2e3a]" />
+                                ) : (
+                                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-gray-100 dark:ring-[#2e2e3a]">
+                                        {teacher.name.charAt(0)}
+                                    </div>
+                                )}
+                                <span className="text-gray-500 dark:text-gray-400 text-xs">{teacher.name}</span>
+                            </div>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">{formatDate(exam.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        </motion.div>
     );
 }

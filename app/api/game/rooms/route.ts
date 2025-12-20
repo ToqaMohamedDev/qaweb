@@ -66,8 +66,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, room });
     } catch (error) {
         console.error('Error creating room:', error);
+        const errorMessage = error instanceof Error ? error.message : 'خطأ في إنشاء الغرفة';
         return NextResponse.json(
-            { success: false, error: 'خطأ في إنشاء الغرفة' },
+            { success: false, error: errorMessage },
             { status: 500 }
         );
     }

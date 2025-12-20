@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Smartphone, Tablet, RefreshCw, ArrowLeft, Users, Eye } from 'lucide-react';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { RefreshCw, Users, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { UserDevicesList } from '@/components/admin/UserDevicesList';
 import { VisitorDevicesList } from '@/components/admin/VisitorDevicesList';
 import { getAllDevices, deleteDevice } from '@/lib/actions/track-device';
 import { getAllVisitorDevices, deleteVisitorDevice } from '@/lib/actions/track-visitor';
+
+const ITEMS_PER_PAGE = 20;
 
 // Types
 interface UserDevice {
@@ -54,6 +55,79 @@ interface VisitorDevice {
     visit_count: number;
 }
 
+// Pagination Component
+function Pagination({
+    currentPage,
+    totalPages,
+    onPageChange,
+    totalItems,
+    itemsPerPage,
+}: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+    totalItems: number;
+    itemsPerPage: number;
+}) {
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+    if (totalPages <= 1) return null;
+
+    return (
+        <div className="flex items-center justify-between mt-6 p-4 bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-[#2a2a2a]">
+            <div className="text-sm text-gray-500">
+                عرض {startItem} - {endItem} من {totalItems}
+            </div>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                            pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                        } else {
+                            pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                            <button
+                                key={pageNum}
+                                onClick={() => onPageChange(pageNum)}
+                                className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#333]'
+                                    }`}
+                            >
+                                {pageNum}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function DevicesPage() {
     const [activeTab, setActiveTab] = useState<'users' | 'visitors'>('users');
 
@@ -61,19 +135,22 @@ export default function DevicesPage() {
     const [userDevices, setUserDevices] = useState<UserDevice[]>([]);
     const [isUsersLoading, setIsUsersLoading] = useState(true);
     const [userTotal, setUserTotal] = useState(0);
+    const [userPage, setUserPage] = useState(1);
 
     // Visitor Devices State
     const [visitorDevices, setVisitorDevices] = useState<VisitorDevice[]>([]);
     const [isVisitorsLoading, setIsVisitorsLoading] = useState(true);
     const [visitorTotal, setVisitorTotal] = useState(0);
+    const [visitorPage, setVisitorPage] = useState(1);
 
     const [error, setError] = useState<string | null>(null);
 
-    const fetchUserDevices = useCallback(async () => {
+    const fetchUserDevices = useCallback(async (page: number = 1) => {
         setIsUsersLoading(true);
         setError(null);
         try {
-            const result = await getAllDevices({ limit: 100 });
+            const offset = (page - 1) * ITEMS_PER_PAGE;
+            const result = await getAllDevices({ limit: ITEMS_PER_PAGE, offset });
             if (result.success) {
                 setUserDevices(result.devices as UserDevice[]);
                 setUserTotal(result.total || 0);
@@ -87,11 +164,12 @@ export default function DevicesPage() {
         }
     }, []);
 
-    const fetchVisitorDevices = useCallback(async () => {
+    const fetchVisitorDevices = useCallback(async (page: number = 1) => {
         setIsVisitorsLoading(true);
         setError(null);
         try {
-            const result = await getAllVisitorDevices({ limit: 100 });
+            const offset = (page - 1) * ITEMS_PER_PAGE;
+            const result = await getAllVisitorDevices({ limit: ITEMS_PER_PAGE, offset });
             if (result.success) {
                 setVisitorDevices(result.devices as VisitorDevice[]);
                 setVisitorTotal(result.total || 0);
@@ -106,14 +184,18 @@ export default function DevicesPage() {
     }, []);
 
     useEffect(() => {
-        fetchUserDevices();
-        fetchVisitorDevices();
-    }, [fetchUserDevices, fetchVisitorDevices]);
+        fetchUserDevices(userPage);
+    }, [fetchUserDevices, userPage]);
+
+    useEffect(() => {
+        fetchVisitorDevices(visitorPage);
+    }, [fetchVisitorDevices, visitorPage]);
 
     const handleUserDelete = async (deviceId: string) => {
         const result = await deleteDevice(deviceId);
         if (result.success) {
             setUserDevices((prev) => prev.filter((d) => d.id !== deviceId));
+            setUserTotal((prev) => prev - 1);
         }
     };
 
@@ -121,18 +203,31 @@ export default function DevicesPage() {
         const result = await deleteVisitorDevice(deviceId);
         if (result.success) {
             setVisitorDevices((prev) => prev.filter((d) => d.id !== deviceId));
+            setVisitorTotal((prev) => prev - 1);
         }
     };
 
     const handleRefresh = () => {
         if (activeTab === 'users') {
-            fetchUserDevices();
+            fetchUserDevices(userPage);
         } else {
-            fetchVisitorDevices();
+            fetchVisitorDevices(visitorPage);
         }
     };
 
+    const handleUserPageChange = (page: number) => {
+        setUserPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleVisitorPageChange = (page: number) => {
+        setVisitorPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const isLoading = activeTab === 'users' ? isUsersLoading : isVisitorsLoading;
+    const userTotalPages = Math.ceil(userTotal / ITEMS_PER_PAGE);
+    const visitorTotalPages = Math.ceil(visitorTotal / ITEMS_PER_PAGE);
 
     return (
         <div className="max-w-6xl mx-auto space-y-6" dir="rtl">
@@ -173,8 +268,8 @@ export default function DevicesPage() {
                 <button
                     onClick={() => setActiveTab('users')}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'users'
-                            ? 'bg-white dark:bg-[#2a2a2a] text-primary-600 dark:text-primary-400 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        ? 'bg-white dark:bg-[#2a2a2a] text-primary-600 dark:text-primary-400 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     <Users className="h-4 w-4" />
@@ -186,8 +281,8 @@ export default function DevicesPage() {
                 <button
                     onClick={() => setActiveTab('visitors')}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'visitors'
-                            ? 'bg-white dark:bg-[#2a2a2a] text-primary-600 dark:text-primary-400 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        ? 'bg-white dark:bg-[#2a2a2a] text-primary-600 dark:text-primary-400 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                 >
                     <Eye className="h-4 w-4" />
@@ -212,8 +307,15 @@ export default function DevicesPage() {
                             isLoading={isUsersLoading}
                             isAdmin={true}
                             showUserInfo={true}
-                            onRefresh={fetchUserDevices}
+                            onRefresh={() => fetchUserDevices(userPage)}
                             onDelete={handleUserDelete}
+                        />
+                        <Pagination
+                            currentPage={userPage}
+                            totalPages={userTotalPages}
+                            onPageChange={handleUserPageChange}
+                            totalItems={userTotal}
+                            itemsPerPage={ITEMS_PER_PAGE}
                         />
                     </motion.div>
                 ) : (
@@ -226,8 +328,15 @@ export default function DevicesPage() {
                         <VisitorDevicesList
                             devices={visitorDevices}
                             isLoading={isVisitorsLoading}
-                            onRefresh={fetchVisitorDevices}
+                            onRefresh={() => fetchVisitorDevices(visitorPage)}
                             onDelete={handleVisitorDelete}
+                        />
+                        <Pagination
+                            currentPage={visitorPage}
+                            totalPages={visitorTotalPages}
+                            onPageChange={handleVisitorPageChange}
+                            totalItems={visitorTotal}
+                            itemsPerPage={ITEMS_PER_PAGE}
                         />
                     </motion.div>
                 )}

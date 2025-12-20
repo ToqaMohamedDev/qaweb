@@ -94,7 +94,28 @@ export async function trackVisitor(visitorId: string, pageUrl?: string, referrer
         const supabase = await getSupabaseClient();
         const headersList = await headers();
         const userAgent = headersList.get('user-agent') || '';
+        // Get IP address
         const ipAddress = getIPAddress(headersList);
+
+        // Fetch Geolocation Data
+        let country = null;
+        let city = null;
+
+        if (ipAddress && ipAddress !== '0.0.0.0' && ipAddress !== '127.0.0.1' && ipAddress !== '::1') {
+            try {
+                const geoRes = await fetch(`http://ip-api.com/json/${ipAddress}`);
+                if (geoRes.ok) {
+                    const geoData = await geoRes.json();
+                    if (geoData.status === 'success') {
+                        country = geoData.country;
+                        city = geoData.city;
+                    }
+                }
+            } catch (e) {
+                // Ignore geo fetch errors
+            }
+        }
+
         const deviceInfo = parseDeviceInfo(userAgent);
 
         const { data, error } = await supabase.rpc('upsert_visitor_device', {
@@ -108,8 +129,8 @@ export async function trackVisitor(visitorId: string, pageUrl?: string, referrer
             p_user_agent: userAgent,
             p_page_url: pageUrl || null,
             p_referrer: referrer || null,
-            p_country: null,
-            p_city: null,
+            p_country: country,
+            p_city: city,
         });
 
         if (error) {

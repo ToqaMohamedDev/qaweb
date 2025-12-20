@@ -46,8 +46,27 @@ export async function createRoom(
         createdAt: now,
     };
 
-    // Store room data
-    await redis.hset(REDIS_KEYS.room(code), room as unknown as Record<string, string>);
+    // Store room data - convert to flat record with string values for Redis
+    const roomForRedis: Record<string, string | number | boolean> = {
+        id: room.id,
+        code: room.code,
+        name: room.name,
+        isPrivate: String(room.isPrivate),
+        password: room.password || '',
+        gameMode: room.gameMode,
+        maxPlayers: room.maxPlayers,
+        questionCount: room.questionCount,
+        timePerQuestion: room.timePerQuestion,
+        category: room.category,
+        difficulty: room.difficulty,
+        creatorId: room.creatorId,
+        status: room.status,
+        currentQuestion: room.currentQuestion,
+        questionIds: JSON.stringify(room.questionIds),
+        createdAt: room.createdAt,
+    };
+
+    await redis.hset(REDIS_KEYS.room(code), roomForRedis);
     await redis.expire(REDIS_KEYS.room(code), ROOM_TTL);
 
     // Add to active rooms
@@ -146,9 +165,24 @@ export async function addPlayerToRoom(
         lastActive: now,
     };
 
-    // Store player data
+    // Store player data - convert to flat record for Redis
+    const playerForRedis: Record<string, string | number> = {
+        odUserId: player.odUserId,
+        odDisplayName: player.odDisplayName,
+        avatar: player.avatar || '',
+        team: player.team || '',
+        isCaptain: String(player.isCaptain),
+        isReady: String(player.isReady),
+        score: player.score,
+        correctAnswers: player.correctAnswers,
+        wrongAnswers: player.wrongAnswers,
+        streak: player.streak,
+        joinedAt: player.joinedAt,
+        lastActive: player.lastActive,
+    };
+
     await redis.sadd(REDIS_KEYS.roomPlayers(code), odUserId);
-    await redis.hset(REDIS_KEYS.roomPlayer(code, odUserId), player as unknown as Record<string, string>);
+    await redis.hset(REDIS_KEYS.roomPlayer(code, odUserId), playerForRedis);
     await redis.expire(REDIS_KEYS.roomPlayer(code, odUserId), ROOM_TTL);
 
     // Update user session

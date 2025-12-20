@@ -132,6 +132,25 @@ export async function trackDevice(): Promise<TrackDeviceResult> {
         // Parse device info
         const deviceInfo = parseDeviceInfo(userAgent);
 
+        // Fetch Geolocation Data
+        let country = null;
+        let city = null;
+
+        if (ipAddress && ipAddress !== '0.0.0.0' && ipAddress !== '127.0.0.1' && ipAddress !== '::1') {
+            try {
+                const geoRes = await fetch(`http://ip-api.com/json/${ipAddress}`);
+                if (geoRes.ok) {
+                    const geoData = await geoRes.json();
+                    if (geoData.status === 'success') {
+                        country = geoData.country;
+                        city = geoData.city;
+                    }
+                }
+            } catch (e) {
+                // Ignore geo fetch errors
+            }
+        }
+
         // Call the upsert function
         const { data, error } = await supabase.rpc('upsert_user_device', {
             p_user_id: user.id,
@@ -142,8 +161,8 @@ export async function trackDevice(): Promise<TrackDeviceResult> {
             p_browser_version: deviceInfo.browserVersion,
             p_ip_address: ipAddress,
             p_user_agent: userAgent,
-            p_country: null, // Can be populated using IP geolocation service
-            p_city: null,
+            p_country: country,
+            p_city: city,
         });
 
         if (error) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, getPlayer, getPlayersInRoom } from '@/lib/game/room-manager';
-import { submitAnswer, endQuestion, startQuestion } from '@/lib/game/game-engine';
-import { playerAnsweredEvent, questionResultEvent, questionStartEvent, gameEndedEvent } from '@/lib/game/event-manager';
+import { submitAnswer, endQuestion } from '@/lib/game/game-engine';
+import { playerAnsweredEvent } from '@/lib/game/event-manager';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -97,20 +97,24 @@ export async function POST(
             );
         }
 
-        // Publish answer event (hide correctness until round ends in team mode)
+        // Publish answer event
         await playerAnsweredEvent(
             code,
             user.id,
             player.odDisplayName,
-            // In FFA show correctness immediately (or maybe hide to keep suspense? let's kept it revealed for sender)
-            // Actually, for fairness, we might want to hide it from OTHERS, but here we are publishing to everyone.
-            // In Speed mode (First to answer correct wins), it doesn't matter much because game pauses.
-            // Let's reveal it.
             result.isCorrect
         );
 
-        // If answer was correct, end the question immediately (First Correct Wins)
-        if (result.isCorrect) {
+        // Response data
+        const responseData: any = {
+            success: true,
+            isCorrect: result.isCorrect,
+            points: result.points,
+        };
+
+        // If answer was correct in FFA mode, end the question immediately
+        // The game-engine will handle timer clearing and event pushing
+        if (result.isCorrect && room.gameMode === 'ffa') {
             const endResult = await endQuestion(code, questionNumber);
 
             // Get updated scores
@@ -121,16 +125,12 @@ export async function POST(
                 delta: p.odUserId === user.id ? (result.points || 0) : 0,
             }));
 
-            await questionResultEvent(
-                code,
-                questionNumber,
-                endResult.correctAnswer!,
-                user.id,
-                player.odDisplayName,
-                scores
-            );
+            responseData.correctAnswer = endResult.correctAnswer;
+            responseData.winnerId = user.id;
+            responseData.winnerName = player.odDisplayName;
+            responseData.scores = scores;
 
-            // Start next question or end game
+            // Check if game should end
             if (endResult.shouldEndGame) {
                 const rankings = players
                     .sort((a, b) => b.score - a.score)
@@ -141,33 +141,12 @@ export async function POST(
                         rank: i + 1,
                     }));
 
-                await gameEndedEvent(code, {
-                    winnerId: rankings[0]?.odUserId,
-                    winnerName: rankings[0]?.odDisplayName,
-                    rankings,
-                });
-            } else {
-                // Wait 2 seconds then start next question
-                setTimeout(async () => {
-                    const nextQ = await startQuestion(code);
-                    if (nextQ.success && nextQ.question) {
-                        await questionStartEvent(
-                            code,
-                            nextQ.questionNumber!,
-                            nextQ.question.question,
-                            nextQ.question.options,
-                            room.timePerQuestion
-                        );
-                    }
-                }, 2000);
+                responseData.shouldEndGame = true;
+                responseData.rankings = rankings;
             }
         }
 
-        return NextResponse.json({
-            success: true,
-            isCorrect: result.isCorrect,
-            points: result.points,
-        });
+        return NextResponse.json(responseData);
     } catch (error) {
         console.error('Error submitting answer:', error);
         return NextResponse.json(

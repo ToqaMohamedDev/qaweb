@@ -76,24 +76,33 @@ export async function POST(
 
         // Publish game starting event with countdown
         await gameStartingEvent(code, 3);
+        await gameStartedEvent(code);
 
-        // After 3 seconds, start the first question
-        setTimeout(async () => {
-            await gameStartedEvent(code);
+        // Start the first question immediately
+        const questionResult = await startQuestion(code);
+        if (questionResult.success && questionResult.question) {
+            // Remove correct answer before sending
+            const { correctAnswer, ...safeQuestion } = questionResult.question;
 
-            const questionResult = await startQuestion(code);
-            if (questionResult.success && questionResult.question) {
-                // Remove correct answer before sending
-                const { correctAnswer, ...safeQuestion } = questionResult.question;
-                await questionStartEvent(
-                    code,
-                    questionResult.questionNumber!,
-                    safeQuestion.question,
-                    safeQuestion.options,
-                    room.timePerQuestion
-                );
-            }
-        }, 3000);
+            // Use endsAt from startQuestion (timer state already set there)
+            const endsAt = questionResult.endsAt || Date.now() + (room.timePerQuestion * 1000);
+
+            // Publish question start event with endsAt for client-side timer
+            await questionStartEvent(
+                code,
+                questionResult.questionNumber!,
+                safeQuestion.question,
+                safeQuestion.options,
+                room.timePerQuestion
+            );
+
+            return NextResponse.json({
+                success: true,
+                questionNumber: questionResult.questionNumber,
+                endsAt,
+                timeLimit: room.timePerQuestion,
+            });
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

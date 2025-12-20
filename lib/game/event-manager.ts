@@ -92,11 +92,16 @@ export function questionStartEvent(
     options: string[],
     timeLimit: number
 ) {
+    const now = Date.now();
+    const endsAt = now + (timeLimit * 1000);
+
     return publishRoomEvent(roomCode, 'question_start', {
         questionNumber,
         question,
         options,
         timeLimit,
+        endsAt,
+        startedAt: now,
     });
 }
 

@@ -25,7 +25,11 @@ import {
     Zap,
     Star,
     Trophy,
-    ArrowLeft
+    ArrowLeft,
+    Gem,
+    Activity,
+    TrendingUp,
+    Award
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -40,44 +44,87 @@ const navItems = [
     { href: "/game", label: "Quiz Battle", icon: Gamepad2 },
 ] as const;
 
-// Animation variants for dropdown menus
+// Enhanced Animation variants for dropdown menus with smoother transitions
 const dropdownVariants = {
     hidden: {
         opacity: 0,
-        y: -10,
-        scale: 0.95,
-        filter: "blur(4px)"
+        y: -15,
+        scale: 0.92,
+        filter: "blur(8px)",
+        rotateX: -10
     },
     visible: {
         opacity: 1,
         y: 0,
         scale: 1,
         filter: "blur(0px)",
+        rotateX: 0,
         transition: {
             type: "spring" as const,
-            stiffness: 400,
-            damping: 25,
-            staggerChildren: 0.05,
-            delayChildren: 0.1
+            stiffness: 350,
+            damping: 28,
+            mass: 0.8,
+            staggerChildren: 0.04,
+            delayChildren: 0.08
         }
     },
     exit: {
         opacity: 0,
-        y: -10,
+        y: -12,
         scale: 0.95,
-        filter: "blur(4px)",
-        transition: { duration: 0.15 }
+        filter: "blur(6px)",
+        rotateX: 5,
+        transition: {
+            duration: 0.2,
+            ease: "easeOut" as const
+        }
     }
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
+    hidden: { opacity: 0, x: -15, scale: 0.95 },
     visible: {
         opacity: 1,
         x: 0,
-        transition: { type: "spring" as const, stiffness: 300, damping: 24 }
+        scale: 1,
+        transition: {
+            type: "spring" as const,
+            stiffness: 400,
+            damping: 22,
+            mass: 0.6
+        }
     }
 } as const;
+
+// Floating animation for decorative elements
+const floatingVariants = {
+    initial: { y: 0, rotate: 0 },
+    animate: {
+        y: [-2, 2, -2],
+        rotate: [-2, 2, -2],
+        transition: {
+            duration: 4,
+            ease: "easeInOut" as const,
+            repeat: Infinity,
+            repeatType: "loop" as const
+        }
+    }
+};
+
+// Glow pulse animation
+const glowVariants = {
+    initial: { opacity: 0.5, scale: 1 },
+    animate: {
+        opacity: [0.5, 0.8, 0.5],
+        scale: [1, 1.05, 1],
+        transition: {
+            duration: 2.5,
+            ease: "easeInOut" as const,
+            repeat: Infinity,
+            repeatType: "loop" as const
+        }
+    }
+};
 
 const mobileMenuVariants = {
     hidden: {
@@ -361,23 +408,71 @@ export function Navbar() {
                                                     initial="hidden"
                                                     animate="visible"
                                                     exit="exit"
-                                                    className="absolute top-full left-0 mt-3 w-72 rounded-2xl bg-white/95 dark:bg-[#1c1c24]/95 backdrop-blur-xl border border-gray-200/50 dark:border-[#2e2e3a]/50 shadow-2xl shadow-black/5 dark:shadow-black/20 overflow-hidden"
+                                                    style={{ perspective: "1000px" }}
+                                                    className="absolute top-full left-0 mt-4 w-80 rounded-3xl bg-white/80 dark:bg-[#1a1a24]/90 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.6)] overflow-hidden"
                                                 >
-                                                    {/* Decorative Gradient Header */}
-                                                    <div className="relative h-20 bg-gradient-to-br from-primary-500 via-purple-500 to-pink-500 overflow-hidden">
-                                                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] opacity-50" />
-                                                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-                                                        <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full blur-lg" />
+                                                    {/* Premium Gradient Header with Animated Elements */}
+                                                    <div className="relative h-28 overflow-hidden">
+                                                        {/* Animated gradient background */}
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-fuchsia-500" />
+
+                                                        {/* Mesh gradient overlay */}
+                                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-rose-400/30 via-transparent to-transparent" />
+                                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-cyan-400/20 via-transparent to-transparent" />
+
+                                                        {/* Animated pattern */}
+                                                        <div className="absolute inset-0 opacity-30">
+                                                            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjMiLz48L3N2Zz4=')] animate-pulse" />
+                                                        </div>
+
+                                                        {/* Floating decorative elements */}
+                                                        <motion.div
+                                                            variants={floatingVariants}
+                                                            initial="initial"
+                                                            animate="animate"
+                                                            className="absolute top-3 right-4"
+                                                        >
+                                                            <Sparkles className="w-5 h-5 text-white/40" />
+                                                        </motion.div>
+                                                        <motion.div
+                                                            variants={floatingVariants}
+                                                            initial="initial"
+                                                            animate="animate"
+                                                            style={{ animationDelay: "0.5s" }}
+                                                            className="absolute bottom-6 left-6"
+                                                        >
+                                                            <Star className="w-4 h-4 text-white/30" />
+                                                        </motion.div>
+
+                                                        {/* Glow effects */}
+                                                        <motion.div
+                                                            variants={glowVariants}
+                                                            initial="initial"
+                                                            animate="animate"
+                                                            className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"
+                                                        />
+                                                        <motion.div
+                                                            variants={glowVariants}
+                                                            initial="initial"
+                                                            animate="animate"
+                                                            style={{ animationDelay: "1s" }}
+                                                            className="absolute -top-6 -left-6 w-24 h-24 bg-cyan-300/20 rounded-full blur-xl"
+                                                        />
+
+                                                        {/* Glass overlay */}
+                                                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent backdrop-blur-[1px]" />
                                                     </div>
 
-                                                    {/* User Avatar - Overlapping Header */}
-                                                    <div className="relative -mt-10 px-4">
-                                                        <div className="flex items-end gap-3">
+                                                    {/* User Avatar - Premium Overlapping Style */}
+                                                    <div className="relative -mt-14 px-5">
+                                                        <div className="flex items-end gap-4">
                                                             <motion.div
                                                                 variants={itemVariants}
-                                                                className="relative"
+                                                                className="relative group"
                                                             >
-                                                                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#252530] p-1 shadow-lg ring-4 ring-white dark:ring-[#1c1c24]">
+                                                                {/* Avatar glow ring */}
+                                                                <div className="absolute -inset-1.5 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl blur-sm opacity-60 group-hover:opacity-80 transition-opacity" />
+                                                                <div className="relative w-20 h-20 rounded-2xl bg-white dark:bg-[#252530] p-1.5 shadow-xl ring-4 ring-white/80 dark:ring-[#1a1a24]/80">
                                                                     {user?.user_metadata?.avatar_url ? (
                                                                         <img
                                                                             src={user.user_metadata.avatar_url}
@@ -385,90 +480,162 @@ export function Navbar() {
                                                                             className="w-full h-full rounded-xl object-cover"
                                                                         />
                                                                     ) : (
-                                                                        <div className="w-full h-full rounded-xl bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center">
-                                                                            <UserCircle className="w-8 h-8 text-white" />
+                                                                        <div className="w-full h-full rounded-xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
+                                                                            <UserCircle className="w-10 h-10 text-white drop-shadow-lg" />
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                                {/* Online indicator */}
-                                                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-3 border-white dark:border-[#1c1c24] flex items-center justify-center">
-                                                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                                                {/* Premium online indicator */}
+                                                                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full border-[3px] border-white dark:border-[#1a1a24] shadow-lg flex items-center justify-center">
+                                                                    <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
                                                                 </div>
                                                             </motion.div>
-                                                            <motion.div variants={itemVariants} className="flex-1 min-w-0 pb-1">
-                                                                <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                                                                    {user?.user_metadata?.name || user?.email?.split('@')[0]}
-                                                                </h3>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                            <motion.div variants={itemVariants} className="flex-1 min-w-0 pb-2">
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                                                                        {user?.user_metadata?.name || user?.email?.split('@')[0]}
+                                                                    </h3>
+                                                                    <div className="flex-shrink-0 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-[9px] font-bold text-white uppercase tracking-wider">
+                                                                        VIP
+                                                                    </div>
+                                                                </div>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                                                     {user?.email}
                                                                 </p>
                                                             </motion.div>
                                                         </div>
                                                     </div>
 
-                                                    {/* Quick Stats */}
-                                                    <motion.div variants={itemVariants} className="px-4 py-3 mt-3">
-                                                        <div className="grid grid-cols-3 gap-2">
-                                                            <div className="text-center p-2.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100 dark:border-amber-800/30">
-                                                                <Trophy className="w-4 h-4 mx-auto text-amber-500 mb-1" />
-                                                                <p className="text-xs font-bold text-amber-600 dark:text-amber-400">150</p>
-                                                                <p className="text-[10px] text-amber-500/80 dark:text-amber-400/60">نقطة</p>
-                                                            </div>
-                                                            <div className="text-center p-2.5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100 dark:border-purple-800/30">
-                                                                <Crown className="w-4 h-4 mx-auto text-purple-500 mb-1" />
-                                                                <p className="text-xs font-bold text-purple-600 dark:text-purple-400">12</p>
-                                                                <p className="text-[10px] text-purple-500/80 dark:text-purple-400/60">مرتبة</p>
-                                                            </div>
-                                                            <div className="text-center p-2.5 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100 dark:border-blue-800/30">
-                                                                <Zap className="w-4 h-4 mx-auto text-blue-500 mb-1" />
-                                                                <p className="text-xs font-bold text-blue-600 dark:text-blue-400">25</p>
-                                                                <p className="text-[10px] text-blue-500/80 dark:text-blue-400/60">اختبار</p>
-                                                            </div>
+                                                    {/* Premium Stats Cards */}
+                                                    <motion.div variants={itemVariants} className="px-5 py-4 mt-2">
+                                                        <div className="grid grid-cols-3 gap-3">
+                                                            <motion.div
+                                                                whileHover={{ scale: 1.05, y: -2 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                className="relative group cursor-pointer"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl blur-sm opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                <div className="relative text-center p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200/50 dark:border-amber-700/30 shadow-sm">
+                                                                    <div className="w-8 h-8 mx-auto mb-1.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                                                                        <Trophy className="w-4 h-4 text-white" />
+                                                                    </div>
+                                                                    <p className="text-sm font-bold bg-gradient-to-br from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">150</p>
+                                                                    <p className="text-[10px] font-medium text-amber-600/70 dark:text-amber-400/50">نقطة</p>
+                                                                </div>
+                                                            </motion.div>
+                                                            <motion.div
+                                                                whileHover={{ scale: 1.05, y: -2 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                className="relative group cursor-pointer"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl blur-sm opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                <div className="relative text-center p-3 rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/40 dark:to-purple-950/40 border border-violet-200/50 dark:border-violet-700/30 shadow-sm">
+                                                                    <div className="w-8 h-8 mx-auto mb-1.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                                                                        <Crown className="w-4 h-4 text-white" />
+                                                                    </div>
+                                                                    <p className="text-sm font-bold bg-gradient-to-br from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">#12</p>
+                                                                    <p className="text-[10px] font-medium text-violet-600/70 dark:text-violet-400/50">مرتبة</p>
+                                                                </div>
+                                                            </motion.div>
+                                                            <motion.div
+                                                                whileHover={{ scale: 1.05, y: -2 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                className="relative group cursor-pointer"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl blur-sm opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                <div className="relative text-center p-3 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/40 dark:to-blue-950/40 border border-cyan-200/50 dark:border-cyan-700/30 shadow-sm">
+                                                                    <div className="w-8 h-8 mx-auto mb-1.5 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                                                                        <Zap className="w-4 h-4 text-white" />
+                                                                    </div>
+                                                                    <p className="text-sm font-bold bg-gradient-to-br from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">25</p>
+                                                                    <p className="text-[10px] font-medium text-cyan-600/70 dark:text-cyan-400/50">اختبار</p>
+                                                                </div>
+                                                            </motion.div>
                                                         </div>
                                                     </motion.div>
 
-                                                    {/* Menu Items */}
-                                                    <div className="p-2 mt-1 space-y-1">
+                                                    {/* Premium Menu Items */}
+                                                    <div className="px-3 pb-3 space-y-1">
                                                         {isUserAdmin && (
                                                             <motion.div variants={itemVariants}>
                                                                 <Link
                                                                     href="/admin"
-                                                                    className="group flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:bg-gradient-to-l hover:from-primary-50 hover:to-transparent dark:hover:from-primary-900/20 dark:hover:to-transparent rounded-xl transition-all duration-200"
+                                                                    className="group relative flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-2xl overflow-hidden transition-all duration-300"
                                                                 >
-                                                                    <div className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30 group-hover:scale-110 transition-transform">
-                                                                        <Shield className="w-4 h-4" />
+                                                                    {/* Hover gradient background */}
+                                                                    <div className="absolute inset-0 bg-gradient-to-l from-violet-100 via-purple-50 to-transparent dark:from-violet-900/30 dark:via-purple-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                                                    <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 group-hover:scale-110 transition-all duration-300">
+                                                                        <Shield className="w-4 h-4 text-white" />
                                                                     </div>
-                                                                    <span>لوحة التحكم</span>
-                                                                    <ArrowLeft className="w-4 h-4 mr-auto opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />
+                                                                    <div className="relative flex-1">
+                                                                        <span className="text-violet-700 dark:text-violet-300">لوحة التحكم</span>
+                                                                        <p className="text-[10px] text-violet-500/60 dark:text-violet-400/50 font-normal">إدارة المحتوى والمستخدمين</p>
+                                                                    </div>
+                                                                    <div className="relative w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                                                                        <ArrowLeft className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                                                                    </div>
                                                                 </Link>
                                                             </motion.div>
                                                         )}
+
                                                         <motion.div variants={itemVariants}>
                                                             <Link
                                                                 href="/profile"
-                                                                className="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gradient-to-l hover:from-gray-100 hover:to-transparent dark:hover:from-[#2a2a38] dark:hover:to-transparent rounded-xl transition-all duration-200"
+                                                                className="group relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-2xl overflow-hidden transition-all duration-300"
                                                             >
-                                                                <div className="p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a38] group-hover:scale-110 group-hover:bg-gray-200 dark:group-hover:bg-[#353545] transition-all">
+                                                                <div className="absolute inset-0 bg-gradient-to-l from-gray-100 via-gray-50 to-transparent dark:from-gray-800/50 dark:via-gray-800/30 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                                                <div className="relative p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 group-hover:scale-110 transition-all duration-300 shadow-sm">
                                                                     <UserIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                                                                 </div>
-                                                                <span>الملف الشخصي</span>
-                                                                <ArrowLeft className="w-4 h-4 mr-auto opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />
+                                                                <div className="relative flex-1">
+                                                                    <span className="text-gray-700 dark:text-gray-200">الملف الشخصي</span>
+                                                                    <p className="text-[10px] text-gray-500/60 dark:text-gray-400/50 font-normal">عرض وتعديل بياناتك</p>
+                                                                </div>
+                                                                <div className="relative w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                                                                    <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                                                </div>
                                                             </Link>
                                                         </motion.div>
 
-                                                        {/* Divider */}
-                                                        <motion.div variants={itemVariants} className="h-px bg-gradient-to-l from-gray-200 via-gray-100 to-transparent dark:from-[#2e2e3a] dark:via-[#252530] dark:to-transparent my-2" />
+                                                        <motion.div variants={itemVariants}>
+                                                            <Link
+                                                                href="/settings"
+                                                                className="group relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-2xl overflow-hidden transition-all duration-300"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-l from-gray-100 via-gray-50 to-transparent dark:from-gray-800/50 dark:via-gray-800/30 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                                                        {/* Logout Button */}
+                                                                <div className="relative p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 group-hover:scale-110 transition-all duration-300 shadow-sm">
+                                                                    <Settings className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                                                </div>
+                                                                <div className="relative flex-1">
+                                                                    <span className="text-gray-700 dark:text-gray-200">الإعدادات</span>
+                                                                    <p className="text-[10px] text-gray-500/60 dark:text-gray-400/50 font-normal">تخصيص التطبيق</p>
+                                                                </div>
+                                                                <div className="relative w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                                                                    <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                                                </div>
+                                                            </Link>
+                                                        </motion.div>
+
+                                                        {/* Premium Divider */}
+                                                        <motion.div variants={itemVariants} className="py-2">
+                                                            <div className="h-px bg-gradient-to-l from-gray-200 via-gray-300/50 to-transparent dark:from-gray-700 dark:via-gray-600/30 dark:to-transparent" />
+                                                        </motion.div>
+
+                                                        {/* Logout Button - Premium Style */}
                                                         <motion.div variants={itemVariants}>
                                                             <button
                                                                 onClick={handleSignOut}
-                                                                className="group w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-gradient-to-l hover:from-red-50 hover:to-transparent dark:hover:from-red-900/20 dark:hover:to-transparent rounded-xl transition-all duration-200"
+                                                                className="group relative w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-2xl overflow-hidden transition-all duration-300"
                                                             >
-                                                                <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 group-hover:scale-110 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-all">
-                                                                    <LogOut className="w-4 h-4" />
+                                                                <div className="absolute inset-0 bg-gradient-to-l from-red-100 via-rose-50 to-transparent dark:from-red-900/30 dark:via-rose-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                                                <div className="relative p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-rose-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-red-500/25 transition-all duration-300">
+                                                                    <LogOut className="w-4 h-4 text-red-500 dark:text-red-400 group-hover:text-white transition-colors" />
                                                                 </div>
-                                                                <span>تسجيل الخروج</span>
+                                                                <span className="relative text-red-600 dark:text-red-400">تسجيل الخروج</span>
                                                             </button>
                                                         </motion.div>
                                                     </div>

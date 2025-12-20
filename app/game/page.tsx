@@ -148,23 +148,44 @@ export default function GameLobbyPage() {
                 <div className="absolute bottom-20 right-20 w-96 h-96 bg-orange-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px]" />
 
-                {/* Floating Particles */}
-                {[...Array(20)].map((_, i) => (
+                {/* Floating Particles - Using fixed positions to avoid hydration mismatch */}
+                {[
+                    { left: 5, top: 10, duration: 3.2, delay: 0.5 },
+                    { left: 15, top: 25, duration: 4.1, delay: 1.2 },
+                    { left: 25, top: 5, duration: 3.8, delay: 0.3 },
+                    { left: 35, top: 45, duration: 4.5, delay: 1.8 },
+                    { left: 45, top: 15, duration: 3.4, delay: 0.7 },
+                    { left: 55, top: 65, duration: 4.2, delay: 1.5 },
+                    { left: 65, top: 35, duration: 3.6, delay: 0.9 },
+                    { left: 75, top: 85, duration: 4.8, delay: 1.1 },
+                    { left: 85, top: 55, duration: 3.3, delay: 1.6 },
+                    { left: 95, top: 20, duration: 4.4, delay: 0.4 },
+                    { left: 10, top: 70, duration: 3.9, delay: 1.3 },
+                    { left: 20, top: 90, duration: 4.0, delay: 0.6 },
+                    { left: 30, top: 60, duration: 3.5, delay: 1.9 },
+                    { left: 40, top: 30, duration: 4.3, delay: 0.8 },
+                    { left: 50, top: 80, duration: 3.7, delay: 1.4 },
+                    { left: 60, top: 50, duration: 4.6, delay: 0.2 },
+                    { left: 70, top: 75, duration: 3.1, delay: 1.7 },
+                    { left: 80, top: 40, duration: 4.7, delay: 1.0 },
+                    { left: 90, top: 95, duration: 3.0, delay: 0.1 },
+                    { left: 12, top: 42, duration: 4.9, delay: 2.0 },
+                ].map((particle, i) => (
                     <motion.div
                         key={i}
                         className="absolute w-1 h-1 bg-white/30 rounded-full"
                         style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
+                            left: `${particle.left}%`,
+                            top: `${particle.top}%`,
                         }}
                         animate={{
                             y: [0, -30, 0],
                             opacity: [0.3, 0.8, 0.3],
                         }}
                         transition={{
-                            duration: 3 + Math.random() * 2,
+                            duration: particle.duration,
                             repeat: Infinity,
-                            delay: Math.random() * 2,
+                            delay: particle.delay,
                         }}
                     />
                 ))}
@@ -433,8 +454,8 @@ export default function GameLobbyPage() {
                                                     <p className="font-mono text-xs text-gray-500 tracking-widest">{room.code}</p>
                                                 </div>
                                                 <span className={`px-3 py-1 rounded-lg text-xs font-bold ${room.gameMode === 'ffa'
-                                                        ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                                                        : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                                                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                                    : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                                                     }`}>
                                                     {room.gameMode === 'ffa' ? 'FFA' : 'TEAMS'}
                                                 </span>
