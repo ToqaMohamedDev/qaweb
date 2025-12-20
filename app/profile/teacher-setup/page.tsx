@@ -79,26 +79,18 @@ interface TeacherProfile {
     rating_count: number;
 }
 
-const availableSubjects = [
-    "اللغة العربية",
-    "اللغة الإنجليزية",
-    "الرياضيات",
-    "الفيزياء",
-    "الكيمياء",
-    "الأحياء",
-    "الجغرافيا",
-    "التاريخ",
-    "الفلسفة",
-    "علم النفس",
-    "علم الاجتماع",
-];
+// Subject from database
+interface Subject {
+    id: string;
+    name: string;
+    slug: string;
+}
 
-const availableStages = [
-    "الابتدائية",
-    "الإعدادية",
-    "الثانوية",
-    "الجامعية",
-];
+// Stage from database
+interface Stage {
+    id: string;
+    name: string;
+}
 
 export default function TeacherSetupPage() {
     const router = useRouter();
@@ -108,6 +100,8 @@ export default function TeacherSetupPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'basic' | 'professional' | 'social' | 'preview'>('basic');
     const [profile, setProfile] = useState<TeacherProfile | null>(null);
+    const [availableSubjects, setAvailableSubjects] = useState<Subject[]>([]);
+    const [availableStages, setAvailableStages] = useState<Stage[]>([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -129,7 +123,7 @@ export default function TeacherSetupPage() {
             instagram: "",
             linkedin: "",
         },
-        subjects: [] as string[],
+        subject: "",  // Single subject - required
         stages: [] as string[],
     });
 
@@ -145,6 +139,31 @@ export default function TeacherSetupPage() {
             if (!user) {
                 router.push("/login");
                 return;
+            }
+
+            // Fetch subjects from database
+            const { data: subjectsData, error: subjectsError } = await supabase
+                .from("subjects")
+                .select("id, name, slug")
+                .eq("is_active", true)
+                .order("order_index", { ascending: true });
+
+            if (subjectsError) {
+                console.error("Error fetching subjects:", subjectsError);
+            } else if (subjectsData) {
+                setAvailableSubjects(subjectsData);
+            }
+
+            // Fetch stages from database
+            const { data: stagesData, error: stagesError } = await supabase
+                .from("educational_stages")
+                .select("id, name")
+                .order("order_index", { ascending: true });
+
+            if (stagesError) {
+                console.error("Error fetching stages:", stagesError);
+            } else if (stagesData) {
+                setAvailableStages(stagesData);
             }
 
             const { data: profileData, error: profileError } = await supabase
@@ -179,7 +198,7 @@ export default function TeacherSetupPage() {
                         instagram: "",
                         linkedin: "",
                     },
-                    subjects: data.subjects || [],
+                    subject: data.subjects?.[0] || data.subject || "",
                     stages: data.stages || [],
                 });
             }
@@ -193,6 +212,17 @@ export default function TeacherSetupPage() {
 
     const handleSave = async () => {
         if (!profile) return;
+
+        // Validate required fields
+        if (!formData.subject) {
+            setError("يجب اختيار المادة التي تدرسها");
+            return;
+        }
+
+        if (!formData.name.trim()) {
+            setError("يجب إدخال الاسم");
+            return;
+        }
 
         setIsSaving(true);
         setError(null);
@@ -214,7 +244,7 @@ export default function TeacherSetupPage() {
                     teaching_style: formData.teaching_style || null,
                     is_teacher_profile_public: formData.is_teacher_profile_public,
                     social_links: formData.social_links,
-                    subjects: formData.subjects,
+                    subjects: formData.subject ? [formData.subject] : [],
                     stages: formData.stages,
                     role: "teacher", // Ensure role is teacher
                     updated_at: new Date().toISOString(),
@@ -236,12 +266,10 @@ export default function TeacherSetupPage() {
         }
     };
 
-    const toggleSubject = (subject: string) => {
+    const selectSubject = (subject: string) => {
         setFormData(prev => ({
             ...prev,
-            subjects: prev.subjects.includes(subject)
-                ? prev.subjects.filter(s => s !== subject)
-                : [...prev.subjects, subject]
+            subject: prev.subject === subject ? "" : subject
         }));
     };
 
@@ -276,7 +304,7 @@ export default function TeacherSetupPage() {
             formData.specialization,
             formData.teacher_title,
             formData.education,
-            formData.subjects.length > 0,
+            formData.subject ? true : false,
             formData.stages.length > 0,
         ];
         const filled = fields.filter(Boolean).length;
@@ -546,41 +574,66 @@ export default function TeacherSetupPage() {
                                     </div>
                                 </div>
 
-                                {/* Subjects */}
+                                {/* Subject - Single Selection Required */}
                                 <div className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-                                    <h3 className="text-md font-bold text-gray-900 dark:text-white mb-4">المواد التي تدرسها</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableSubjects.map((subject) => (
-                                            <button
-                                                key={subject}
-                                                onClick={() => toggleSubject(subject)}
-                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${formData.subjects.includes(subject)
-                                                    ? "bg-primary-500 text-white"
-                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                                    }`}
-                                            >
-                                                {subject}
-                                            </button>
-                                        ))}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-md font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                            المادة التي تدرسها
+                                            <span className="text-red-500">*</span>
+                                        </h3>
+                                        {!formData.subject && (
+                                            <span className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-lg">
+                                                إجباري - اختر مادة واحدة
+                                            </span>
+                                        )}
                                     </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableSubjects.length > 0 ? (
+                                            availableSubjects.map((subj) => (
+                                                <button
+                                                    key={subj.id}
+                                                    onClick={() => selectSubject(subj.name)}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${formData.subject === subj.name
+                                                        ? "bg-primary-500 text-white ring-2 ring-primary-300 shadow-lg shadow-primary-500/25"
+                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                        }`}
+                                                >
+                                                    {formData.subject === subj.name && <CheckCircle className="inline-block h-4 w-4 mr-1" />}
+                                                    {subj.name}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 text-sm">جاري تحميل المواد...</p>
+                                        )}
+                                    </div>
+                                    {formData.subject && (
+                                        <div className="mt-3 flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                            <CheckCircle className="h-4 w-4" />
+                                            <span>تم اختيار: {formData.subject}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Stages */}
                                 <div className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
                                     <h3 className="text-md font-bold text-gray-900 dark:text-white mb-4">المراحل الدراسية</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {availableStages.map((stage) => (
-                                            <button
-                                                key={stage}
-                                                onClick={() => toggleStage(stage)}
-                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${formData.stages.includes(stage)
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                                    }`}
-                                            >
-                                                {stage}
-                                            </button>
-                                        ))}
+                                        {availableStages.length > 0 ? (
+                                            availableStages.map((stage) => (
+                                                <button
+                                                    key={stage.id}
+                                                    onClick={() => toggleStage(stage.name)}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${formData.stages.includes(stage.name)
+                                                        ? "bg-blue-500 text-white"
+                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                        }`}
+                                                >
+                                                    {stage.name}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 text-sm">جاري تحميل المراحل...</p>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>
@@ -724,11 +777,11 @@ export default function TeacherSetupPage() {
 
                                             {/* Tags */}
                                             <div className="flex flex-wrap gap-2 mt-4">
-                                                {formData.subjects.map((subject) => (
-                                                    <span key={subject} className="px-3 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-medium">
-                                                        {subject}
+                                                {formData.subject && (
+                                                    <span className="px-3 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-medium">
+                                                        {formData.subject}
                                                     </span>
-                                                ))}
+                                                )}
                                                 {formData.stages.map((stage) => (
                                                     <span key={stage} className="px-3 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium">
                                                         {stage}
@@ -839,14 +892,28 @@ export default function TeacherSetupPage() {
                             <span>العودة للملف الشخصي</span>
                         </Link>
 
-                        <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 hover:from-primary-600 hover:to-purple-600 text-white font-bold transition-all disabled:opacity-50 shadow-lg shadow-primary-500/25"
-                        >
-                            {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                            <span>حفظ التغييرات</span>
-                        </button>
+                        <div className="flex items-center gap-4">
+                            {/* Validation Warning */}
+                            {!formData.subject && (
+                                <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <span>اختر المادة أولاً</span>
+                                </div>
+                            )}
+
+                            {/* Save/Confirm Button */}
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving || !formData.subject}
+                                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg ${formData.subject
+                                        ? "bg-gradient-to-r from-primary-500 to-purple-500 hover:from-primary-600 hover:to-purple-600 text-white shadow-primary-500/25"
+                                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                    } disabled:opacity-50`}
+                            >
+                                {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                                <span>تأكيد وحفظ التغييرات</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

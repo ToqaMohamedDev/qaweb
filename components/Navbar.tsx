@@ -15,7 +15,6 @@ import {
     FileText,
     BookOpen,
     Gamepad2,
-    Bell,
     LogOut,
     Settings,
     UserCircle,
@@ -32,6 +31,7 @@ import {
     Award
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationDropdown } from "./NotificationDropdown";
 import { cn } from "@/lib/utils";
 import { supabase, signOut, isAdmin } from "@/lib/supabase";
 import { type User } from "@supabase/supabase-js";
@@ -182,8 +182,7 @@ export function Navbar() {
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
 
-    // Mock data for notifications (UI Only)
-    const unreadNotifications = 3;
+
 
     // Check auth state
     useEffect(() => {
@@ -363,18 +362,7 @@ export function Navbar() {
                         {/* Actions */}
                         <div className="flex items-center gap-2.5 flex-shrink-0">
                             {/* Notifications */}
-                            <Link
-                                href="/notifications"
-                                className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1c1c24] transition-colors"
-                                aria-label="الإشعارات"
-                            >
-                                <Bell className="h-5 w-5" />
-                                {unreadNotifications > 0 && (
-                                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                                    </span>
-                                )}
-                            </Link>
+                            <NotificationDropdown />
 
                             <ThemeToggle />
 
