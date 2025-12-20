@@ -623,31 +623,66 @@ export default function TeachersPage() {
                     <div className="px-3 sm:px-6 pb-28 md:pb-10">
                         {loading ? (
                             <motion.div
-                                className="flex flex-col items-center justify-center py-24"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
+                                transition={{ duration: 0.3 }}
                             >
-                                <div className="relative">
-                                    <div className="w-20 h-20 rounded-full border-4 border-gray-100 dark:border-[#272727]" />
-                                    <div className="absolute inset-0">
-                                        <div className="w-20 h-20 rounded-full border-4 border-transparent border-t-primary-500 dark:border-t-red-500 animate-spin" />
+                                {/* Skeleton Header */}
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="p-3 rounded-2xl bg-gray-200 dark:bg-[#272727] animate-pulse">
+                                        <div className="h-6 w-6" />
                                     </div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <motion.div
-                                            animate={{ scale: [1, 1.1, 1] }}
-                                            transition={{ repeat: Infinity, duration: 1.5 }}
-                                        >
-                                            <GraduationCap className="h-8 w-8 text-primary-500 dark:text-red-500" />
-                                        </motion.div>
+                                    <div className="space-y-2">
+                                        <div className="h-6 w-32 rounded-lg bg-gray-200 dark:bg-[#272727] animate-pulse" />
+                                        <div className="h-4 w-48 rounded-lg bg-gray-100 dark:bg-[#1f1f1f] animate-pulse" />
                                     </div>
                                 </div>
-                                <motion.p
-                                    className="text-gray-500 dark:text-[#888] mt-6 font-medium"
-                                    animate={{ opacity: [0.5, 1, 0.5] }}
-                                    transition={{ repeat: Infinity, duration: 1.5 }}
-                                >
-                                    جاري التحميل...
-                                </motion.p>
+
+                                {/* Skeleton Grid */}
+                                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+                                    {[...Array(8)].map((_, index) => (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05, duration: 0.3 }}
+                                            className="group"
+                                        >
+                                            <div className="relative">
+                                                {/* Thumbnail Skeleton - 16:9 */}
+                                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-200 dark:bg-[#272727]">
+                                                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent" />
+                                                    <div className="absolute bottom-2 left-2">
+                                                        <div className="w-16 h-5 rounded-md bg-gray-300/50 dark:bg-[#3a3a3a]" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Info Section Skeleton */}
+                                                <div className="flex gap-3 mt-3 px-1">
+                                                    {/* Avatar */}
+                                                    <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-[#272727] animate-pulse flex-shrink-0 relative overflow-hidden">
+                                                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+                                                    </div>
+
+                                                    {/* Title & Meta */}
+                                                    <div className="flex-1 min-w-0 space-y-2">
+                                                        <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-[#272727] animate-pulse relative overflow-hidden">
+                                                            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-3 w-16 rounded-md bg-gray-100 dark:bg-[#1f1f1f] animate-pulse" />
+                                                            <div className="h-3 w-3 rounded-full bg-gray-100 dark:bg-[#1f1f1f]" />
+                                                            <div className="h-3 w-20 rounded-md bg-gray-100 dark:bg-[#1f1f1f] animate-pulse" />
+                                                        </div>
+                                                        <div className="h-7 w-20 rounded-full bg-gray-200 dark:bg-[#272727] animate-pulse relative overflow-hidden">
+                                                            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             </motion.div>
                         ) : filteredTeachers.length === 0 ? (
                             <motion.div
