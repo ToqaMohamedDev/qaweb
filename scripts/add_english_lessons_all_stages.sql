@@ -18,10 +18,10 @@ DECLARE
     stage_record RECORD;
     lesson_order int;
 BEGIN
-    -- جلب معرف مادة الإنجليزية
+    -- جلب معرف مادة الإنجليزية (بالبحث بـ slug أو name)
     SELECT id INTO english_subject_id 
     FROM subjects 
-    WHERE name = 'English'
+    WHERE slug = 'english' OR name ILIKE '%english%'
     LIMIT 1;
 
     -- إذا لم توجد المادة، أنشئها
@@ -30,7 +30,7 @@ BEGIN
         VALUES (
             gen_random_uuid(),
             'English',
-            'english',
+            'english-lang',
             'English language lessons and exercises',
             '🇬🇧',
             '#3B82F6',
@@ -39,6 +39,8 @@ BEGIN
         )
         RETURNING id INTO english_subject_id;
         RAISE NOTICE 'Created English subject with ID: %', english_subject_id;
+    ELSE
+        RAISE NOTICE 'Found existing English subject with ID: %', english_subject_id;
     END IF;
 
     RAISE NOTICE 'Using English subject ID: %', english_subject_id;
