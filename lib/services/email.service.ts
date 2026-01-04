@@ -5,118 +5,125 @@
 
 import { Resend } from 'resend';
 
-// تهيئة Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// تهيئة Resend (optional - يعمل فقط إذا كان API key موجود)
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 /**
  * إرسال بريد إلكتروني
  */
 export async function sendEmail({
-    to,
-    subject,
-    html,
-    from = 'Qaalaa <notifications@qaalaa.com>',
+  to,
+  subject,
+  html,
+  from = 'Qaalaa <notifications@qaalaa.com>',
 }: {
-    to: string | string[];
-    subject: string;
-    html: string;
-    from?: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  from?: string;
 }) {
-    try {
-        const { data, error } = await resend.emails.send({
-            from,
-            to,
-            subject,
-            html,
-        });
-
-        if (error) {
-            console.error('Email sending error:', error);
-            throw error;
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Failed to send email:', error);
-        throw error;
+  try {
+    // تحقق من توفر Resend
+    if (!resend) {
+      console.warn('Resend API key not configured. Email not sent.');
+      return null;
     }
+
+    const { data, error } = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error('Email sending error:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw error;
+  }
 }
 
 /**
  * إرسال إشعار بالبريد الإلكتروني
  */
 export async function sendEmailNotification({
-    userId,
-    title,
-    message,
-    actionUrl,
-    actionText = 'عرض التفاصيل',
+  userId,
+  title,
+  message,
+  actionUrl,
+  actionText = 'عرض التفاصيل',
 }: {
-    userId: string;
-    title: string;
-    message: string;
-    actionUrl?: string;
-    actionText?: string;
+  userId: string;
+  title: string;
+  message: string;
+  actionUrl?: string;
+  actionText?: string;
 }) {
-    try {
-        // جلب بريد المستخدم وتفضيلاته
-        const { createClient } = await import('@/lib/supabase');
-        const supabase = createClient();
+  try {
+    // جلب بريد المستخدم وتفضيلاته
+    const { createClient } = await import('@/lib/supabase');
+    const supabase = createClient();
 
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, notification_preferences(email_notifications)')
-            .eq('id', userId)
-            .single();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, notification_preferences(email_notifications)')
+      .eq('id', userId)
+      .single();
 
-        if (!profile?.email) {
-            console.log('No email found for user:', userId);
-            return null;
-        }
-
-        // التحقق من تفعيل إشعارات البريد
-        const emailEnabled = profile.notification_preferences?.email_notifications !== false;
-
-        if (!emailEnabled) {
-            console.log('Email notifications disabled for user:', userId);
-            return null;
-        }
-
-        // إنشاء HTML للبريد
-        const html = createEmailTemplate({
-            title,
-            message,
-            actionUrl,
-            actionText,
-        });
-
-        // إرسال البريد
-        return await sendEmail({
-            to: profile.email,
-            subject: title,
-            html,
-        });
-    } catch (error) {
-        console.error('Failed to send email notification:', error);
-        throw error;
+    if (!profile?.email) {
+      console.log('No email found for user:', userId);
+      return null;
     }
+
+    // التحقق من تفعيل إشعارات البريد
+    const emailEnabled = profile.notification_preferences?.email_notifications !== false;
+
+    if (!emailEnabled) {
+      console.log('Email notifications disabled for user:', userId);
+      return null;
+    }
+
+    // إنشاء HTML للبريد
+    const html = createEmailTemplate({
+      title,
+      message,
+      actionUrl,
+      actionText,
+    });
+
+    // إرسال البريد
+    return await sendEmail({
+      to: profile.email,
+      subject: title,
+      html,
+    });
+  } catch (error) {
+    console.error('Failed to send email notification:', error);
+    throw error;
+  }
 }
 
 /**
  * قالب البريد الإلكتروني
  */
 function createEmailTemplate({
-    title,
-    message,
-    actionUrl,
-    actionText,
+  title,
+  message,
+  actionUrl,
+  actionText,
 }: {
-    title: string;
-    message: string;
-    actionUrl?: string;
-    actionText?: string;
+  title: string;
+  message: string;
+  actionUrl?: string;
+  actionText?: string;
 }) {
-    return `
+  return `
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -196,78 +203,78 @@ function createEmailTemplate({
  * قالب بريد نشر امتحان جديد
  */
 export function createExamPublishedEmail({
-    teacherName,
-    examTitle,
-    examUrl,
+  teacherName,
+  examTitle,
+  examUrl,
 }: {
-    teacherName: string;
-    examTitle: string;
-    examUrl: string;
+  teacherName: string;
+  examTitle: string;
+  examUrl: string;
 }) {
-    return createEmailTemplate({
-        title: 'امتحان جديد متاح!',
-        message: `نشر المعلم ${teacherName} امتحاناً جديداً:\n\n"${examTitle}"\n\nابدأ الآن واختبر معلوماتك!`,
-        actionUrl: examUrl,
-        actionText: 'عرض الامتحان',
-    });
+  return createEmailTemplate({
+    title: 'امتحان جديد متاح!',
+    message: `نشر المعلم ${teacherName} امتحاناً جديداً:\n\n"${examTitle}"\n\nابدأ الآن واختبر معلوماتك!`,
+    actionUrl: examUrl,
+    actionText: 'عرض الامتحان',
+  });
 }
 
 /**
  * قالب بريد رد على رسالة
  */
 export function createMessageReplyEmail({
-    subject,
-    reply,
-    messageUrl,
+  subject,
+  reply,
+  messageUrl,
 }: {
-    subject: string;
-    reply: string;
-    messageUrl: string;
+  subject: string;
+  reply: string;
+  messageUrl: string;
 }) {
-    return createEmailTemplate({
-        title: 'رد جديد على رسالتك',
-        message: `تلقيت رداً على رسالتك "${subject}":\n\n${reply}`,
-        actionUrl: messageUrl,
-        actionText: 'عرض الرسالة',
-    });
+  return createEmailTemplate({
+    title: 'رد جديد على رسالتك',
+    message: `تلقيت رداً على رسالتك "${subject}":\n\n${reply}`,
+    actionUrl: messageUrl,
+    actionText: 'عرض الرسالة',
+  });
 }
 
 /**
  * قالب بريد رد على دعم فني
  */
 export function createSupportReplyEmail({
-    chatSubject,
-    reply,
-    chatUrl,
+  chatSubject,
+  reply,
+  chatUrl,
 }: {
-    chatSubject: string;
-    reply: string;
-    chatUrl: string;
+  chatSubject: string;
+  reply: string;
+  chatUrl: string;
 }) {
-    return createEmailTemplate({
-        title: 'رد من فريق الدعم',
-        message: `تلقيت رداً على محادثة الدعم "${chatSubject}":\n\n${reply}`,
-        actionUrl: chatUrl,
-        actionText: 'عرض الدردشة',
-    });
+  return createEmailTemplate({
+    title: 'رد من فريق الدعم',
+    message: `تلقيت رداً على محادثة الدعم "${chatSubject}":\n\n${reply}`,
+    actionUrl: chatUrl,
+    actionText: 'عرض الدردشة',
+  });
 }
 
 /**
  * قالب بريد إشعار عام
  */
 export function createGeneralNotificationEmail({
+  title,
+  message,
+  url,
+}: {
+  title: string;
+  message: string;
+  url?: string;
+}) {
+  return createEmailTemplate({
     title,
     message,
-    url,
-}: {
-    title: string;
-    message: string;
-    url?: string;
-}) {
-    return createEmailTemplate({
-        title,
-        message,
-        actionUrl: url,
-        actionText: 'عرض التفاصيل',
-    });
+    actionUrl: url,
+    actionText: 'عرض التفاصيل',
+  });
 }

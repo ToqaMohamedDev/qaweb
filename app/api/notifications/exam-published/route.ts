@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createExamPublishedEmail, sendEmail } from '@/lib/services/email.service';
 
 // إرسال إشعارات للمشتركين عند نشر امتحان جديد
 export async function POST(request: NextRequest) {
@@ -71,6 +72,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // ✨ إرسال البريد الإلكتروني في الخلفية (لا ننتظر)
+        sendEmailToSubscribers(
+            supabase,
+            subscribers.map(s => s.user_id),
+            examId,
+            examTitle || 'امتحان جديد',
+            teacherName || 'المدرس'
+        ).catch(err => console.error('Background email error:', err));
+
         return NextResponse.json({
             success: true,
             message: `Notifications sent to ${subscribers.length} subscribers`,
@@ -84,5 +94,56 @@ export async function POST(request: NextRequest) {
             { error: 'Internal server error' },
             { status: 500 }
         );
+    }
+}
+
+/**
+ * ✨ إرسال إشعارات البريد الإلكتروني (background task)
+ */
+async function sendEmailToSubscribers(
+    supabase: any,
+    userIds: string[],
+    examId: string,
+    examTitle: string,
+    teacherName: string
+) {
+    try {
+        // جلب بيانات المستخدمين مع تفضيلات البريد
+        const { data: users } = await supabase
+            .from('profiles')
+            .select('id, email, notification_preferences(email_notifications)')
+            .in('id', userIds);
+
+        if (!users || users.length === 0) return;
+
+        const examUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://qaalaa.com'}/arabic/teacher-exam/${examId}`;
+
+        // إرسال البريد لكل مستخدم
+        for (const user of users) {
+            // تحقق من تفعيل البريد
+            const emailEnabled = user.notification_preferences?.email_notifications !== false;
+
+            if (!emailEnabled || !user.email) continue;
+
+            try {
+                const html = createExamPublishedEmail({
+                    teacherName,
+                    examTitle,
+                    examUrl,
+                });
+
+                await sendEmail({
+                    to: user.email,
+                    subject: `امتحان جديد من ${teacherName}`,
+                    html,
+                });
+
+                console.log(`✅ Email sent to ${user.email} for exam ${examId}`);
+            } catch (err) {
+                console.error(`Failed to send email to ${user.email}:`, err);
+            }
+        }
+    } catch (error) {
+        console.error('Error sending email notifications:', error);
     }
 }
