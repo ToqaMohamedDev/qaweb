@@ -21,19 +21,20 @@ BEGIN
     -- جلب معرف مادة الإنجليزية
     SELECT id INTO english_subject_id 
     FROM subjects 
-    WHERE name = 'English' OR name_ar = 'اللغة الإنجليزية'
+    WHERE name = 'English'
     LIMIT 1;
 
     -- إذا لم توجد المادة، أنشئها
     IF english_subject_id IS NULL THEN
-        INSERT INTO subjects (id, name, name_ar, description, icon, color, created_at)
+        INSERT INTO subjects (id, name, slug, description, icon, color, is_active, created_at)
         VALUES (
             gen_random_uuid(),
             'English',
-            'اللغة الإنجليزية',
+            'english',
             'English language lessons and exercises',
             '🇬🇧',
             '#3B82F6',
+            true,
             NOW()
         )
         RETURNING id INTO english_subject_id;
@@ -43,8 +44,8 @@ BEGIN
     RAISE NOTICE 'Using English subject ID: %', english_subject_id;
 
     -- لكل مرحلة تعليمية
-    FOR stage_record IN SELECT id, name_ar FROM educational_stages ORDER BY id LOOP
-        RAISE NOTICE 'Processing stage: %', stage_record.name_ar;
+    FOR stage_record IN SELECT id, name FROM educational_stages ORDER BY id LOOP
+        RAISE NOTICE 'Processing stage: %', stage_record.name;
         
         lesson_order := 1;
 
@@ -153,7 +154,7 @@ BEGIN
             lesson_order, 'intermediate', 35, NOW()
         );
 
-        RAISE NOTICE 'Added 7 lessons for stage: %', stage_record.name_ar;
+        RAISE NOTICE 'Added 7 lessons for stage: %', stage_record.name;
     END LOOP;
 
     RAISE NOTICE 'Successfully added all English lessons!';
@@ -161,11 +162,11 @@ END $$;
 
 -- التحقق من النتائج
 SELECT 
-    es.name_ar as stage,
+    es.name as stage,
     COUNT(l.id) as lesson_count,
     string_agg(l.title_ar, ', ' ORDER BY l.lesson_order) as lessons
 FROM educational_stages es
 LEFT JOIN lessons l ON l.stage_id = es.id 
     AND l.subject_id = (SELECT id FROM subjects WHERE name = 'English' LIMIT 1)
-GROUP BY es.id, es.name_ar
-ORDER BY es.name_ar;
+GROUP BY es.id, es.name
+ORDER BY es.name;
