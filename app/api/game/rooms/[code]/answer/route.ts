@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, getPlayer, getPlayersInRoom } from '@/lib/game/room-manager';
-import { submitAnswer, endQuestion } from '@/lib/game/game-engine';
-import { playerAnsweredEvent } from '@/lib/game/event-manager';
+import { getRoom } from '@/lib/game/room-manager';
+import { submitAnswer, forceEndQuestion } from '@/lib/game/game-engine';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/utils/logger';
 
-// Helper to create supabase client for API routes
+/**
+ * POST /api/game/rooms/[code]/answer
+ * 
+ * Submit an answer for the current question.
+ * 
+ * ⚠️ This route ONLY records answers - NO scoring!
+ * Scoring happens in endQuestion ONLY.
+ * 
+ * For FFA mode: If this is the winning answer, it triggers endQuestion.
+ */
+
 async function createSupabaseClient() {
     const cookieStore = await cookies();
     return createServerClient(
@@ -13,9 +23,7 @@ async function createSupabaseClient() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value;
-                },
+                get(name: string) { return cookieStore.get(name)?.value; },
                 set() { },
                 remove() { },
             },
@@ -23,7 +31,6 @@ async function createSupabaseClient() {
     );
 }
 
-// POST - Submit answer
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
@@ -31,13 +38,10 @@ export async function POST(
     try {
         const { code } = await params;
 
-        // Get authenticated user
+        // Auth
         const authHeader = request.headers.get('authorization');
         if (!authHeader) {
-            return NextResponse.json(
-                { success: false, error: 'غير مصرح' },
-                { status: 401 }
-            );
+            return NextResponse.json({ success: false, error: 'غير مصرح' }, { status: 401 });
         }
 
         const token = authHeader.replace('Bearer ', '');
@@ -45,113 +49,43 @@ export async function POST(
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
         if (authError || !user) {
-            return NextResponse.json(
-                { success: false, error: 'غير مصرح' },
-                { status: 401 }
-            );
+            return NextResponse.json({ success: false, error: 'غير مصرح' }, { status: 401 });
         }
 
+        // Validate input
         const body = await request.json();
         const { answer, questionNumber } = body;
 
         if (typeof answer !== 'number' || typeof questionNumber !== 'number') {
-            return NextResponse.json(
-                { success: false, error: 'بيانات غير صالحة' },
-                { status: 400 }
-            );
+            return NextResponse.json({ success: false, error: 'بيانات غير صالحة' }, { status: 400 });
         }
 
-        // Get player info
-        const player = await getPlayer(code, user.id);
-        if (!player) {
-            return NextResponse.json(
-                { success: false, error: 'اللاعب غير موجود' },
-                { status: 400 }
-            );
-        }
-
-        // Check captaincy for team mode
+        // Get room
         const room = await getRoom(code);
-
         if (!room) {
-            return NextResponse.json(
-                { success: false, error: 'الغرفة غير موجودة' },
-                { status: 404 }
-            );
-        }
-
-        if (room.gameMode === 'team' && !player.isCaptain) {
-            return NextResponse.json(
-                { success: false, error: 'فقط القائد يمكنه الإجابة' },
-                { status: 403 }
-            );
+            return NextResponse.json({ success: false, error: 'الغرفة غير موجودة' }, { status: 404 });
         }
 
         // Submit answer
         const result = await submitAnswer(code, user.id, questionNumber, answer);
 
         if (!result.success) {
-            return NextResponse.json(
-                { success: false, error: result.error },
-                { status: 400 }
-            );
+            return NextResponse.json({ success: false, error: result.error }, { status: 400 });
         }
 
-        // Publish answer event
-        await playerAnsweredEvent(
-            code,
-            user.id,
-            player.odDisplayName,
-            result.isCorrect
-        );
+        // FFA: Auto-end if winning answer
+        if (room.gameMode === 'ffa' && result.isCorrect && !result.alreadyLocked) {
+            await forceEndQuestion(code);
+        }
 
-        // Response data
-        const responseData: any = {
+        return NextResponse.json({
             success: true,
+            recorded: result.recorded,
             isCorrect: result.isCorrect,
-            points: result.points,
-        };
-
-        // If answer was correct in FFA mode, end the question immediately
-        // The game-engine will handle timer clearing and event pushing
-        if (result.isCorrect && room.gameMode === 'ffa') {
-            const endResult = await endQuestion(code, questionNumber);
-
-            // Get updated scores
-            const players = await getPlayersInRoom(code);
-            const scores = players.map(p => ({
-                odUserId: p.odUserId,
-                score: p.score,
-                delta: p.odUserId === user.id ? (result.points || 0) : 0,
-            }));
-
-            responseData.correctAnswer = endResult.correctAnswer;
-            responseData.winnerId = user.id;
-            responseData.winnerName = player.odDisplayName;
-            responseData.scores = scores;
-
-            // Check if game should end
-            if (endResult.shouldEndGame) {
-                const rankings = players
-                    .sort((a, b) => b.score - a.score)
-                    .map((p, i) => ({
-                        odUserId: p.odUserId,
-                        odDisplayName: p.odDisplayName,
-                        score: p.score,
-                        rank: i + 1,
-                    }));
-
-                responseData.shouldEndGame = true;
-                responseData.rankings = rankings;
-            }
-        }
-
-        return NextResponse.json(responseData);
+            alreadyLocked: result.alreadyLocked,
+        });
     } catch (error) {
-        console.error('Error submitting answer:', error);
-        return NextResponse.json(
-            { success: false, error: 'خطأ في إرسال الإجابة' },
-            { status: 500 }
-        );
+        logger.error('Answer route error', { context: 'GameAPI', data: error });
+        return NextResponse.json({ success: false, error: 'خطأ في إرسال الإجابة' }, { status: 500 });
     }
 }

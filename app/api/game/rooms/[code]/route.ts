@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, getPlayersInRoom, deleteRoom } from '@/lib/game/room-manager';
-import { getCurrentQuestion } from '@/lib/game/game-engine';
+import { getCurrentQuestion, getTimerInfo } from '@/lib/game/game-engine';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/utils/logger';
 
-// GET - Get room details
+/**
+ * GET /api/game/rooms/[code]
+ * 
+ * Get room details including players, current question, and timer state.
+ * Used by clients for initial state and reconnection.
+ */
 export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
@@ -25,7 +31,10 @@ export async function GET(
         const { password, ...safeRoom } = room;
 
         let currentQuestion = null;
+        let timerInfo = null;
+
         if (room.status === 'playing') {
+            // Get current question
             const qData = await getCurrentQuestion(code);
             if (qData) {
                 // Hide correct answer
@@ -37,6 +46,17 @@ export async function GET(
                     timeRemaining: qData.timeRemaining
                 };
             }
+
+            // Get timer info for accurate client sync
+            const timer = await getTimerInfo(code);
+            if (timer) {
+                timerInfo = {
+                    questionNumber: timer.questionNumber,
+                    timeRemaining: timer.timeRemaining,
+                    endsAt: timer.endsAt,
+                    serverTime: Date.now(),
+                };
+            }
         }
 
         return NextResponse.json({
@@ -44,9 +64,10 @@ export async function GET(
             room: safeRoom,
             players,
             currentQuestion,
+            timerInfo,
         });
     } catch (error) {
-        console.error('Error getting room:', error);
+        logger.error('Error getting room', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في جلب الغرفة' },
             { status: 500 }
@@ -54,7 +75,11 @@ export async function GET(
     }
 }
 
-// DELETE - Delete room (creator only)
+/**
+ * DELETE /api/game/rooms/[code]
+ * 
+ * Delete a room. Only the creator can delete.
+ */
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
@@ -62,7 +87,7 @@ export async function DELETE(
     try {
         const { code } = await params;
 
-        // Get authenticated user
+        // Auth
         const authHeader = request.headers.get('authorization');
         if (!authHeader) {
             return NextResponse.json(
@@ -100,7 +125,7 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting room:', error);
+        logger.error('Error deleting room', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في حذف الغرفة' },
             { status: 500 }

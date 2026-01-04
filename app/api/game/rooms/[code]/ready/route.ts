@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { setPlayerReady, areAllPlayersReady, getPlayer } from '@/lib/game/room-manager';
 import { playerReadyEvent } from '@/lib/game/event-manager';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/utils/logger';
 
 // POST - Toggle ready status
 export async function POST(
@@ -56,7 +57,7 @@ export async function POST(
             allReady,
         });
     } catch (error) {
-        console.error('Error updating ready status:', error);
+        logger.error('Error updating ready status', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في تحديث الحالة' },
             { status: 500 }

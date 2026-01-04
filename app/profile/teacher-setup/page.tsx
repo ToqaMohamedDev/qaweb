@@ -41,6 +41,7 @@ import {
     Shield,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/utils/logger";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -148,7 +149,7 @@ export default function TeacherSetupPage() {
                 .order("order_index", { ascending: true });
 
             if (subjectsError) {
-                console.error("Error fetching subjects:", subjectsError);
+                logger.error('Error fetching subjects', { context: 'TeacherSetupPage', data: subjectsError });
             } else if (subjectsData) {
                 setAvailableSubjects(subjectsData);
             }
@@ -160,7 +161,7 @@ export default function TeacherSetupPage() {
                 .order("order_index", { ascending: true });
 
             if (stagesError) {
-                console.error("Error fetching stages:", stagesError);
+                logger.error('Error fetching stages', { context: 'TeacherSetupPage', data: stagesError });
             } else if (stagesData) {
                 setAvailableStages(stagesData);
             }
@@ -202,7 +203,7 @@ export default function TeacherSetupPage() {
                 });
             }
         } catch (err) {
-            console.error("Error fetching profile:", err);
+            logger.error('Error fetching profile', { context: 'TeacherSetupPage', data: err });
             setError("حدث خطأ في جلب البيانات");
         } finally {
             setIsLoading(false);
@@ -258,7 +259,7 @@ export default function TeacherSetupPage() {
             // Refresh profile
             await fetchProfile();
         } catch (err) {
-            console.error("Error saving profile:", err);
+            logger.error('Error saving profile', { context: 'TeacherSetupPage', data: err });
             setError("حدث خطأ أثناء حفظ البيانات");
         } finally {
             setIsSaving(false);
@@ -379,6 +380,25 @@ export default function TeacherSetupPage() {
                                 />
                             </div>
                         </div>
+
+                        {/* Quick Actions - Exams Management */}
+                        <Link
+                            href="/profile/teacher-setup/exams"
+                            className="block bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-5 hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg shadow-primary-500/25"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                                        <FileText className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">إدارة الامتحانات</h3>
+                                        <p className="text-white/80 text-sm">أنشئ وأدر امتحاناتك الخاصة</p>
+                                    </div>
+                                </div>
+                                <ChevronLeft className="h-6 w-6 text-white" />
+                            </div>
+                        </Link>
                     </div>
 
                     {/* Tabs */}

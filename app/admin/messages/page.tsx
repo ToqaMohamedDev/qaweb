@@ -1,228 +1,614 @@
 "use client";
 
+/**
+ * Admin Messages Page - إدارة الرسائل الواردة
+ * 
+ * Displays and manages contact messages from users.
+ * Uses the messages table from the database.
+ */
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Search, Inbox, Send, Star, Trash2, Archive, CheckCheck, Reply, X, Loader2, RefreshCw, Mail, AlertCircle } from "lucide-react";
+import {
+    Mail,
+    MailOpen,
+    Search,
+    Star,
+    StarOff,
+    Archive,
+    Trash2,
+    Reply,
+    Clock,
+    User,
+    Filter,
+    Loader2,
+    CheckCircle2,
+    X,
+    Send,
+    RefreshCw,
+    Inbox,
+    AlertCircle,
+    Eye,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase";
-import { Database } from "@/lib/database.types";
+import { useAuth } from "@/hooks/useAuth";
+import {
+    getMessages,
+    markMessageAsRead,
+    toggleMessageStarred,
+    archiveMessage,
+    deleteMessage,
+    replyToMessage,
+} from "@/lib/services/message.service";
+import type { Message } from "@/lib/database.types";
 
-type Message = Database["public"]["Tables"]["messages"]["Row"];
+// ==========================================
+// Types
+// ==========================================
+type FilterType = "all" | "unread" | "starred" | "archived";
 
-const folders = [
-    { id: "inbox", label: "الوارد", icon: Inbox },
-    { id: "starred", label: "المميز", icon: Star },
-    { id: "replied", label: "المردود", icon: Send },
-    { id: "archive", label: "الأرشيف", icon: Archive },
-];
+// ==========================================
+// Animation Variants
+// ==========================================
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+};
 
-export default function MessagesPage() {
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [search, setSearch] = useState("");
-    const [activeFolder, setActiveFolder] = useState("inbox");
-    const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-    const [showReplyModal, setShowReplyModal] = useState(false);
-    const [replyText, setReplyText] = useState("");
-    const [sending, setSending] = useState(false);
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+};
 
-    const fetchData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const supabase = createClient();
-            const { data, error } = await supabase.from("messages").select("*").order("created_at", { ascending: false });
-            if (error) {
-                if (error.code === "42P01") {
-                    setError("جدول الرسائل غير موجود. يرجى تنفيذ الـ migration أولاً.");
-                    return;
-                }
-                throw error;
-            }
-            setMessages(data || []);
-        } catch (err: any) {
-            setError(err.message || "حدث خطأ في جلب البيانات");
-        } finally {
-            setLoading(false);
+// ==========================================
+// Message Card Component
+// ==========================================
+function MessageCard({
+    message,
+    isSelected,
+    onSelect,
+    onToggleStar,
+    onMarkRead,
+}: {
+    message: Message;
+    isSelected: boolean;
+    onSelect: () => void;
+    onToggleStar: () => void;
+    onMarkRead: () => void;
+}) {
+    const formatDate = (date: string) => {
+        const d = new Date(date);
+        const now = new Date();
+        const diff = now.getTime() - d.getTime();
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (days === 0) {
+            return d.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+        } else if (days === 1) {
+            return "أمس";
+        } else if (days < 7) {
+            return `منذ ${days} أيام`;
+        } else {
+            return d.toLocaleDateString("ar-EG", { month: "short", day: "numeric" });
         }
     };
-
-    useEffect(() => { fetchData(); }, []);
-
-    const getFilteredMessages = () => {
-        let filtered = messages;
-        switch (activeFolder) {
-            case "inbox": filtered = messages.filter(m => !m.is_archived); break;
-            case "starred": filtered = messages.filter(m => m.is_starred && !m.is_archived); break;
-            case "replied": filtered = messages.filter(m => m.is_replied); break;
-            case "archive": filtered = messages.filter(m => m.is_archived); break;
-            default: filtered = messages;
-        }
-        if (search) {
-            filtered = filtered.filter(m => m.subject.toLowerCase().includes(search.toLowerCase()) || m.from_name.toLowerCase().includes(search.toLowerCase()) || m.message.toLowerCase().includes(search.toLowerCase()));
-        }
-        return filtered;
-    };
-
-    const filteredMessages = getFilteredMessages();
-    const unreadCount = messages.filter(m => !m.is_read && !m.is_archived).length;
-
-    const handleSelect = async (message: Message) => {
-        setSelectedMessage(message);
-        if (!message.is_read) {
-            try {
-                const supabase = createClient();
-                await supabase.from("messages").update({ is_read: true }).eq("id", message.id);
-                setMessages(prev => prev.map(m => m.id === message.id ? { ...m, is_read: true } : m));
-            } catch (err) {
-                console.error(err);
-            }
-        }
-    };
-
-    const handleStar = async (messageId: string) => {
-        try {
-            const supabase = createClient();
-            const message = messages.find(m => m.id === messageId);
-            if (!message) return;
-            await supabase.from("messages").update({ is_starred: !message.is_starred }).eq("id", messageId);
-            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, is_starred: !m.is_starred } : m));
-            if (selectedMessage?.id === messageId) setSelectedMessage({ ...selectedMessage, is_starred: !selectedMessage.is_starred });
-        } catch (err: any) {
-            alert("خطأ: " + err.message);
-        }
-    };
-
-    const handleArchive = async (messageId: string) => {
-        try {
-            const supabase = createClient();
-            await supabase.from("messages").update({ is_archived: true }).eq("id", messageId);
-            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, is_archived: true } : m));
-            setSelectedMessage(null);
-        } catch (err: any) {
-            alert("خطأ: " + err.message);
-        }
-    };
-
-    const handleDelete = async (messageId: string) => {
-        if (!confirm("هل أنت متأكد من حذف هذه الرسالة؟")) return;
-        try {
-            const supabase = createClient();
-            await supabase.from("messages").delete().eq("id", messageId);
-            setMessages(prev => prev.filter(m => m.id !== messageId));
-            setSelectedMessage(null);
-        } catch (err: any) {
-            alert("خطأ: " + err.message);
-        }
-    };
-
-    const handleReply = async () => {
-        if (!selectedMessage || !replyText.trim()) return;
-        setSending(true);
-        try {
-            const supabase = createClient();
-            await supabase.from("messages").update({ is_replied: true, reply_text: replyText, replied_at: new Date().toISOString() }).eq("id", selectedMessage.id);
-            setMessages(prev => prev.map(m => m.id === selectedMessage.id ? { ...m, is_replied: true, reply_text: replyText } : m));
-            setShowReplyModal(false);
-            setReplyText("");
-            alert("تم إرسال الرد بنجاح");
-        } catch (err: any) {
-            alert("خطأ: " + err.message);
-        } finally {
-            setSending(false);
-        }
-    };
-
-    if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="h-8 w-8 animate-spin text-primary-500" /></div>;
-    if (error) return <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 text-center"><AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" /><p className="text-red-600">{error}</p><button onClick={fetchData} className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg">إعادة المحاولة</button></div>;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div><h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">الرسائل</h1><p className="text-gray-600 dark:text-gray-400 mt-1">إدارة رسائل المستخدمين ({messages.length})</p></div>
-                <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1c1c24] border border-gray-200 dark:border-gray-800 text-sm font-medium"><RefreshCw className="h-4 w-4" /></button>
-            </div>
+        <motion.div
+            variants={itemVariants}
+            onClick={onSelect}
+            className={`p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 ${isSelected ? "bg-primary-50 dark:bg-primary-900/20 border-r-4 border-r-primary-500" : ""
+                } ${!message.is_read ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}
+        >
+            <div className="flex items-start gap-3">
+                {/* Status Indicator */}
+                <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${message.is_read ? "bg-gray-300 dark:bg-gray-600" : "bg-blue-500"
+                    }`} />
 
-            <div className="flex flex-col lg:flex-row gap-6">
-                {/* Sidebar */}
-                <div className="w-full lg:w-64 space-y-2">
-                    {folders.map(folder => {
-                        const count = folder.id === "inbox" ? unreadCount : folder.id === "starred" ? messages.filter(m => m.is_starred).length : 0;
-                        return (
-                            <button key={folder.id} onClick={() => { setActiveFolder(folder.id); setSelectedMessage(null); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${activeFolder === folder.id ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600" : "bg-white dark:bg-[#1c1c24] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>
-                                <div className="flex items-center gap-3"><folder.icon className="h-5 w-5" /><span className="font-medium">{folder.label}</span></div>
-                                {count > 0 && <span className="bg-primary-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Messages List & Detail */}
-                <div className="flex-1 flex flex-col lg:flex-row gap-4">
-                    {/* List */}
-                    <div className="w-full lg:w-80 bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200/60 dark:border-gray-800 overflow-hidden">
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-800"><div className="relative"><Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" placeholder="بحث..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pr-9 pl-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm outline-none" /></div></div>
-                        <div className="divide-y divide-gray-200 dark:divide-gray-800 max-h-[500px] overflow-y-auto">
-                            {filteredMessages.length === 0 ? (<div className="p-8 text-center text-gray-500">لا توجد رسائل</div>) : filteredMessages.map(message => (
-                                <button key={message.id} onClick={() => handleSelect(message)} className={`w-full text-right p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${selectedMessage?.id === message.id ? "bg-primary-50 dark:bg-primary-900/20" : ""} ${!message.is_read ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-sm shrink-0">{message.from_name.charAt(0)}</div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-2"><span className={`text-sm truncate ${!message.is_read ? "font-bold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>{message.from_name}</span><span className="text-xs text-gray-400 shrink-0">{new Date(message.created_at).toLocaleDateString("ar-SA")}</span></div>
-                                            <p className={`text-sm truncate ${!message.is_read ? "font-semibold text-gray-800 dark:text-gray-200" : "text-gray-600 dark:text-gray-400"}`}>{message.subject}</p>
-                                            <p className="text-xs text-gray-500 truncate">{message.message}</p>
-                                        </div>
-                                        {message.is_starred && <Star className="h-4 w-4 text-amber-500 fill-amber-500 shrink-0" />}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className={`font-medium truncate ${message.is_read
+                            ? "text-gray-700 dark:text-gray-300"
+                            : "text-gray-900 dark:text-white font-semibold"
+                            }`}>
+                            {message.from_name}
+                        </h4>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                            {formatDate(message.created_at || "")}
+                        </span>
                     </div>
+                    <p className={`text-sm truncate mb-1 ${message.is_read
+                        ? "text-gray-500 dark:text-gray-400"
+                        : "text-gray-700 dark:text-gray-300"
+                        }`}>
+                        {message.subject}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                        {message.message}
+                    </p>
 
-                    {/* Detail */}
-                    <div className="flex-1 bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200/60 dark:border-gray-800 overflow-hidden">
-                        {selectedMessage ? (
-                            <div className="h-full flex flex-col">
-                                <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-900 dark:text-white">{selectedMessage.subject}</h3>
-                                    <div className="flex gap-1">
-                                        <button onClick={() => handleStar(selectedMessage.id)} className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${selectedMessage.is_starred ? "text-amber-500" : "text-gray-400"}`}><Star className={`h-5 w-5 ${selectedMessage.is_starred ? "fill-current" : ""}`} /></button>
-                                        <button onClick={() => handleArchive(selectedMessage.id)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><Archive className="h-5 w-5" /></button>
-                                        <button onClick={() => handleDelete(selectedMessage.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500"><Trash2 className="h-5 w-5" /></button>
-                                    </div>
-                                </div>
-                                <div className="flex-1 p-6 overflow-y-auto">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold">{selectedMessage.from_name.charAt(0)}</div>
-                                        <div><p className="font-semibold text-gray-900 dark:text-white">{selectedMessage.from_name}</p><p className="text-sm text-gray-500">{selectedMessage.from_email}</p></div>
-                                        <div className="mr-auto text-sm text-gray-400">{new Date(selectedMessage.created_at).toLocaleString("ar-SA")}</div>
-                                    </div>
-                                    <div className="prose dark:prose-invert max-w-none"><p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedMessage.message}</p></div>
-                                    {selectedMessage.is_replied && <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"><div className="flex items-center gap-2 text-green-600 text-sm mb-2"><CheckCheck className="h-4 w-4" />تم الرد</div><p className="text-gray-700 dark:text-gray-300 text-sm">{selectedMessage.reply_text}</p></div>}
-                                </div>
-                                {!selectedMessage.is_replied && <div className="p-4 border-t border-gray-200 dark:border-gray-800"><button onClick={() => setShowReplyModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 text-white font-medium hover:bg-primary-600"><Reply className="h-4 w-4" />رد</button></div>}
-                            </div>
-                        ) : (
-                            <div className="h-full flex items-center justify-center text-gray-400"><div className="text-center"><Mail className="h-16 w-16 mx-auto mb-4 opacity-50" /><p>اختر رسالة لعرضها</p></div></div>
+                    {/* Tags */}
+                    <div className="flex items-center gap-2 mt-2">
+                        {message.is_replied && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs">
+                                <Reply className="w-3 h-3" />
+                                تم الرد
+                            </span>
+                        )}
+                        {message.is_archived && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs">
+                                <Archive className="w-3 h-3" />
+                                مؤرشف
+                            </span>
                         )}
                     </div>
                 </div>
+
+                {/* Star Button */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleStar();
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                    {message.is_starred ? (
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                    ) : (
+                        <StarOff className="w-4 h-4 text-gray-400" />
+                    )}
+                </button>
+            </div>
+        </motion.div>
+    );
+}
+
+// ==========================================
+// Message Detail Component
+// ==========================================
+function MessageDetail({
+    message,
+    onClose,
+    onReply,
+    onArchive,
+    onDelete,
+    onMarkRead,
+}: {
+    message: Message;
+    onClose: () => void;
+    onReply: (text: string) => Promise<void>;
+    onArchive: () => void;
+    onDelete: () => void;
+    onMarkRead: () => void;
+}) {
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyText, setReplyText] = useState("");
+    const [isSending, setIsSending] = useState(false);
+
+    // Mark as read when opened
+    useEffect(() => {
+        if (!message.is_read) {
+            onMarkRead();
+        }
+    }, [message.id]);
+
+    const handleSendReply = async () => {
+        if (!replyText.trim()) return;
+        setIsSending(true);
+        try {
+            await onReply(replyText);
+            setReplyText("");
+            setIsReplying(false);
+        } catch (error) {
+            console.error("Error sending reply:", error);
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="h-full flex flex-col"
+        >
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onClose}
+                        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-medium">
+                        {message.from_name.charAt(0)}
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {message.from_name}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {message.from_email}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={onArchive}
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        title="أرشفة"
+                    >
+                        <Archive className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={onDelete}
+                        className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-500"
+                        title="حذف"
+                    >
+                        <Trash2 className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
-            {/* Reply Modal */}
-            <AnimatePresence>
-                {showReplyModal && selectedMessage && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowReplyModal(false)}>
-                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={e => e.stopPropagation()} className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 w-full max-w-lg">
-                            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold">الرد على: {selectedMessage.from_name}</h2><button onClick={() => setShowReplyModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="h-5 w-5" /></button></div>
-                            <div className="mb-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800"><p className="text-sm text-gray-500">الموضوع: {selectedMessage.subject}</p></div>
-                            <textarea value={replyText} onChange={e => setReplyText(e.target.value)} rows={6} placeholder="اكتب ردك هنا..." className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none resize-none" />
-                            <div className="flex gap-3 mt-4"><button onClick={() => setShowReplyModal(false)} className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 font-medium">إلغاء</button><button onClick={handleReply} disabled={sending || !replyText.trim()} className="flex-1 px-4 py-2.5 rounded-xl bg-primary-500 text-white font-medium disabled:opacity-50 flex items-center justify-center gap-2">{sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Send className="h-4 w-4" />إرسال</>}</button></div>
-                        </motion.div>
-                    </motion.div>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                <div className="mb-6">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        <Clock className="w-4 h-4" />
+                        {new Date(message.created_at || "").toLocaleString("ar-EG", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                        })}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        {message.subject}
+                    </h2>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                            {message.message}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Previous Reply */}
+                {message.is_replied && message.reply_text && (
+                    <div className="mt-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                            <Reply className="w-4 h-4" />
+                            <span className="font-medium text-sm">ردك السابق</span>
+                            <span className="text-xs text-green-500">
+                                {message.replied_at && new Date(message.replied_at).toLocaleDateString("ar-EG")}
+                            </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm">
+                            {message.reply_text}
+                        </p>
+                    </div>
                 )}
-            </AnimatePresence>
+            </div>
+
+            {/* Reply Section */}
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+                {!isReplying ? (
+                    <button
+                        onClick={() => setIsReplying(true)}
+                        className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Reply className="w-5 h-5" />
+                        {message.is_replied ? "إرسال رد آخر" : "الرد على الرسالة"}
+                    </button>
+                ) : (
+                    <div className="space-y-3">
+                        <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="اكتب ردك هنا..."
+                            rows={4}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
+                            autoFocus
+                        />
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleSendReply}
+                                disabled={!replyText.trim() || isSending}
+                                className="flex-1 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium flex items-center justify-center gap-2 transition-colors"
+                            >
+                                {isSending ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <Send className="w-5 h-5" />
+                                )}
+                                إرسال الرد
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsReplying(false);
+                                    setReplyText("");
+                                }}
+                                className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            >
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
         </motion.div>
+    );
+}
+
+// ==========================================
+// Main Component
+// ==========================================
+export default function AdminMessagesPage() {
+    const { user } = useAuth();
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+    const [filter, setFilter] = useState<FilterType>("all");
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Fetch messages
+    const fetchMessages = async () => {
+        setIsLoading(true);
+        try {
+            const data = await getMessages();
+            setMessages(data);
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+    }, []);
+
+    // Filter messages
+    const filteredMessages = messages.filter((msg) => {
+        // Apply filter
+        if (filter === "unread" && msg.is_read) return false;
+        if (filter === "starred" && !msg.is_starred) return false;
+        if (filter === "archived" && !msg.is_archived) return false;
+        if (filter === "all" && msg.is_archived) return false;
+
+        // Apply search
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (
+                msg.from_name.toLowerCase().includes(query) ||
+                msg.from_email.toLowerCase().includes(query) ||
+                msg.subject.toLowerCase().includes(query) ||
+                msg.message.toLowerCase().includes(query)
+            );
+        }
+
+        return true;
+    });
+
+    // Stats
+    const stats = {
+        total: messages.filter((m) => !m.is_archived).length,
+        unread: messages.filter((m) => !m.is_read).length,
+        starred: messages.filter((m) => m.is_starred).length,
+        archived: messages.filter((m) => m.is_archived).length,
+    };
+
+    // Handlers
+    const handleToggleStar = async (id: string, current: boolean) => {
+        try {
+            await toggleMessageStarred(id, !current);
+            setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, is_starred: !current } : m))
+            );
+            if (selectedMessage?.id === id) {
+                setSelectedMessage((prev) => prev ? { ...prev, is_starred: !current } : null);
+            }
+        } catch (error) {
+            console.error("Error toggling star:", error);
+        }
+    };
+
+    const handleMarkRead = async (id: string) => {
+        try {
+            await markMessageAsRead(id);
+            setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, is_read: true } : m))
+            );
+            if (selectedMessage?.id === id) {
+                setSelectedMessage((prev) => prev ? { ...prev, is_read: true } : null);
+            }
+        } catch (error) {
+            console.error("Error marking as read:", error);
+        }
+    };
+
+    const handleArchive = async (id: string) => {
+        try {
+            await archiveMessage(id);
+            setMessages((prev) =>
+                prev.map((m) => (m.id === id ? { ...m, is_archived: true } : m))
+            );
+            setSelectedMessage(null);
+        } catch (error) {
+            console.error("Error archiving:", error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("هل أنت متأكد من حذف هذه الرسالة؟")) return;
+        try {
+            await deleteMessage(id);
+            setMessages((prev) => prev.filter((m) => m.id !== id));
+            setSelectedMessage(null);
+        } catch (error) {
+            console.error("Error deleting:", error);
+        }
+    };
+
+    const handleReply = async (id: string, text: string) => {
+        if (!user) return;
+        try {
+            await replyToMessage(id, text, user.id);
+            setMessages((prev) =>
+                prev.map((m) =>
+                    m.id === id
+                        ? { ...m, is_replied: true, reply_text: text, replied_at: new Date().toISOString() }
+                        : m
+                )
+            );
+            if (selectedMessage?.id === id) {
+                setSelectedMessage((prev) =>
+                    prev
+                        ? { ...prev, is_replied: true, reply_text: text, replied_at: new Date().toISOString() }
+                        : null
+                );
+            }
+        } catch (error) {
+            console.error("Error replying:", error);
+            throw error;
+        }
+    };
+
+    const filterButtons: { key: FilterType; label: string; count: number; icon: typeof Mail }[] = [
+        { key: "all", label: "الوارد", count: stats.total, icon: Inbox },
+        { key: "unread", label: "غير مقروء", count: stats.unread, icon: Mail },
+        { key: "starred", label: "المميزة", count: stats.starred, icon: Star },
+        { key: "archived", label: "الأرشيف", count: stats.archived, icon: Archive },
+    ];
+
+    return (
+        <div className="h-[calc(100vh-80px)] flex" dir="rtl">
+            {/* Sidebar - Message List */}
+            <div className={`w-full lg:w-[400px] bg-white dark:bg-[#0f172a] border-l border-gray-100 dark:border-gray-800 flex flex-col ${selectedMessage ? "hidden lg:flex" : ""}`}>
+                {/* Header */}
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Mail className="w-6 h-6 text-primary-500" />
+                            الرسائل
+                        </h1>
+                        <button
+                            onClick={fetchMessages}
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
+                        >
+                            <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
+                        </button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="بحث في الرسائل..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+                        />
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <div className="flex items-center gap-1 mt-3 overflow-x-auto scrollbar-hide pb-1">
+                        {filterButtons.map(({ key, label, count, icon: Icon }) => (
+                            <button
+                                key={key}
+                                onClick={() => setFilter(key)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${filter === key
+                                    ? "bg-primary-500 text-white"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                    }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {label}
+                                {count > 0 && (
+                                    <span className={`px-1.5 py-0.5 rounded-full text-xs ${filter === key
+                                        ? "bg-white/20"
+                                        : "bg-gray-200 dark:bg-gray-700"
+                                        }`}>
+                                        {count}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Message List */}
+                <div className="flex-1 overflow-y-auto">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-64">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+                        </div>
+                    ) : filteredMessages.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-center p-6">
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                                <Inbox className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="font-medium text-gray-900 dark:text-white mb-1">
+                                لا توجد رسائل
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {searchQuery ? "جرب البحث بكلمات مختلفة" : "لم تصلك أي رسائل بعد"}
+                            </p>
+                        </div>
+                    ) : (
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                            {filteredMessages.map((msg) => (
+                                <MessageCard
+                                    key={msg.id}
+                                    message={msg}
+                                    isSelected={selectedMessage?.id === msg.id}
+                                    onSelect={() => setSelectedMessage(msg)}
+                                    onToggleStar={() => handleToggleStar(msg.id, msg.is_starred || false)}
+                                    onMarkRead={() => handleMarkRead(msg.id)}
+                                />
+                            ))}
+                        </motion.div>
+                    )}
+                </div>
+            </div>
+
+            {/* Message Detail */}
+            <div className={`flex-1 bg-gray-50 dark:bg-[#0a0f1a] ${!selectedMessage ? "hidden lg:flex items-center justify-center" : ""}`}>
+                <AnimatePresence mode="wait">
+                    {selectedMessage ? (
+                        <MessageDetail
+                            key={selectedMessage.id}
+                            message={selectedMessage}
+                            onClose={() => setSelectedMessage(null)}
+                            onReply={(text) => handleReply(selectedMessage.id, text)}
+                            onArchive={() => handleArchive(selectedMessage.id)}
+                            onDelete={() => handleDelete(selectedMessage.id)}
+                            onMarkRead={() => handleMarkRead(selectedMessage.id)}
+                        />
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center p-8"
+                        >
+                            <div className="w-24 h-24 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                                <Eye className="w-12 h-12 text-gray-300 dark:text-gray-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                اختر رسالة لعرضها
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                اختر رسالة من القائمة لقراءة محتواها والرد عليها
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
     );
 }

@@ -18,6 +18,7 @@ import {
     Search,
     Filter,
 } from 'lucide-react';
+import { Avatar } from '@/components/common';
 
 // Types
 interface UserDevice {
@@ -209,17 +210,13 @@ function DeviceCard({
                         {/* User Info (Admin View) */}
                         {showUserInfo && device.profiles && (
                             <div className="flex items-center gap-2 mb-2 p-2 bg-gray-50 dark:bg-[#222] rounded-lg">
-                                {device.profiles.avatar_url ? (
-                                    <img
-                                        src={device.profiles.avatar_url}
-                                        alt=""
-                                        className="w-6 h-6 rounded-full"
-                                    />
-                                ) : (
-                                    <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold">
-                                        {device.profiles.name?.charAt(0) || '?'}
-                                    </div>
-                                )}
+                                <Avatar
+                                    src={device.profiles.avatar_url}
+                                    name={device.profiles.name}
+                                    email={device.profiles.email}
+                                    size="xs"
+                                    customGradient="from-primary-500 to-primary-600"
+                                />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                         {device.profiles.name || 'مستخدم'}

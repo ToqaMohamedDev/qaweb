@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, getPlayer } from '@/lib/game/room-manager';
 import { answerSuggestionEvent } from '@/lib/game/event-manager';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/utils/logger';
 
 // POST - Suggest Answer
 export async function POST(
@@ -81,7 +82,7 @@ export async function POST(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error suggesting answer:', error);
+        logger.error('Error suggesting answer', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في إرسال الاقتراح' },
             { status: 500 }

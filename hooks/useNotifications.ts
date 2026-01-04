@@ -15,6 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase";
+import { logger } from "@/lib/utils/logger";
 import NotificationClient, {
     type Notification as NotificationRecord,
     type NotificationType,
@@ -119,25 +120,29 @@ export function useNotifications(
             const errorObj = err as { message?: string; code?: string; details?: string; hint?: string };
             const errorMessage = errorObj?.message || 'Unknown error';
             const errorCode = errorObj?.code || '';
-            const errorDetails = errorObj?.details || '';
-            const errorHint = errorObj?.hint || '';
 
-            console.error("Error fetching notifications:", {
-                message: errorMessage,
-                code: errorCode,
-                details: errorDetails,
-                hint: errorHint,
-                fullError: err
-            });
+            // Known non-critical errors - handle gracefully without logging as error
+            const isTableMissing = errorCode === '42P01' || errorMessage.includes('does not exist');
+            const isFunctionMissing = errorCode === '42883' || errorMessage.includes('function') && errorMessage.includes('does not exist');
+            const isRLSError = errorCode === '42501' || errorMessage.includes('permission denied');
+            const isNotSetup = isTableMissing || isFunctionMissing || isRLSError;
 
-            // If table doesn't exist, show a more helpful message
-            if (errorCode === '42P01' || errorMessage.includes('does not exist')) {
-                console.warn('Notifications table not found. Please run the migrations.');
-                // Set empty state gracefully - don't treat missing table as fatal error
+            if (isNotSetup) {
+                // Only log once as debug, not error - this is expected if notifications aren't set up
+                logger.debug('Notifications not configured', {
+                    context: 'useNotifications',
+                    data: { code: errorCode, reason: errorMessage.substring(0, 100) }
+                });
+                // Set empty state gracefully - don't treat as fatal error
                 setNotifications([]);
                 setUnreadCount(0);
                 setError(null);
             } else {
+                // Unexpected error - log it
+                logger.warn("Error fetching notifications", {
+                    context: 'useNotifications',
+                    data: { message: errorMessage, code: errorCode }
+                });
                 setError(err as Error);
             }
         } finally {
@@ -241,7 +246,7 @@ export function useNotifications(
             );
             setUnreadCount((prev) => Math.max(0, prev - 1));
         } catch (err) {
-            console.error("Error marking notification as read:", err);
+            logger.error("Error marking notification as read", { context: 'useNotifications', data: err });
         }
     }, []);
 
@@ -260,7 +265,7 @@ export function useNotifications(
             );
             setUnreadCount(0);
         } catch (err) {
-            console.error("Error marking all notifications as read:", err);
+            logger.error("Error marking all notifications as read", { context: 'useNotifications', data: err });
         }
     }, []);
 
@@ -276,7 +281,7 @@ export function useNotifications(
                 setUnreadCount((prev) => Math.max(0, prev - 1));
             }
         } catch (err) {
-            console.error("Error deleting notification:", err);
+            logger.error("Error deleting notification", { context: 'useNotifications', data: err });
         }
     }, [notifications]);
 

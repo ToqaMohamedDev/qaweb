@@ -1,38 +1,32 @@
 'use server';
 
-import { headers } from 'next/headers';
+/**
+ * Track Visitor Server Action (Re-export for backward compatibility)
+ */
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { UAParser } from 'ua-parser-js';
+import type { Database } from '../database.types';
 
-type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
-
-/**
- * Get Supabase client for server actions (with anon key for visitors)
- */
-async function getSupabaseClient() {
+// Helper: Create Server Client
+async function createSupabaseServerClient() {
     const cookieStore = await cookies();
 
-    return createServerClient(
+    return createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value;
+                getAll() {
+                    return cookieStore.getAll();
                 },
-                set(name: string, value: string, options: any) {
+                setAll(cookiesToSet) {
                     try {
-                        cookieStore.set({ name, value, ...options });
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        );
                     } catch {
-                        // Ignore cookie errors in read-only contexts
-                    }
-                },
-                remove(name: string, options: any) {
-                    try {
-                        cookieStore.delete({ name, ...options });
-                    } catch {
-                        // Ignore cookie errors in read-only contexts
+                        // Ignore in server action
                     }
                 },
             },
@@ -40,174 +34,73 @@ async function getSupabaseClient() {
     );
 }
 
-/**
- * Parse device information from User-Agent string
- */
-function parseDeviceInfo(userAgent: string) {
-    const parser = new UAParser(userAgent);
-    const result = parser.getResult();
-
-    let deviceType: DeviceType = 'unknown';
-    const deviceTypeRaw = result.device.type?.toLowerCase();
-
-    if (deviceTypeRaw === 'mobile') {
-        deviceType = 'mobile';
-    } else if (deviceTypeRaw === 'tablet') {
-        deviceType = 'tablet';
-    } else if (!deviceTypeRaw || deviceTypeRaw === 'desktop') {
-        if (result.os.name && !['iOS', 'Android'].includes(result.os.name)) {
-            deviceType = 'desktop';
-        } else if (result.os.name === 'Android' || result.os.name === 'iOS') {
-            deviceType = 'mobile';
-        } else {
-            deviceType = 'desktop';
-        }
-    }
-
-    return {
-        deviceType,
-        osName: result.os.name || null,
-        osVersion: result.os.version || null,
-        browser: result.browser.name || null,
-        browserVersion: result.browser.version || null,
-    };
+export async function trackVisitor(...args: Parameters<typeof import('./track-device').trackVisitorDeviceAction>) {
+    const { trackVisitorDeviceAction } = await import('./track-device');
+    return trackVisitorDeviceAction(...args);
 }
 
-/**
- * Get IP address from headers
- */
-function getIPAddress(headersList: Headers): string | null {
-    const forwardedFor = headersList.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
-    }
-    return headersList.get('x-real-ip') ||
-        headersList.get('cf-connecting-ip') ||
-        '0.0.0.0';
+// ==========================================
+// Get All Visitor Devices (Admin)
+// ==========================================
+
+interface GetAllVisitorDevicesParams {
+    limit?: number;
+    offset?: number;
 }
 
-/**
- * Track anonymous visitor device
- */
-export async function trackVisitor(visitorId: string, pageUrl?: string, referrer?: string) {
+interface GetAllVisitorDevicesResult {
+    success: boolean;
+    devices?: unknown[];
+    total?: number;
+    error?: string;
+}
+
+export async function getAllVisitorDevices(params: GetAllVisitorDevicesParams = {}): Promise<GetAllVisitorDevicesResult> {
     try {
-        const supabase = await getSupabaseClient();
-        const headersList = await headers();
-        const userAgent = headersList.get('user-agent') || '';
-        // Get IP address
-        const ipAddress = getIPAddress(headersList);
+        const { limit = 20, offset = 0 } = params;
+        const supabase = await createSupabaseServerClient();
 
-        // Fetch Geolocation Data
-        let country = null;
-        let city = null;
+        // Get total count
+        const { count, error: countError } = await supabase
+            .from('visitor_devices')
+            .select('*', { count: 'exact', head: true });
 
-        if (ipAddress && ipAddress !== '0.0.0.0' && ipAddress !== '127.0.0.1' && ipAddress !== '::1') {
-            try {
-                const geoRes = await fetch(`http://ip-api.com/json/${ipAddress}`);
-                if (geoRes.ok) {
-                    const geoData = await geoRes.json();
-                    if (geoData.status === 'success') {
-                        country = geoData.country;
-                        city = geoData.city;
-                    }
-                }
-            } catch (e) {
-                // Ignore geo fetch errors
-            }
+        if (countError) {
+            console.error('Error counting visitor devices:', countError);
+            return { success: false, error: countError.message };
         }
 
-        const deviceInfo = parseDeviceInfo(userAgent);
-
-        const { data, error } = await supabase.rpc('upsert_visitor_device', {
-            p_visitor_id: visitorId,
-            p_device_type: deviceInfo.deviceType,
-            p_os_name: deviceInfo.osName,
-            p_os_version: deviceInfo.osVersion,
-            p_browser: deviceInfo.browser,
-            p_browser_version: deviceInfo.browserVersion,
-            p_ip_address: ipAddress,
-            p_user_agent: userAgent,
-            p_page_url: pageUrl || null,
-            p_referrer: referrer || null,
-            p_country: country,
-            p_city: city,
-        });
+        // Get visitor devices
+        const { data, error } = await supabase
+            .from('visitor_devices')
+            .select('*')
+            .order('last_seen_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
         if (error) {
-            console.error('Error tracking visitor:', error);
+            console.error('Error fetching visitor devices:', error);
             return { success: false, error: error.message };
         }
 
-        return { success: true, deviceId: data };
+        return { success: true, devices: data || [], total: count || 0 };
     } catch (error) {
-        console.error('Track visitor error:', error);
-        return { success: false, error: 'Failed to track visitor' };
+        console.error('Error in getAllVisitorDevices:', error);
+        return { success: false, error: 'Internal server error' };
     }
 }
 
-/**
- * Get all visitor devices (Admin only)
- */
-export async function getAllVisitorDevices(options?: {
-    limit?: number;
-    offset?: number;
-}) {
-    try {
-        const supabase = await getSupabaseClient();
+// ==========================================
+// Delete Visitor Device (Admin)
+// ==========================================
 
-        // Check if user is admin
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, devices: [], error: 'Not authenticated' };
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            return { success: false, devices: [], error: 'Unauthorized' };
-        }
-
-        const { data, error, count } = await supabase
-            .from('visitor_devices')
-            .select('*', { count: 'exact' })
-            .order('last_seen_at', { ascending: false })
-            .range(
-                options?.offset || 0,
-                (options?.offset || 0) + (options?.limit || 50) - 1
-            );
-
-        if (error) {
-            return { success: false, devices: [], error: error.message };
-        }
-
-        return { success: true, devices: data || [], total: count };
-    } catch (error) {
-        console.error('getAllVisitorDevices error:', error);
-        return { success: false, devices: [], error: 'Failed to fetch visitor devices' };
-    }
+interface DeleteVisitorDeviceResult {
+    success: boolean;
+    error?: string;
 }
 
-/**
- * Delete a visitor device record (Admin only)
- */
-export async function deleteVisitorDevice(deviceId: string) {
+export async function deleteVisitorDevice(deviceId: string): Promise<DeleteVisitorDeviceResult> {
     try {
-        const supabase = await getSupabaseClient();
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, error: 'Not authenticated' };
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            return { success: false, error: 'Unauthorized' };
-        }
+        const supabase = await createSupabaseServerClient();
 
         const { error } = await supabase
             .from('visitor_devices')
@@ -215,11 +108,13 @@ export async function deleteVisitorDevice(deviceId: string) {
             .eq('id', deviceId);
 
         if (error) {
+            console.error('Error deleting visitor device:', error);
             return { success: false, error: error.message };
         }
 
         return { success: true };
     } catch (error) {
-        return { success: false, error: 'Failed to delete visitor device' };
+        console.error('Error in deleteVisitorDevice:', error);
+        return { success: false, error: 'Internal server error' };
     }
 }

@@ -1,62 +1,115 @@
 import { NextRequest } from 'next/server';
-import { redis, REDIS_KEYS } from '@/lib/redis';
+import { redis, REDIS_KEYS, getTimerState } from '@/lib/redis';
+import { logger } from '@/lib/utils/logger';
+import { processExpiredTimers, checkNextQuestionSchedule, startQuestion } from '@/lib/game/game-engine';
 
-// SSE endpoint for real-time game events
+/**
+ * GET /api/game/rooms/[code]/events
+ * 
+ * Server-Sent Events endpoint - THE HEART OF THE GAME LOOP
+ * 
+ * This route does THREE critical things:
+ * 1. STREAMS events to clients (display updates)
+ * 2. ENFORCES timers server-side (processes expired timers)
+ * 3. STARTS next questions when scheduled
+ * 
+ * Even if all clients disconnect, the next connection
+ * will process any pending timer expirations.
+ */
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
 ) {
     const { code } = await params;
 
-    // Check if room exists
+    // Check room exists
     const roomExists = await redis.exists(REDIS_KEYS.room(code));
     if (!roomExists) {
         return new Response('Room not found', { status: 404 });
     }
 
-    // Create a readable stream for SSE
     const stream = new ReadableStream({
         start(controller) {
             const encoder = new TextEncoder();
-
-            // Send initial connection message
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected', roomCode: code })}\n\n`));
-
-            // Set up Redis subscription
-            // Note: Upstash Redis REST API doesn't support true pub/sub subscriptions
-            // So we use polling as a workaround for SSE
-
+            let isClosed = false;
+            let isProcessing = false;
             let lastEventId = Date.now();
-            const pollInterval = setInterval(async () => {
-                try {
-                    // Get latest events from a list (alternative approach)
-                    const events = await redis.lrange(REDIS_KEYS.roomEventsQueue(code), 0, 10);
 
-                    if (events && events.length > 0) {
+            // Send connection event
+            const connected = JSON.stringify({
+                type: 'connected',
+                roomCode: code,
+                timestamp: Date.now(),
+            });
+            controller.enqueue(encoder.encode(`data: ${connected}\n\n`));
+
+            const poll = setInterval(async () => {
+                if (isProcessing || isClosed) return;
+                isProcessing = true;
+
+                try {
+                    // 1. TIMER ENFORCEMENT (Server-side game loop)
+                    await processExpiredTimers();
+
+                    // 2. CHECK & START NEXT QUESTION
+                    const schedule = await checkNextQuestionSchedule(code);
+                    if (schedule.shouldStart) {
+                        await startQuestion(code);
+                    }
+
+                    if (isClosed) return;
+
+                    // 3. TIMER SYNC
+                    const timerState = await getTimerState(code);
+                    if (timerState && Date.now() < timerState.endsAt) {
+                        const sync = JSON.stringify({
+                            type: 'timer_sync',
+                            roomCode: code,
+                            timestamp: Date.now(),
+                            data: {
+                                questionNumber: timerState.questionNumber,
+                                timeRemaining: Math.max(0, Math.ceil((timerState.endsAt - Date.now()) / 1000)),
+                                endsAt: timerState.endsAt,
+                            }
+                        });
+                        controller.enqueue(encoder.encode(`data: ${sync}\n\n`));
+                    }
+
+                    // 4. STREAM EVENTS
+                    const events = await redis.lrange(REDIS_KEYS.roomEventsQueue(code), 0, 20);
+                    if (events?.length) {
                         for (const eventStr of events) {
                             try {
                                 const event = typeof eventStr === 'string' ? JSON.parse(eventStr) : eventStr;
-                                if (event.timestamp > lastEventId) {
+                                if (event.timestamp > lastEventId && !isClosed) {
                                     controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
                                     lastEventId = event.timestamp;
                                 }
-                            } catch (e) {
-                                console.error('Error parsing event:', e);
-                            }
+                            } catch { /* skip */ }
                         }
                     }
 
-                    // Send heartbeat every poll
-                    controller.enqueue(encoder.encode(`: heartbeat\n\n`));
+                    // Heartbeat
+                    if (!isClosed) {
+                        controller.enqueue(encoder.encode(`: heartbeat\n\n`));
+                    }
                 } catch (error) {
-                    console.error('Polling error:', error);
+                    if ((error as Error).message?.includes('closed')) {
+                        isClosed = true;
+                    } else {
+                        logger.error('SSE error', { context: 'GameSSE', data: error });
+                    }
+                } finally {
+                    isProcessing = false;
                 }
-            }, 1000); // Poll every second
+            }, 1000);
 
-            // Clean up on close
+            // Cleanup
             request.signal.addEventListener('abort', () => {
-                clearInterval(pollInterval);
-                controller.close();
+                isClosed = true;
+                clearInterval(poll);
+                try { controller.close(); } catch { /* already closed */ }
             });
         },
     });
@@ -64,17 +117,9 @@ export async function GET(
     return new Response(stream, {
         headers: {
             'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
         },
     });
-}
-
-// Helper to push events to the queue (call this from event-manager)
-export async function pushEventToQueue(code: string, event: Record<string, unknown>) {
-    await redis.rpush(`room:${code}:events:queue`, JSON.stringify(event));
-    // Keep only last 100 events
-    await redis.ltrim(`room:${code}:events:queue`, -100, -1);
-    // Set expiry
-    await redis.expire(`room:${code}:events:queue`, 3600);
 }

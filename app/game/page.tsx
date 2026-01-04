@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -8,29 +8,18 @@ import {
     Swords,
     Users,
     Plus,
-    Search,
     ArrowRight,
-    Crown,
-    Zap,
-    Shield,
     Flame,
-    Trophy,
-    Target,
-    Lock,
-    Unlock,
     RefreshCw,
-    Home,
     Loader2,
     UserPlus,
     Gamepad2,
-    Volume2,
-    VolumeX,
-    Settings,
-    LogOut,
     Sparkles,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { RoomSummary } from "@/lib/game/types";
+import { logger } from "@/lib/utils/logger";
+import { RoomSummary, GameUser, extractGameUser } from "@/lib/game/types";
+import { GameBackground, GameHeader, GameMusic, useGameMusic } from "@/components/game";
 
 export default function GameLobbyPage() {
     const router = useRouter();
@@ -39,20 +28,22 @@ export default function GameLobbyPage() {
     const [joinCode, setJoinCode] = useState("");
     const [isJoining, setIsJoining] = useState(false);
     const [error, setError] = useState("");
-    const [user, setUser] = useState<any>(null);
-    const [soundOn, setSoundOn] = useState(true);
+    const [user, setUser] = useState<GameUser | null>(null);
+
+    // استخدام hook الموسيقى
+    const { isMusicPlaying, toggleMusic } = useGameMusic(); // autoPlay عند أول تفاعل
 
     // Check auth
     useEffect(() => {
         const checkAuth = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            setUser(extractGameUser(authUser));
         };
         checkAuth();
     }, []);
 
     // Fetch public rooms
-    const fetchRooms = async () => {
+    const fetchRooms = useCallback(async () => {
         try {
             setIsLoading(true);
             const res = await fetch("/api/game/rooms");
@@ -61,11 +52,11 @@ export default function GameLobbyPage() {
                 setPublicRooms(data.rooms || []);
             }
         } catch (err) {
-            console.error("Error fetching rooms:", err);
+            logger.error('Error fetching rooms', { context: 'GameLobbyPage', data: err });
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchRooms();
@@ -132,108 +123,33 @@ export default function GameLobbyPage() {
                 router.push(`/game/room/${code}`);
             }
         } catch (err) {
-            console.error("Error joining room:", err);
+            logger.error('Error joining room', { context: 'GameLobbyPage', data: err });
         }
     };
 
     return (
         <div className="min-h-screen bg-[#0a0a1a] relative overflow-hidden" dir="rtl">
             {/* Animated Background */}
-            <div className="fixed inset-0 pointer-events-none">
-                {/* Grid Pattern */}
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFhMWEzYSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
+            <GameBackground showParticles />
 
-                {/* Glowing Orbs */}
-                <div className="absolute top-20 left-20 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-20 right-20 w-96 h-96 bg-orange-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px]" />
-
-                {/* Floating Particles - Using fixed positions to avoid hydration mismatch */}
-                {[
-                    { left: 5, top: 10, duration: 3.2, delay: 0.5 },
-                    { left: 15, top: 25, duration: 4.1, delay: 1.2 },
-                    { left: 25, top: 5, duration: 3.8, delay: 0.3 },
-                    { left: 35, top: 45, duration: 4.5, delay: 1.8 },
-                    { left: 45, top: 15, duration: 3.4, delay: 0.7 },
-                    { left: 55, top: 65, duration: 4.2, delay: 1.5 },
-                    { left: 65, top: 35, duration: 3.6, delay: 0.9 },
-                    { left: 75, top: 85, duration: 4.8, delay: 1.1 },
-                    { left: 85, top: 55, duration: 3.3, delay: 1.6 },
-                    { left: 95, top: 20, duration: 4.4, delay: 0.4 },
-                    { left: 10, top: 70, duration: 3.9, delay: 1.3 },
-                    { left: 20, top: 90, duration: 4.0, delay: 0.6 },
-                    { left: 30, top: 60, duration: 3.5, delay: 1.9 },
-                    { left: 40, top: 30, duration: 4.3, delay: 0.8 },
-                    { left: 50, top: 80, duration: 3.7, delay: 1.4 },
-                    { left: 60, top: 50, duration: 4.6, delay: 0.2 },
-                    { left: 70, top: 75, duration: 3.1, delay: 1.7 },
-                    { left: 80, top: 40, duration: 4.7, delay: 1.0 },
-                    { left: 90, top: 95, duration: 3.0, delay: 0.1 },
-                    { left: 12, top: 42, duration: 4.9, delay: 2.0 },
-                ].map((particle, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute w-1 h-1 bg-white/30 rounded-full"
-                        style={{
-                            left: `${particle.left}%`,
-                            top: `${particle.top}%`,
-                        }}
-                        animate={{
-                            y: [0, -30, 0],
-                            opacity: [0.3, 0.8, 0.3],
-                        }}
-                        transition={{
-                            duration: particle.duration,
-                            repeat: Infinity,
-                            delay: particle.delay,
-                        }}
-                    />
-                ))}
-            </div>
+            {/* Background Music */}
+            <GameMusic
+                isPlaying={isMusicPlaying}
+                onToggle={toggleMusic}
+                volume={0.3}
+                showVolumeControl
+            />
 
             {/* Top Bar */}
-            <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/30 backdrop-blur-xl">
-                <div className="flex items-center gap-4">
-                    <motion.div
-                        whileHover={{ rotate: 15 }}
-                        className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center shadow-lg shadow-orange-500/30"
-                    >
-                        <Swords className="h-6 w-6 text-white" />
-                    </motion.div>
-                    <div>
-                        <h1 className="text-xl font-black text-white tracking-tight">QUIZ BATTLE</h1>
-                        <p className="text-xs text-gray-500">تحدى • تنافس • انتصر</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setSoundOn(!soundOn)}
-                        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all"
-                    >
-                        {soundOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                    </button>
-
-                    {user && (
-                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-                                {user.user_metadata?.name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || '?'}
-                            </div>
-                            <span className="text-white font-medium text-sm hidden sm:block">
-                                {user.user_metadata?.name || user.email?.split('@')[0]}
-                            </span>
-                        </div>
-                    )}
-
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all"
-                    >
-                        <LogOut className="h-4 w-4" />
-                        <span className="hidden sm:block text-sm">خروج</span>
-                    </Link>
-                </div>
-            </header>
+            <GameHeader
+                subtitle="تحدى • تنافس • انتصر"
+                showSound
+                soundOn={isMusicPlaying}
+                onSoundToggle={toggleMusic}
+                showLogout
+                userName={user?.displayName}
+                userInitial={user?.displayName?.charAt(0) || user?.email?.charAt(0)?.toUpperCase()}
+            />
 
             <main className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
                 {/* Hero Section */}

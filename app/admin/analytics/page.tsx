@@ -10,7 +10,6 @@ interface Stats {
     totalTeachers: number;
     totalStudents: number;
     totalComprehensiveExams: number;
-    totalExamTemplates: number;
     totalLessons: number;
     totalSubjects: number;
     totalStages: number;
@@ -37,12 +36,10 @@ export default function AnalyticsPage() {
             const results = await Promise.allSettled([
                 supabase.from("profiles").select("id, role, is_verified"),
                 supabase.from("comprehensive_exams").select("id, is_published, exam_title, language, created_at").order("created_at", { ascending: false }).limit(5),
-                supabase.from("exam_templates").select("id, is_published, title, created_at").order("created_at", { ascending: false }).limit(5),
                 supabase.from("lessons").select("id, is_published"),
                 supabase.from("subjects").select("id, name, is_active"),
                 supabase.from("educational_stages").select("id"),
                 supabase.from("comprehensive_exam_attempts").select("id"),
-                supabase.from("exam_attempts").select("id"),
             ]);
 
             const getDataOrEmpty = (result: PromiseSettledResult<any>) => {
@@ -54,25 +51,22 @@ export default function AnalyticsPage() {
 
             const profiles = getDataOrEmpty(results[0]);
             const comprehensiveExams = getDataOrEmpty(results[1]);
-            const examTemplates = getDataOrEmpty(results[2]);
-            const lessons = getDataOrEmpty(results[3]);
-            const subjects = getDataOrEmpty(results[4]);
-            const stages = getDataOrEmpty(results[5]);
-            const comprehensiveAttempts = getDataOrEmpty(results[6]);
-            const examAttempts = getDataOrEmpty(results[7]);
+            const lessons = getDataOrEmpty(results[2]);
+            const subjects = getDataOrEmpty(results[3]);
+            const stages = getDataOrEmpty(results[4]);
+            const comprehensiveAttempts = getDataOrEmpty(results[5]);
 
             setStats({
                 totalUsers: profiles.length,
                 totalTeachers: profiles.filter((p: any) => p.role === "teacher").length,
                 totalStudents: profiles.filter((p: any) => p.role === "student").length,
                 totalComprehensiveExams: comprehensiveExams.length,
-                totalExamTemplates: examTemplates.length,
                 totalLessons: lessons.length,
                 totalSubjects: subjects.length,
                 totalStages: stages.length,
-                totalExamAttempts: comprehensiveAttempts.length + examAttempts.length,
+                totalExamAttempts: comprehensiveAttempts.length,
                 verifiedTeachers: profiles.filter((p: any) => p.role === "teacher" && p.is_verified).length,
-                publishedExams: comprehensiveExams.filter((e: any) => e.is_published).length + examTemplates.filter((e: any) => e.is_published).length,
+                publishedExams: comprehensiveExams.filter((e: any) => e.is_published).length,
                 publishedLessons: lessons.filter((l: any) => l.is_published).length,
             });
 
@@ -84,13 +78,7 @@ export default function AnalyticsPage() {
                     created_at: e.created_at,
                     type: e.language === 'arabic' ? 'عربي شامل' : 'إنجليزي شامل'
                 })),
-                ...examTemplates.map((e: any) => ({
-                    title: e.title?.ar || e.title?.en || 'امتحان',
-                    is_published: e.is_published,
-                    created_at: e.created_at,
-                    type: 'قالب امتحان'
-                }))
-            ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+            ].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
             setRecentExams(allExams);
 
             // Mock subject stats (would need actual join with lessons/exams)
@@ -113,7 +101,7 @@ export default function AnalyticsPage() {
     if (error) return <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 text-center"><AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" /><p className="text-red-600">{error}</p><button onClick={fetchStats} className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg">إعادة المحاولة</button></div>;
     if (!stats) return null;
 
-    const totalExams = stats.totalComprehensiveExams + stats.totalExamTemplates;
+    const totalExams = stats.totalComprehensiveExams;
 
     const mainStats = [
         { label: "إجمالي المستخدمين", value: stats.totalUsers, icon: Users, color: "from-blue-500 to-blue-600", change: "+12%", up: true },

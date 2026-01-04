@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Inter, Cairo } from "next/font/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import ChatWidget from "@/components/ChatWidget";
-import { VisitorTracker } from "@/components/VisitorTracker";
+import { ClientProviders } from "@/components/ClientProviders";
+import { SplashScreenWrapper } from "@/components/SplashScreen";
 import { homeMetadata } from "@/lib/metadata";
 import "./globals.css";
 
@@ -80,17 +78,12 @@ export default function RootLayout({
             __html: clientBootstrapScript,
           }}
         />
-        <ThemeProvider>
-          {/* Main Content */}
-          <div id="main-content" style={{ minHeight: "100dvh", position: "relative" }} suppressHydrationWarning>
-            <Suspense fallback={null}>
-              {children}
-            </Suspense>
-          </div>
-          {/* Chat Widget */}
-          <ChatWidget />
-          <VisitorTracker />
-        </ThemeProvider>
+
+        <ClientProviders>
+          <SplashScreenWrapper>
+            {children}
+          </SplashScreenWrapper>
+        </ClientProviders>
       </body>
     </html>
   );

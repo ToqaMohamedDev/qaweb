@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Bot, User, Loader2, Minimize2, Maximize2, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Minimize2, Maximize2, Sparkles, Shield } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { logger } from "@/lib/utils/logger";
 
 interface Message {
     id: string;
@@ -50,6 +51,8 @@ const getAIResponse = (message: string): { response: string; needsHuman: boolean
     return { response: aiResponses.default[0], needsHuman: true };
 };
 
+const CHAT_STORAGE_KEY = "support_chat_id";
+
 export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
@@ -59,10 +62,13 @@ export default function ChatWidget() {
     const [chatId, setChatId] = useState<string | null>(null);
     const [userName, setUserName] = useState("");
     const [userEmail, setUserEmail] = useState("");
+    const [userId, setUserId] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(true);
     const [useLocalMode, setUseLocalMode] = useState(false);
     const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
     const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+    const [chatStarted, setChatStarted] = useState(false);
+    const [hasNewAdminReply, setHasNewAdminReply] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -90,29 +96,116 @@ export default function ChatWidget() {
     useEffect(() => {
         if (isOpen) {
             setShowWelcomeBubble(false);
+            setHasNewAdminReply(false);
         }
     }, [isOpen]);
 
-    // جلب بيانات المستخدم إذا كان مسجل دخول
+    // جلب بيانات المستخدم + استرجاع الشات المحفوظ
     useEffect(() => {
-        const checkUser = async () => {
+        const initializeChat = async () => {
             try {
                 const supabase = createClient();
                 const { data: { user } } = await supabase.auth.getUser();
+
                 if (user) {
+                    setUserId(user.id);
                     const { data: profile } = await supabase.from("profiles").select("name, email").eq("id", user.id).single();
                     if (profile) {
-                        setUserName(profile.name || "");
+                        setUserName(profile.name || user.email?.split('@')[0] || "مستخدم");
                         setUserEmail(profile.email || user.email || "");
+                    } else {
+                        setUserName(user.email?.split('@')[0] || "مستخدم");
+                        setUserEmail(user.email || "");
+                    }
+                    setShowForm(false);
+                }
+
+                // استرجاع الشات المحفوظ من localStorage
+                const savedChatId = localStorage.getItem(CHAT_STORAGE_KEY);
+                if (savedChatId) {
+                    // التحقق من أن الشات لا يزال موجوداً
+                    const { data: chatData, error } = await supabase
+                        .from("support_chats")
+                        .select("*")
+                        .eq("id", savedChatId)
+                        .single();
+
+                    if (!error && chatData) {
+                        setChatId(savedChatId);
+                        setChatStarted(true);
                         setShowForm(false);
+
+                        // جلب الرسائل القديمة
+                        const { data: messagesData } = await supabase
+                            .from("chat_messages")
+                            .select("*")
+                            .eq("chat_id", savedChatId)
+                            .order("created_at", { ascending: true });
+
+                        if (messagesData && messagesData.length > 0) {
+                            setMessages(messagesData.map(m => ({
+                                id: m.id,
+                                sender_type: m.sender_type as "user" | "ai" | "admin",
+                                message: m.message,
+                                created_at: m.created_at || new Date().toISOString()
+                            })));
+                        }
+                    } else {
+                        // الشات محذوف، نحذف الـ ID المحفوظ
+                        localStorage.removeItem(CHAT_STORAGE_KEY);
                     }
                 }
             } catch (err) {
-                console.error(err);
+                logger.debug('Error initializing chat', { context: 'ChatWidget', data: err });
             }
         };
-        checkUser();
+
+        initializeChat();
     }, []);
+
+    // Real-time subscription لاستقبال ردود الأدمن
+    useEffect(() => {
+        if (!chatId || useLocalMode) return;
+
+        const supabase = createClient();
+
+        const channel = supabase
+            .channel(`chat-${chatId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'chat_messages',
+                    filter: `chat_id=eq.${chatId}`
+                },
+                (payload) => {
+                    const newMessage = payload.new as any;
+                    // فقط نضيف الرسالة إذا كانت من الأدمن ولم نضفها من قبل
+                    if (newMessage.sender_type === 'admin') {
+                        setMessages(prev => {
+                            // تجنب التكرار
+                            if (prev.some(m => m.id === newMessage.id)) return prev;
+                            return [...prev, {
+                                id: newMessage.id,
+                                sender_type: newMessage.sender_type,
+                                message: newMessage.message,
+                                created_at: newMessage.created_at
+                            }];
+                        });
+                        // إذا الشات مش مفتوح، نظهر notification
+                        if (!isOpen) {
+                            setHasNewAdminReply(true);
+                        }
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [chatId, useLocalMode, isOpen]);
 
     const dismissWelcome = () => {
         setShowWelcomeBubble(false);
@@ -120,56 +213,93 @@ export default function ChatWidget() {
         localStorage.setItem("chat_welcome_dismissed", "true");
     };
 
-    const startChat = async () => {
-        if (!userName.trim() || !userEmail.trim()) return;
+    // بدء محادثة جديدة
+    const createNewChat = useCallback(async (name: string, email?: string) => {
+        if (chatStarted) return chatId;
+
         setIsLoading(true);
+        setChatStarted(true);
 
         try {
             const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
 
             const { data, error } = await supabase.from("support_chats").insert({
-                user_id: user?.id || null,
-                user_name: userName,
-                user_email: userEmail,
+                user_id: userId,
+                user_name: name,
+                user_email: email || `${name.replace(/\s/g, '_')}@guest.local`,
             }).select().single();
 
             if (error) {
-                console.log("Using local mode:", error.message);
+                logger.debug('Using local mode', { context: 'ChatWidget', data: { reason: error.message } });
                 setUseLocalMode(true);
-                setChatId("local-" + Date.now());
+                const localId = "local-" + Date.now();
+                setChatId(localId);
+                return localId;
             } else {
                 setChatId(data.id);
+                // حفظ الـ chat ID في localStorage
+                localStorage.setItem(CHAT_STORAGE_KEY, data.id);
+                return data.id;
             }
 
-            setShowForm(false);
-
-            const welcomeMsg: Message = {
-                id: Date.now().toString(),
-                sender_type: "ai",
-                message: `مرحباً ${userName}! 👋\nأنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟\n\nيمكنني مساعدتك في:\n• التسجيل وتسجيل الدخول\n• الامتحانات والدروس\n• المعلمين والمحتوى\n• أي استفسار آخر`,
-                created_at: new Date().toISOString(),
-            };
-            setMessages([welcomeMsg]);
-
         } catch (err) {
-            console.error(err);
+            logger.error('Error starting chat', { context: 'ChatWidget', data: err });
             setUseLocalMode(true);
-            setChatId("local-" + Date.now());
-            setShowForm(false);
-            setMessages([{
-                id: Date.now().toString(),
-                sender_type: "ai",
-                message: `مرحباً ${userName}! كيف يمكنني مساعدتك؟`,
-                created_at: new Date().toISOString(),
-            }]);
+            const localId = "local-" + Date.now();
+            setChatId(localId);
+            return localId;
         } finally {
             setIsLoading(false);
+        }
+    }, [chatStarted, chatId, userId]);
+
+    // بدء الشات من النموذج
+    const startChat = async () => {
+        if (!userName.trim()) return;
+
+        const newChatId = await createNewChat(userName, userEmail || undefined);
+        setShowForm(false);
+
+        const welcomeMsg: Message = {
+            id: Date.now().toString(),
+            sender_type: "ai",
+            message: `مرحباً ${userName}! 👋\nأنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟\n\nيمكنني مساعدتك في:\n• التسجيل وتسجيل الدخول\n• الامتحانات والدروس\n• المعلمين والمحتوى\n• أي استفسار آخر`,
+            created_at: new Date().toISOString(),
+        };
+        setMessages([welcomeMsg]);
+
+        // حفظ رسالة الترحيب في قاعدة البيانات
+        if (newChatId && !newChatId.startsWith('local-')) {
+            const supabase = createClient();
+            await supabase.from("chat_messages").insert({
+                chat_id: newChatId,
+                sender_type: "system" as any, // 'ai' mapped to 'system' in DB
+                message: welcomeMsg.message,
+                is_ai_response: true,
+            });
         }
     };
 
     const sendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
+
+        let currentChatId = chatId;
+
+        // إذا لم يبدأ الشات بعد، ابدأه الآن
+        if (!chatStarted && userName) {
+            currentChatId = await createNewChat(userName, userEmail || undefined);
+
+            // إذا لم تكن هناك رسائل، نضيف رسالة ترحيب
+            if (messages.length === 0) {
+                const welcomeMsg: Message = {
+                    id: Date.now().toString(),
+                    sender_type: "ai",
+                    message: `مرحباً ${userName}! 👋 كيف يمكنني مساعدتك؟`,
+                    created_at: new Date().toISOString(),
+                };
+                setMessages([welcomeMsg]);
+            }
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -183,10 +313,10 @@ export default function ChatWidget() {
         setIsLoading(true);
 
         try {
-            if (!useLocalMode && chatId) {
+            if (!useLocalMode && currentChatId && !currentChatId.startsWith('local-')) {
                 const supabase = createClient();
                 await supabase.from("chat_messages").insert({
-                    chat_id: chatId,
+                    chat_id: currentChatId,
                     sender_type: "user",
                     message: userMessage.message,
                 });
@@ -205,22 +335,31 @@ export default function ChatWidget() {
 
             setMessages(prev => [...prev, aiMessage]);
 
-            if (!useLocalMode && chatId) {
+            if (!useLocalMode && currentChatId && !currentChatId.startsWith('local-')) {
                 const supabase = createClient();
                 await supabase.from("chat_messages").insert({
-                    chat_id: chatId,
-                    sender_type: "ai",
+                    chat_id: currentChatId,
+                    sender_type: "system" as any, // 'ai' mapped to 'system' in DB
                     message: response,
                     is_ai_response: true,
                 });
 
                 if (needsHuman) {
-                    await supabase.from("support_chats").update({ status: "pending", updated_at: new Date().toISOString() }).eq("id", chatId);
+                    await supabase.from("support_chats").update({
+                        status: "pending",
+                        updated_at: new Date().toISOString()
+                    }).eq("id", currentChatId);
                 }
             }
 
         } catch (err) {
-            console.error(err);
+            logger.error('Error sending message', { context: 'ChatWidget', data: err });
+            setMessages(prev => [...prev, {
+                id: (Date.now() + 1).toString(),
+                sender_type: "ai",
+                message: "شكراً لرسالتك! سيتم الرد عليك قريباً.",
+                created_at: new Date().toISOString(),
+            }]);
         } finally {
             setIsLoading(false);
         }
@@ -229,8 +368,57 @@ export default function ChatWidget() {
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (showForm) startChat();
-            else sendMessage();
+            if (showForm && !userName) {
+                // لا شيء - لازم يكتب اسمه
+            } else if (showForm) {
+                startChat();
+            } else {
+                sendMessage();
+            }
+        }
+    };
+
+    // فتح الشات
+    const handleOpenChat = async () => {
+        setIsOpen(true);
+        dismissWelcome();
+
+        // إذا المستخدم مسجل دخول وعنده اسم ولم يبدأ الشات
+        if (userName && !chatStarted && !chatId) {
+            setShowForm(false);
+            await createNewChat(userName, userEmail || undefined);
+
+            // رسالة ترحيب
+            if (messages.length === 0) {
+                const welcomeMsg: Message = {
+                    id: Date.now().toString(),
+                    sender_type: "ai",
+                    message: `مرحباً ${userName}! 👋\nأنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟`,
+                    created_at: new Date().toISOString(),
+                };
+                setMessages([welcomeMsg]);
+            }
+        }
+    };
+
+    // بدء محادثة جديدة
+    const startNewChat = async () => {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+        setChatId(null);
+        setChatStarted(false);
+        setMessages([]);
+
+        if (userName) {
+            await createNewChat(userName, userEmail || undefined);
+            const welcomeMsg: Message = {
+                id: Date.now().toString(),
+                sender_type: "ai",
+                message: `مرحباً ${userName}! 👋 محادثة جديدة. كيف يمكنني مساعدتك؟`,
+                created_at: new Date().toISOString(),
+            };
+            setMessages([welcomeMsg]);
+        } else {
+            setShowForm(true);
         }
     };
 
@@ -246,7 +434,6 @@ export default function ChatWidget() {
                         className="fixed bottom-24 right-6 z-50 max-w-xs"
                     >
                         <div className="relative bg-white dark:bg-[#1c1c24] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 p-4">
-                            {/* زر الإغلاق */}
                             <button
                                 onClick={dismissWelcome}
                                 className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -254,7 +441,6 @@ export default function ChatWidget() {
                                 <X className="h-3 w-3 text-gray-600 dark:text-gray-400" />
                             </button>
 
-                            {/* المحتوى */}
                             <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
                                     <Bot className="h-5 w-5 text-white" />
@@ -269,14 +455,13 @@ export default function ChatWidget() {
                                 </div>
                             </div>
 
-                            {/* السهم */}
                             <div className="absolute bottom-4 -right-2 w-4 h-4 bg-white dark:bg-[#1c1c24] border-r border-b border-gray-200 dark:border-gray-800 transform rotate-[-45deg]" />
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* زر الدردشة العائم - على اليمين */}
+            {/* زر الدردشة العائم */}
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
@@ -285,16 +470,22 @@ export default function ChatWidget() {
                         exit={{ scale: 0, opacity: 0 }}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => { setIsOpen(true); dismissWelcome(); }}
+                        onClick={handleOpenChat}
                         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/40 flex items-center justify-center hover:shadow-xl transition-shadow"
                     >
                         <MessageCircle className="h-6 w-6" />
-                        <span className="absolute -top-1 -left-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+                        {hasNewAdminReply ? (
+                            <span className="absolute -top-1 -left-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <span className="text-[10px] font-bold text-white">!</span>
+                            </span>
+                        ) : (
+                            <span className="absolute -top-1 -left-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+                        )}
                     </motion.button>
                 )}
             </AnimatePresence>
 
-            {/* نافذة الدردشة - على اليمين */}
+            {/* نافذة الدردشة */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -318,6 +509,15 @@ export default function ChatWidget() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-1">
+                                {chatStarted && (
+                                    <button
+                                        onClick={startNewChat}
+                                        className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white/80 hover:text-white text-xs"
+                                        title="محادثة جديدة"
+                                    >
+                                        جديد
+                                    </button>
+                                )}
                                 <button onClick={() => setIsMinimized(!isMinimized)} className="p-2 rounded-lg hover:bg-white/20 transition-colors">
                                     {isMinimized ? <Maximize2 className="h-4 w-4 text-white" /> : <Minimize2 className="h-4 w-4 text-white" />}
                                 </button>
@@ -329,14 +529,14 @@ export default function ChatWidget() {
 
                         {!isMinimized && (
                             <>
-                                {showForm ? (
+                                {showForm && !userName ? (
                                     <div className="p-6 space-y-4">
                                         <div className="text-center mb-6">
                                             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 flex items-center justify-center mx-auto mb-4">
                                                 <Sparkles className="h-8 w-8 text-primary-500" />
                                             </div>
                                             <h4 className="text-lg font-bold text-gray-900 dark:text-white">أهلاً بك!</h4>
-                                            <p className="text-sm text-gray-500 mt-1">أخبرنا عن نفسك للبدء</p>
+                                            <p className="text-sm text-gray-500 mt-1">أخبرنا اسمك للبدء</p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">الاسم</label>
@@ -347,10 +547,13 @@ export default function ChatWidget() {
                                                 onKeyPress={handleKeyPress}
                                                 placeholder="اسمك الكريم"
                                                 className="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none text-sm focus:ring-2 focus:ring-primary-500"
+                                                autoFocus
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">البريد الإلكتروني</label>
+                                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                                البريد الإلكتروني <span className="text-gray-400">(اختياري)</span>
+                                            </label>
                                             <input
                                                 type="email"
                                                 value={userEmail}
@@ -362,7 +565,7 @@ export default function ChatWidget() {
                                         </div>
                                         <button
                                             onClick={startChat}
-                                            disabled={isLoading || !userName.trim() || !userEmail.trim()}
+                                            disabled={isLoading || !userName.trim()}
                                             className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
                                             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>ابدأ المحادثة<MessageCircle className="h-5 w-5" /></>}
@@ -371,6 +574,12 @@ export default function ChatWidget() {
                                 ) : (
                                     <>
                                         <div className="flex-1 p-4 overflow-y-auto h-[380px] space-y-4">
+                                            {messages.length === 0 && !isLoading && (
+                                                <div className="text-center py-8 text-gray-400">
+                                                    <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                                                    <p className="text-sm">ابدأ المحادثة الآن!</p>
+                                                </div>
+                                            )}
                                             {messages.map((msg) => (
                                                 <motion.div
                                                     key={msg.id}
@@ -379,12 +588,31 @@ export default function ChatWidget() {
                                                     className={`flex ${msg.sender_type === "user" ? "justify-end" : "justify-start"}`}
                                                 >
                                                     <div className={`flex items-end gap-2 max-w-[85%] ${msg.sender_type === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.sender_type === "user" ? "bg-gray-200 dark:bg-gray-700" : msg.sender_type === "ai" ? "bg-gradient-to-br from-primary-400 to-primary-600" : "bg-green-500"}`}>
-                                                            {msg.sender_type === "user" ? <User className="h-4 w-4 text-gray-600 dark:text-gray-300" /> : <Bot className="h-4 w-4 text-white" />}
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.sender_type === "user"
+                                                            ? "bg-gray-200 dark:bg-gray-700"
+                                                            : msg.sender_type === "admin"
+                                                                ? "bg-green-500"
+                                                                : "bg-gradient-to-br from-primary-400 to-primary-600"
+                                                            }`}>
+                                                            {msg.sender_type === "user" ? (
+                                                                <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                                                            ) : msg.sender_type === "admin" ? (
+                                                                <Shield className="h-4 w-4 text-white" />
+                                                            ) : (
+                                                                <Bot className="h-4 w-4 text-white" />
+                                                            )}
                                                         </div>
-                                                        <div className={`p-3 rounded-2xl ${msg.sender_type === "user" ? "bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-tr-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-sm"}`}>
+                                                        <div className={`p-3 rounded-2xl ${msg.sender_type === "user"
+                                                            ? "bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-tr-sm"
+                                                            : msg.sender_type === "admin"
+                                                                ? "bg-green-500 text-white rounded-tl-sm"
+                                                                : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-sm"
+                                                            }`}>
+                                                            {msg.sender_type === "admin" && (
+                                                                <p className="text-xs text-white/80 mb-1 font-medium">رد الدعم الفني:</p>
+                                                            )}
                                                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
-                                                            <p className={`text-xs mt-1 ${msg.sender_type === "user" ? "text-white/70" : "text-gray-400"}`}>
+                                                            <p className={`text-xs mt-1 ${msg.sender_type === "user" || msg.sender_type === "admin" ? "text-white/70" : "text-gray-400"}`}>
                                                                 {new Date(msg.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
                                                             </p>
                                                         </div>

@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getTimerInfo } from '@/lib/game/game-engine';
 import { getRoom } from '@/lib/game/room-manager';
-import { getTimerState } from '@/lib/redis';
 
-// GET - Get current timer state
+/**
+ * GET /api/game/rooms/[code]/timer
+ * 
+ * Get current timer state for a room.
+ * Used by clients for initial sync on reconnect.
+ */
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ code: string }> }
@@ -12,48 +18,27 @@ export async function GET(
 
         const room = await getRoom(code);
         if (!room) {
-            return NextResponse.json(
-                { success: false, error: 'الغرفة غير موجودة' },
-                { status: 404 }
-            );
+            return NextResponse.json({ success: false, error: 'الغرفة غير موجودة' }, { status: 404 });
         }
 
-        if (room.status !== 'playing') {
+        const timerInfo = await getTimerInfo(code);
+
+        if (!timerInfo) {
             return NextResponse.json({
                 success: true,
-                timer: null,
-                status: room.status,
+                active: false,
+                message: 'لا يوجد تايمر نشط',
             });
         }
-
-        const timerState = await getTimerState(code);
-
-        if (!timerState) {
-            return NextResponse.json({
-                success: true,
-                timer: null,
-            });
-        }
-
-        const now = Date.now();
-        const timeRemaining = Math.max(0, Math.ceil((timerState.endsAt - now) / 1000));
 
         return NextResponse.json({
             success: true,
-            timer: {
-                questionNumber: timerState.questionNumber,
-                timeRemaining,
-                endsAt: timerState.endsAt,
-                startedAt: timerState.startedAt,
-                timeLimit: timerState.timeLimit,
-                serverTime: now,
-            },
+            active: true,
+            timeRemaining: timerInfo.timeRemaining,
+            questionNumber: timerInfo.questionNumber,
+            endsAt: timerInfo.endsAt,
         });
     } catch (error) {
-        console.error('Error getting timer:', error);
-        return NextResponse.json(
-            { success: false, error: 'خطأ في الخادم' },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'خطأ في جلب التايمر' }, { status: 500 });
     }
 }

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, Home, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/utils/logger";
 
 export default function ExamResultsPage() {
     const searchParams = useSearchParams();
@@ -27,7 +28,7 @@ export default function ExamResultsPage() {
                 if (error) throw error;
                 setAttempt(data);
             } catch (err) {
-                console.error("Error fetching result", err);
+                logger.error('Error fetching result', { context: 'EnglishExamResultsPage', data: err });
             } finally {
                 setLoading(false);
             }

@@ -18,6 +18,7 @@
  */
 
 import { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
+import { logger } from '@/lib/utils/logger';
 
 // ============================================================================
 // TYPES
@@ -114,7 +115,7 @@ export class NotificationClient {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
-                    console.log('New notification:', payload.new);
+                    logger.debug('New notification received', { context: 'NotificationClient', data: payload.new });
                     if (this.onNewNotification) {
                         this.onNewNotification(payload.new as Notification);
                     }
@@ -129,14 +130,14 @@ export class NotificationClient {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
-                    console.log('Notification updated:', payload.new);
+                    logger.debug('Notification updated', { context: 'NotificationClient', data: payload.new });
                     if (this.onNotificationUpdate) {
                         this.onNotificationUpdate(payload.new as Notification);
                     }
                 }
             )
             .subscribe((status) => {
-                console.log('Notification channel status:', status);
+                logger.debug('Notification channel status', { context: 'NotificationClient', data: { status } });
             });
     }
 
@@ -503,14 +504,14 @@ export function useNotifications() {
  */
 export async function requestWebPushPermission(): Promise<string | null> {
     if (!('Notification' in window)) {
-        console.log('This browser does not support notifications');
+        logger.warn('Browser does not support notifications', { context: 'WebPush' });
         return null;
     }
 
     const permission = await Notification.requestPermission();
 
     if (permission !== 'granted') {
-        console.log('Notification permission denied');
+        logger.info('Notification permission denied', { context: 'WebPush' });
         return null;
     }
 
@@ -519,7 +520,7 @@ export async function requestWebPushPermission(): Promise<string | null> {
     // const token = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY' });
     // return token;
 
-    console.log('Notification permission granted. Implement FCM token retrieval.');
+    logger.info('Notification permission granted. Implement FCM token retrieval.', { context: 'WebPush' });
     return null;
 }
 

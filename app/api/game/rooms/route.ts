@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRoom, getPublicRooms } from '@/lib/game/room-manager';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/utils/logger';
 import { CreateRoomRequest } from '@/lib/game/types';
 
 // GET - List public rooms
@@ -9,7 +10,7 @@ export async function GET() {
         const rooms = await getPublicRooms();
         return NextResponse.json({ success: true, rooms });
     } catch (error) {
-        console.error('Error listing rooms:', error);
+        logger.error('Error listing rooms', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في جلب الغرف' },
             { status: 500 }
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, room });
     } catch (error) {
-        console.error('Error creating room:', error);
+        logger.error('Error creating room', { context: 'GameAPI', data: error });
         const errorMessage = error instanceof Error ? error.message : 'خطأ في إنشاء الغرفة';
         return NextResponse.json(
             { success: false, error: errorMessage },

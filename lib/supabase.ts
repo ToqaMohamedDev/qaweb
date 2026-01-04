@@ -1,191 +1,38 @@
-import { createBrowserClient } from '@supabase/ssr';
-import { Database } from './database.types';
-import { UserRole, UserProfile } from './definitions';
-
-// تصدير الأنواع لتكون متاحة للاستخدام في ملفات أخرى
-export type { UserRole, UserProfile };
-
-// Cached client instance
-let _supabaseClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
-
-// 1. إنشاء Client للمتصفح (يستخدم Cookies) - Lazy initialization
-export function createClient() {
-    if (typeof window === 'undefined') {
-        // Server-side: always create new instance (but this shouldn't be used on server)
-        return createBrowserClient<Database>(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-    }
-
-    // Client-side: reuse instance
-    if (!_supabaseClient) {
-        _supabaseClient = createBrowserClient<Database>(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-    }
-    return _supabaseClient;
-}
-
-// Getter function للـ supabase - يتم استدعاؤه عند الاستخدام فقط
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
-    get(_, prop) {
-        return (createClient() as any)[prop];
-    }
-});
-
 /**
- * تسجيل حساب جديد بالبريد الإلكتروني
+ * Supabase Client Configuration
+ * 
+ * This is the main entry point for Supabase client.
+ * It provides a singleton browser client for client-side usage.
  */
-export async function signUpWithEmail(
-    email: string,
-    password: string,
-    name: string,
-    role: UserRole
-) {
-    const supabaseClient = createClient();
 
-    // 1. التسجيل في Auth
-    const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                name,
-                role, // هذا سيذهب للـ Trigger لإنشاء الـ Profile
-            },
-        },
-    });
+import { getSupabaseClient, supabase } from './supabase-client';
 
-    if (error) throw error;
-    return data;
-}
+// Re-export core client functions
+export { getSupabaseClient, supabase };
+export { getSupabaseClient as createClient };
 
-/**
- * تسجيل الدخول بالبريد الإلكتروني
- */
-export async function signInWithEmail(email: string, password: string) {
-    const supabaseClient = createClient();
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
-    });
+// Re-export commonly used functions from services for backward compatibility
+export {
+    signUpWithEmail,
+    signInWithEmail,
+    signInWithGoogle,
+    signOut,
+    getCurrentUser,
+    updatePassword,
+    resetPassword,
+} from './services/auth.service';
 
-    if (error) throw error;
-    return data;
-}
+export {
+    getCurrentProfile,
+    getProfile,
+    updateProfile,
+    isAdmin,
+    isTeacher,
+    isStudent,
+    isCurrentUserAdmin,
+} from './services/profile.service';
 
-/**
- * تسجيل الدخول بـ Google
- */
-export async function signInWithGoogle() {
-    const supabaseClient = createClient();
+// Aliases for backward compatibility
+export { getCurrentProfile as getUserProfile } from './services/profile.service';
+export { updateProfile as updateUserProfile } from './services/profile.service';
 
-    // تحديد عنوان الموقع بشكل ديناميكي وآمن
-    let origin = '';
-    if (typeof window !== 'undefined') {
-        origin = window.location.origin;
-    } else if (process.env.NEXT_PUBLIC_SITE_URL) {
-        origin = process.env.NEXT_PUBLIC_SITE_URL;
-    } else {
-        origin = 'http://localhost:3000'; // Default fallback
-    }
-
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            // توجيه المستخدم لصفحة الـ callback لضبط الـ cookies
-            redirectTo: `${origin}/auth/callback`,
-            queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-            },
-        },
-    });
-
-    if (error) throw error;
-    return data;
-}
-
-/**
- * تسجيل الخروج
- */
-export async function signOut() {
-    const supabaseClient = createClient();
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) throw error;
-}
-
-/**
- * جلب الملف الشخصي
- */
-export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-    const supabaseClient = createClient();
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-    if (error) {
-        // PGRST116: JSON object requested, multiple (or no) rows returned
-        // This effectively means "Not Found" when using .single()
-        if (error.code !== 'PGRST116') {
-            console.error('[getUserProfile] Error fetching profile:', JSON.stringify(error, null, 2));
-        }
-        console.log('[getUserProfile] No profile found for userId:', userId);
-        return null;
-    }
-
-    console.log('[getUserProfile] Found profile:', data?.email, 'role:', data?.role);
-    return data as UserProfile;
-}
-
-/**
- * تحديث الملف الشخصي
- */
-export async function updateUserProfile(userId: string, updates: Partial<UserProfile>) {
-    const supabaseClient = createClient();
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .update({
-            ...updates,
-            updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId)
-        .select()
-        .single();
-
-    if (error) {
-        throw error;
-    }
-
-    return data as UserProfile;
-}
-
-// دوال التحقق من الدور
-export async function isAdmin(userId: string): Promise<boolean> {
-    const profile = await getUserProfile(userId);
-    const isAdminResult = profile?.role === 'admin';
-    console.log('[isAdmin] Check for userId:', userId, '- role:', profile?.role, '- isAdmin:', isAdminResult);
-    return isAdminResult;
-}
-
-export async function isTeacher(userId: string): Promise<boolean> {
-    const profile = await getUserProfile(userId);
-    return profile?.role === 'teacher';
-}
-
-export async function isStudent(userId: string): Promise<boolean> {
-    const profile = await getUserProfile(userId);
-    return profile?.role === 'student';
-}
-
-// دالة لاختبار وتحديث الجلسة (مفيدة لل debugging)
-export async function refreshSession() {
-    const supabaseClient = createClient();
-    const { data, error } = await supabaseClient.auth.refreshSession();
-    if (error) throw error;
-    return data;
-}

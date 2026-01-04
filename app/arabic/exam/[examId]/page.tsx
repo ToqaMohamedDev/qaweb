@@ -1,396 +1,508 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+// =============================================
+// Arabic Exam Page - صفحة الامتحان العربي (Refactored)
+// =============================================
+
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, FileText, AlertTriangle } from "lucide-react";
 import {
-    Clock,
-    CheckCircle2,
-    AlertTriangle,
-    ChevronLeft,
-    ChevronRight,
-    Save,
-    Loader2,
-    BookOpen,
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import type {
-    ArabicComprehensiveExam,
-    ExamBlock,
-    ArabicExamQuestion,
-} from "@/lib/types/exam-templates";
+    ExamLoadingScreen,
+    ExamErrorScreen,
+    ExamEmptyScreen,
+    ExamHeader,
+    ExamPageNavigation,
+    MCQOptions,
+    TextAnswer,
+    ExamFooter,
+} from "@/components/exam";
+import { useTeacherExamPlayer } from "@/hooks/useTeacherExamPlayer";
 
 export default function ArabicExamPage() {
     const params = useParams();
     const router = useRouter();
     const examId = params?.examId as string;
 
-    const [exam, setExam] = useState<ArabicComprehensiveExam | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, any>>({});
-    const [timeLeft, setTimeLeft] = useState<number | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [attemptId, setAttemptId] = useState<string | null>(null);
+    // Use unified exam player hook
+    const {
+        exam,
+        isLoading,
+        error,
+        currentBlockIndex,
+        totalBlocks,
+        answers,
+        answeredCount,
+        totalQuestions,
+        progress,
+        timeFormatted,
+        isTimeWarning,
+        isSubmitting,
+        setCurrentBlockIndex,
+        goToNextBlock,
+        goToPrevBlock,
+        handleAnswerChange,
+        handleSubmit,
+        getBlockProgress,
+    } = useTeacherExamPlayer({
+        examId,
+        language: 'arabic',
+        resultsPath: `/arabic/exam/${examId}/results`,
+        fallbackPath: '/arabic',
+        requireAuth: false, // الامتحانات العادية متاحة للجميع للعرض
+        requireAuthToSubmit: true, // لكن تحتاج تسجيل دخول للتسليم
+    });
 
-    // Fetch exam
-    useEffect(() => {
-        const fetchExam = async () => {
-            if (!examId) return;
-            try {
-                // 1. Fetch Exam
-                const { data: examData, error: examError } = await supabase
-                    .from("comprehensive_exams")
-                    .select("*")
-                    .eq("type", "arabic_comprehensive_exam")
-                    .eq("id", examId)
-                    .single();
-
-                if (examError || !examData) throw examError || new Error("Exam not found");
-
-                // Transform snake_case to camelCase
-                const transformedExam = {
-                    type: examData.type,
-                    language: examData.language,
-                    usageScope: examData.usage_scope,
-                    lessonId: examData.lesson_id,
-                    examTitle: examData.exam_title,
-                    examDescription: examData.exam_description,
-                    totalMarks: examData.total_marks,
-                    durationMinutes: examData.duration_minutes,
-                    gradingMode: examData.grading_mode,
-                    branchTags: examData.branch_tags || [],
-                    blocks: (examData.blocks as unknown as ExamBlock[]) || [],
-                    isPublished: examData.is_published,
-                    createdBy: examData.created_by,
-                    createdAt: examData.created_at,
-                    updatedAt: examData.updated_at,
-                } as unknown as ArabicComprehensiveExam;
-
-                setExam(transformedExam);
-
-                // 2. Start Attempt
-                const { data: attemptData, error: attemptError } = await supabase
-                    .from("comprehensive_exam_attempts")
-                    .insert({
-                        exam_id: examData.id,
-                        student_id: "anonymous", // Placeholder for auth
-                        status: "in_progress",
-                        started_at: new Date().toISOString(),
-                    } as any)
-                    .select("id")
-                    .single();
-
-                if (attemptData) setAttemptId(attemptData.id);
-
-                // 3. Set Timer
-                if (examData.duration_minutes) {
-                    setTimeLeft(examData.duration_minutes * 60);
-                }
-            } catch (err) {
-                console.error("Error loading exam:", err);
-                alert("حدث خطأ أثناء تحميل الامتحان");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchExam();
-    }, [examId]);
-
-    // Timer
-    useEffect(() => {
-        if (timeLeft === null || timeLeft <= 0) return;
-
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev === null || prev <= 0) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [timeLeft]);
-
-    // Auto-submit when time is up
-    useEffect(() => {
-        if (timeLeft === 0) {
-            handleSubmit();
-        }
-    }, [timeLeft]);
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
-    };
-
-    const handleAnswerChange = (questionId: string, value: any) => {
-        setAnswers((prev) => ({
-            ...prev,
-            [questionId]: value,
-        }));
-    };
-
-    const handleSubmit = async () => {
-        if (isSubmitting || !attemptId) return;
-        setIsSubmitting(true);
-
-        try {
-            const { error } = await supabase
-                .from("comprehensive_exam_attempts")
-                .update({
-                    answers,
-                    completed_at: new Date().toISOString(),
-                    status: "completed",
-                })
-                .eq("id", attemptId);
-
-            if (error) throw error;
-
-            router.push(`/arabic/exam/${examId}/results?attemptId=${attemptId}`);
-        } catch (err) {
-            console.error("Error submitting exam:", err);
-            alert("حدث خطأ أثناء تسليم الامتحان");
-            setIsSubmitting(false);
-        }
-    };
-
+    // Loading state
     if (isLoading) {
+        return <ExamLoadingScreen lang="ar" />;
+    }
+
+    // Error state
+    if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#121212]">
-                <Loader2 className="h-10 w-10 text-emerald-500 animate-spin" />
+            <ExamErrorScreen
+                error={error.message || "حدث خطأ أثناء تحميل الامتحان"}
+                onBack={() => router.back()}
+                lang="ar"
+            />
+        );
+    }
+
+    // No exam data
+    if (!exam) return null;
+
+    // No blocks
+    if (!exam.blocks || exam.blocks.length === 0) {
+        return <ExamEmptyScreen onBack={() => router.back()} lang="ar" />;
+    }
+
+    const currentBlock = exam.blocks[currentBlockIndex];
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-purple-50/20 dark:from-[#0a0a0f] dark:via-[#0f0f18] dark:to-[#121218]" dir="rtl">
+
+            {/* Header */}
+            <ExamHeader
+                examTitle={exam.examTitle}
+                currentPage={currentBlockIndex + 1}
+                totalPages={totalBlocks}
+                answeredCount={answeredCount}
+                totalQuestions={totalQuestions}
+                progress={progress}
+                timeFormatted={timeFormatted}
+                isTimeWarning={isTimeWarning}
+                isSubmitting={isSubmitting}
+                onSubmit={handleSubmit}
+                lang="ar"
+            />
+
+            {/* Main Content */}
+            <main className="pt-28 pb-32 px-4">
+                <div className="max-w-4xl mx-auto">
+
+                    {/* Page Navigation */}
+                    <ExamPageNavigation
+                        blocks={exam.blocks}
+                        currentBlockIndex={currentBlockIndex}
+                        answers={answers}
+                        onBlockSelect={setCurrentBlockIndex}
+                        lang="ar"
+                    />
+
+                    {/* Exam Paper */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentBlock.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="bg-white dark:bg-[#1c1c24] rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-200/80 dark:border-[#2e2e3a]/80 overflow-hidden"
+                        >
+                            {/* Section Header */}
+                            <SectionHeader
+                                block={currentBlock}
+                                currentIndex={currentBlockIndex}
+                                totalPages={totalBlocks}
+                            />
+
+                            {/* Content Area (Reading/Poetry/Grammar) */}
+                            <ContentArea block={currentBlock} />
+
+                            {/* Questions */}
+                            <QuestionsArea
+                                block={currentBlock}
+                                answers={answers}
+                                onAnswerChange={handleAnswerChange}
+                            />
+
+                            {/* Section Footer */}
+                            <SectionFooter
+                                currentIndex={currentBlockIndex}
+                                block={currentBlock}
+                                answers={answers}
+                            />
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
+
+            {/* Footer Navigation */}
+            <ExamFooter
+                currentBlockIndex={currentBlockIndex}
+                totalBlocks={totalBlocks}
+                isSubmitting={isSubmitting}
+                onPrev={goToPrevBlock}
+                onNext={goToNextBlock}
+                onSubmit={handleSubmit}
+                lang="ar"
+            />
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Sub-Components
+// ═══════════════════════════════════════════════════════════════════════════
+
+function SectionHeader({ block, currentIndex, totalPages }: { block: any; currentIndex: number; totalPages: number }) {
+    const getBlockTypeLabel = (type: string) => {
+        switch (type) {
+            case 'reading_passage': return 'نص القراءة';
+            case 'poetry_text': return 'نص الشعر';
+            case 'grammar_block': return 'النحو والصرف';
+            case 'expression_block': return 'التعبير';
+            default: return `نوع: ${type}`;
+        }
+    };
+
+    return (
+        <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-violet-600 px-4 py-2.5">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                        <BookOpen className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-white text-sm">
+                            {block.title || `القسم ${currentIndex + 1}`}
+                        </h2>
+                        <p className="text-white/70 text-xs">
+                            {getBlockTypeLabel(block.type)} • {block.questions?.length || 0} أسئلة
+                        </p>
+                    </div>
+                </div>
+                <div className="text-white/80 text-xs font-medium px-2 py-0.5 bg-white/10 rounded">
+                    {currentIndex + 1} / {totalPages}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function ContentArea({ block }: { block: any }) {
+    const contentType = block.contentType || block.type;
+
+    // Debug
+    console.log('ContentArea block:', {
+        contentType,
+        readingTitle: block.readingTitle,
+        readingText: block.readingText?.substring?.(0, 50),
+        poetryTitle: block.poetryTitle,
+        poetryVerses: block.poetryVerses,
+        allKeys: Object.keys(block)
+    });
+
+    // تحقق من وجود محتوى فعلي
+    const hasReadingContent = block.readingText || block.bodyText;
+    const hasPoetryContent = (block.poetryVerses && block.poetryVerses.length > 0) || (block.verses && block.verses.length > 0);
+
+    // تحديد نوع المحتوى للعرض
+    const showReading = contentType === 'reading' || contentType === 'reading_passage' || (hasReadingContent && contentType !== 'poetry' && contentType !== 'poetry_text');
+    const showPoetry = contentType === 'poetry' || contentType === 'poetry_text' || hasPoetryContent;
+    const showGrammar = contentType === 'grammar_block';
+    const showExpression = contentType === 'expression_block';
+
+    // لا تعرض شيء إذا لا يوجد محتوى
+    if (!hasReadingContent && !hasPoetryContent && !showGrammar && !showExpression) {
+        return null;
+    }
+
+    // Expression Block
+    if (showExpression) {
+        return (
+            <div className="border-b border-gray-200 dark:border-[#2e2e3a] p-6 bg-amber-50/50 dark:bg-amber-900/10">
+                <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                    <div>
+                        <h3 className="font-bold text-amber-800 dark:text-amber-400 mb-2">المطلوب:</h3>
+                        <p className="text-gray-700 dark:text-gray-300">{block.prompt}</p>
+                    </div>
+                </div>
             </div>
         );
     }
 
-    if (!exam) return null;
-
-    const currentBlock = exam.blocks[currentBlockIndex];
-    const isLastBlock = currentBlockIndex === exam.blocks.length - 1;
-    const progress = ((currentBlockIndex + 1) / exam.blocks.length) * 100;
-
+    // Reading/Poetry/Grammar Content
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#121212] pb-24 font-arabic" dir="rtl">
-            {/* Header */}
-            <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-md border-b border-gray-200 dark:border-[#2e2e3a]">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div>
-                        <h1 className="font-bold text-gray-900 dark:text-white truncate max-w-[200px] md:max-w-md">
-                            {exam.examTitle}
-                        </h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            سؤال {currentBlockIndex + 1} من {exam.blocks.length} (كتل)
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        {timeLeft !== null && (
-                            <div
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-mono font-medium ${timeLeft < 300
-                                    ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
-                                    : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
-                                    }`}
-                            >
-                                <Clock className="h-4 w-4" />
-                                <span>{formatTime(timeLeft)}</span>
-                            </div>
-                        )}
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-                        >
-                            {isSubmitting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <CheckCircle2 className="h-4 w-4" />
-                            )}
-                            تسليم الامتحان
-                        </button>
-                    </div>
+        <div className="border-b border-gray-200 dark:border-[#2e2e3a]">
+            <div className="p-4 bg-gradient-to-b from-violet-50/50 to-white dark:from-violet-900/10 dark:to-[#1c1c24]">
+                <div className="flex items-center gap-2 mb-3 text-violet-600 dark:text-violet-400">
+                    <FileText className="h-4 w-4" />
+                    <h3 className="font-bold text-xs">
+                        {showReading && 'اقرأ النص التالي ثم أجب:'}
+                        {showPoetry && !showReading && 'اقرأ الأبيات التالية:'}
+                        {showGrammar && 'تأمل الجملة التالية:'}
+                    </h3>
                 </div>
-                {/* Progress Bar */}
-                <div className="h-1 bg-gray-100 dark:bg-[#2e2e3a] w-full">
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        className="h-full bg-emerald-500"
-                    />
-                </div>
-            </header>
 
-            <main className="max-w-3xl mx-auto px-4 pt-24 space-y-8">
-                {/* Block Content */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={currentBlock.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-6"
-                    >
-                        {/* Block Text/Context */}
-                        <div className="bg-white dark:bg-[#1c1c24] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2e2e3a] overflow-hidden">
-                            <div className="p-4 border-b border-gray-200 dark:border-[#2e2e3a] bg-gray-50 dark:bg-[#252530]">
-                                <h2 className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                                    <BookOpen className="h-5 w-5 text-emerald-500" />
-                                    {currentBlock.title || "نص السؤال"}
-                                </h2>
-                            </div>
-                            <div className="p-6 text-lg leading-relaxed text-gray-800 dark:text-gray-200">
-                                {currentBlock.type === "reading_passage" && (
-                                    <div className="whitespace-pre-wrap">{(currentBlock as any).bodyText}</div>
-                                )}
-                                {currentBlock.type === "poetry_text" && (
-                                    <div className="space-y-4 text-center font-amiri">
-                                        <h3 className="font-bold text-xl mb-4 text-emerald-700 dark:text-emerald-400">
-                                            {(currentBlock as any).poemTitle}
-                                        </h3>
-                                        {(currentBlock as any).verses.map((v: any, idx: number) => (
-                                            <div key={idx} className="flex justify-center gap-8 md:gap-16">
-                                                <p>{v.shatrA}</p>
-                                                <p>{v.shatrB}</p>
-                                            </div>
-                                        ))}
-                                        <p className="text-sm text-gray-500 mt-4">
-                                            - {(currentBlock as any).poet}
-                                        </p>
-                                    </div>
-                                )}
-                                {currentBlock.type === "grammar_block" && (
-                                    <div className="whitespace-pre-wrap">
-                                        {(currentBlock as any).contextText}
-                                    </div>
-                                )}
-                                {currentBlock.type === "expression_block" && (
-                                    <div>
-                                        <p className="font-bold mb-2 text-emerald-600">المطلوب:</p>
-                                        <p>{(currentBlock as any).prompt}</p>
-                                    </div>
-                                )}
-                            </div>
+                <div className="bg-white dark:bg-[#252530] rounded-lg p-4 border border-violet-200/50 dark:border-violet-800/30">
+                    {/* Reading Passage */}
+                    {showReading && hasReadingContent && (
+                        <ReadingPassage block={block} />
+                    )}
+
+                    {/* Poetry */}
+                    {showPoetry && hasPoetryContent && !showReading && (
+                        <PoetryContent block={block} />
+                    )}
+
+                    {/* Grammar */}
+                    {showGrammar && (
+                        <div className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed">
+                            {block.contextText || 'النص'}
                         </div>
-
-                        {/* Questions */}
-                        <div className="space-y-4">
-                            {currentBlock.questions.map((q, qIndex) => (
-                                <div
-                                    key={q.id}
-                                    className="bg-white dark:bg-[#1c1c24] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2e2e3a] p-6"
-                                >
-                                    <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm">
-                                            {qIndex + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            {q.type === "mcq" && (
-                                                <div className="space-y-4">
-                                                    <p className="font-medium text-lg text-gray-900 dark:text-white">
-                                                        {(q as any).stem}
-                                                    </p>
-                                                    <div className="space-y-2">
-                                                        {(q as any).options.map((opt: string, optIdx: number) => (
-                                                            <label
-                                                                key={optIdx}
-                                                                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${answers[q.id] === optIdx
-                                                                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                                                                    : "border-gray-100 dark:border-[#2e2e3a] hover:bg-gray-50 dark:hover:bg-[#252530]"
-                                                                    }`}
-                                                            >
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`q-${q.id}`}
-                                                                    value={optIdx}
-                                                                    checked={answers[q.id] === optIdx}
-                                                                    onChange={() => handleAnswerChange(q.id, optIdx)}
-                                                                    className="w-5 h-5 text-emerald-600 focus:ring-emerald-500"
-                                                                />
-                                                                <span className="text-gray-800 dark:text-gray-200">
-                                                                    {opt}
-                                                                </span>
-                                                            </label>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {(q.type === "maqali" ||
-                                                q.type === "comparison_story" ||
-                                                q.type === "rhetoric" ||
-                                                q.type === "grammar_extraction") && (
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <p className="font-medium text-lg text-gray-900 dark:text-white mb-2">
-                                                                {(q as any).prompt}
-                                                            </p>
-                                                            {q.type === "comparison_story" && (
-                                                                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/30 text-amber-900 dark:text-amber-200 text-sm mb-4">
-                                                                    <span className="font-bold block mb-1">
-                                                                        من كتاب الأيام:
-                                                                    </span>
-                                                                    {(q as any).externalSnippet}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <textarea
-                                                            rows={6}
-                                                            value={answers[q.id] || ""}
-                                                            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                                                            placeholder="اكتب إجابتك هنا..."
-                                                            className="w-full p-4 rounded-xl border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#252530] focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow"
-                                                        />
-                                                    </div>
-                                                )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-            </main>
-
-            {/* Footer Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-md border-t border-gray-200 dark:border-[#2e2e3a]">
-                <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-                    <button
-                        onClick={() => setCurrentBlockIndex((prev) => Math.max(0, prev - 1))}
-                        disabled={currentBlockIndex === 0}
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-[#2e2e3a] text-gray-700 dark:text-gray-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-[#353545] transition-colors"
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                        السابق
-                    </button>
-
-                    {isLastBlock ? (
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-wait"
-                        >
-                            {isSubmitting ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <CheckCircle2 className="h-5 w-5" />
-                            )}
-                            إنهاء الامتحان
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() =>
-                                setCurrentBlockIndex((prev) => Math.min(exam.blocks.length - 1, prev + 1))
-                            }
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium hover:shadow-lg transition-all"
-                        >
-                            التالي
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function ReadingPassage({ block }: { block: any }) {
+    const title = block.title || block.readingTitle;
+    const text = block.bodyText || block.readingText;
+
+    return (
+        <div>
+            {title && (
+                <div className="text-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                        {title}
+                    </h4>
+                    {block.genre && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${block.genre === 'Scientific'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                            }`}>
+                            {block.genre === 'Scientific' ? 'نص علمي' : 'نص أدبي'}
+                        </span>
+                    )}
+                </div>
+            )}
+            <div className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap text-justify max-h-48 overflow-y-auto">
+                {text || 'نص القراءة'}
+            </div>
+        </div>
+    );
+}
+
+function PoetryContent({ block }: { block: any }) {
+    const verses = block.verses || block.poetryVerses || [];
+    const title = block.poemTitle || block.poetryTitle;
+
+    return (
+        <div className="text-center space-y-2 font-amiri">
+            {title && (
+                <h4 className="text-base font-bold text-violet-700 dark:text-violet-400 mb-2">
+                    {title}
+                </h4>
+            )}
+            {verses.map((verse: any, vIdx: number) => (
+                <div key={vIdx} className="flex justify-center items-center gap-4 md:gap-8 text-sm text-gray-800 dark:text-gray-200">
+                    <span className="text-right flex-1">{verse.shatrA || verse.firstHalf}</span>
+                    <span className="text-violet-400 text-xs">⁂</span>
+                    <span className="text-left flex-1">{verse.shatrB || verse.secondHalf}</span>
+                </div>
+            ))}
+            {block.poet && (
+                <p className="text-gray-500 dark:text-gray-400 mt-2 text-xs">
+                    — {block.poet}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function QuestionsArea({ block, answers, onAnswerChange }: { block: any; answers: Record<string, any>; onAnswerChange: (id: string, value: any) => void }) {
+    const subsections = block.subsections || [];
+    const questions = block.questions || [];
+    const totalQuestionsCount = questions.length;
+
+    // إذا فيه subsections - نعرض حسب النوع
+    if (subsections.length > 0) {
+        return (
+            <div className="p-4 lg:p-5 space-y-6">
+                {subsections.map((subsection: any, subIdx: number) => (
+                    <div key={subsection.id || subIdx} className="space-y-3">
+                        {/* عنوان نوع الأسئلة */}
+                        <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-[#2e2e3a]">
+                            <div className={`w-6 h-6 rounded-md flex items-center justify-center ${getSubsectionColor(subsection.type)
+                                }`}>
+                                <span className="font-bold text-xs">{getSubsectionIcon(subsection.type)}</span>
+                            </div>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                                {subsection.title || getQuestionTypeLabel(subsection.type)}
+                            </h3>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                ({subsection.questions?.length || 0} سؤال)
+                            </span>
+                        </div>
+
+                        {/* أسئلة هذا النوع */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            {(subsection.questions || []).map((q: any, qIdx: number) => (
+                                <QuestionCard
+                                    key={q.id}
+                                    question={q}
+                                    index={qIdx}
+                                    answer={answers[q.id]}
+                                    onAnswer={onAnswerChange}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    // الهيكل القديم - كل الأسئلة معاً
+    return (
+        <div className="p-4 lg:p-5">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-[#2e2e3a]">
+                <div className="w-6 h-6 rounded-md bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                    <span className="text-violet-600 dark:text-violet-400 font-bold text-xs">؟</span>
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm">الأسئلة</h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                    ({totalQuestionsCount} سؤال)
+                </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {questions.map((q: any, qIdx: number) => (
+                    <QuestionCard
+                        key={q.id}
+                        question={q}
+                        index={qIdx}
+                        answer={answers[q.id]}
+                        onAnswer={onAnswerChange}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// دوال مساعدة للألوان والأيقونات والعناوين
+function getSubsectionColor(type: string): string {
+    switch (type) {
+        case 'mcq': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+        case 'true_false': return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+        case 'fill_blank': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
+        case 'matching': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
+        case 'ordering': return 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400';
+        case 'essay': return 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400';
+        default: return 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400';
+    }
+}
+
+function getSubsectionIcon(type: string): string {
+    switch (type) {
+        case 'mcq': return '☑';
+        case 'true_false': return '✓✗';
+        case 'fill_blank': return '___';
+        case 'matching': return '↔';
+        case 'ordering': return '123';
+        case 'essay': return '✎';
+        default: return '؟';
+    }
+}
+
+function getQuestionTypeLabel(type: string): string {
+    switch (type) {
+        case 'mcq': return 'اختيار من متعدد';
+        case 'true_false': return 'صح أو خطأ';
+        case 'fill_blank': return 'أكمل الفراغ';
+        case 'matching': return 'توصيل';
+        case 'ordering': return 'ترتيب';
+        case 'essay': return 'مقالي';
+        case 'short_answer': return 'إجابة قصيرة';
+        default: return 'أسئلة';
+    }
+}
+
+
+function QuestionCard({ question, index, answer, onAnswer }: { question: any; index: number; answer: any; onAnswer: (id: string, value: any) => void }) {
+    const isAnswered = answer !== undefined;
+
+    return (
+        <div
+            className={`p-3 rounded-lg border transition-all ${isAnswered
+                ? 'border-green-300 dark:border-green-600 bg-green-50/50 dark:bg-green-900/10'
+                : 'border-gray-200 dark:border-[#2e2e3a] bg-gray-50/30 dark:bg-[#252530]/30 hover:border-violet-200 dark:hover:border-violet-800'
+                }`}
+        >
+            {/* Question Header */}
+            <div className="flex items-start gap-2 mb-2">
+                <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm ${isAnswered
+                    ? 'bg-green-500 text-white'
+                    : 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400'
+                    }`}>
+                    {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-gray-900 dark:text-white font-medium text-sm leading-relaxed">
+                        {question.stem}
+                    </p>
+                </div>
+            </div>
+
+            {/* Answer Area */}
+            <div className="mr-9">
+                {question.type === 'mcq' && question.options ? (
+                    <MCQOptions
+                        questionId={question.id}
+                        options={question.options}
+                        selectedAnswer={answer}
+                        onAnswer={onAnswer}
+                        lang="ar"
+                    />
+                ) : (
+                    <TextAnswer
+                        questionId={question.id}
+                        value={answer || ''}
+                        onAnswer={onAnswer}
+                        rows={3}
+                        lang="ar"
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+function SectionFooter({ currentIndex, block, answers }: { currentIndex: number; block: any; answers: Record<string, any> }) {
+    const questions = block.questions || [];
+    const answeredCount = questions.filter((q: any) => answers[q.id] !== undefined).length;
+
+    return (
+        <div className="px-4 py-2 bg-gray-50 dark:bg-[#252530] border-t border-gray-200 dark:border-[#2e2e3a]">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>نهاية القسم {currentIndex + 1}</span>
+                <span>{answeredCount} / {questions.length} مُجاب</span>
             </div>
         </div>
     );

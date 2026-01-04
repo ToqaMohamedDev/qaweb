@@ -11,15 +11,14 @@ import {
     Medal,
     Star,
     Home,
-    RotateCcw,
     Sparkles,
     Target,
     Flame,
     Swords,
-    Zap,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { RoomPlayer } from "@/lib/game/types";
+import { RoomPlayer, GameUser, extractGameUser } from "@/lib/game/types";
+import { GameBackground, GameLoadingSpinner } from "@/components/game";
 
 export default function ResultsPage() {
     const params = useParams();
@@ -27,7 +26,7 @@ export default function ResultsPage() {
     const code = params.code as string;
 
     const [players, setPlayers] = useState<RoomPlayer[]>([]);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<GameUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showConfetti, setShowConfetti] = useState(false);
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
@@ -39,7 +38,8 @@ export default function ResultsPage() {
     useEffect(() => {
         const init = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            setCurrentUser(user);
+            const gameUser = extractGameUser(user);
+            setCurrentUser(gameUser);
 
             const res = await fetch(`/api/game/rooms/${code}`);
             const data = await res.json();
@@ -49,7 +49,7 @@ export default function ResultsPage() {
                 setPlayers(sorted);
 
                 // Show confetti if winner
-                if (sorted[0]?.odUserId === user?.id) {
+                if (sorted[0]?.odUserId === gameUser?.id) {
                     setShowConfetti(true);
                     setTimeout(() => setShowConfetti(false), 5000);
                 }
@@ -65,14 +65,7 @@ export default function ResultsPage() {
     const isWinner = winner?.odUserId === currentUser?.id;
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center">
-                <div className="relative w-16 h-16">
-                    <div className="absolute inset-0 border-4 border-amber-500/30 rounded-full" />
-                    <div className="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-            </div>
-        );
+        return <GameLoadingSpinner color="amber" />;
     }
 
     return (
@@ -112,8 +105,8 @@ export default function ResultsPage() {
                         <div className={`absolute inset-0 rounded-full blur-2xl ${isWinner ? 'bg-amber-500/50' : 'bg-indigo-500/30'
                             }`} />
                         <div className={`relative w-full h-full rounded-3xl flex items-center justify-center ${isWinner
-                                ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/50'
-                                : 'bg-gradient-to-br from-indigo-500 to-purple-500 shadow-2xl shadow-indigo-500/30'
+                            ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/50'
+                            : 'bg-gradient-to-br from-indigo-500 to-purple-500 shadow-2xl shadow-indigo-500/30'
                             }`}>
                             {isWinner ? (
                                 <Crown className="h-16 w-16 text-white drop-shadow-lg" />
@@ -214,15 +207,15 @@ export default function ResultsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.7 + index * 0.1 }}
                                     className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${isMe
-                                            ? 'bg-gradient-to-r from-orange-500/20 to-pink-500/10 border-2 border-orange-500/50'
-                                            : 'bg-white/5 border border-white/5'
+                                        ? 'bg-gradient-to-r from-orange-500/20 to-pink-500/10 border-2 border-orange-500/50'
+                                        : 'bg-white/5 border border-white/5'
                                         }`}
                                 >
                                     {/* Rank */}
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30' :
-                                            index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white' :
-                                                index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-800 text-white' :
-                                                    'bg-white/10 text-gray-400'
+                                        index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white' :
+                                            index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-800 text-white' :
+                                                'bg-white/10 text-gray-400'
                                         }`}>
                                         {index === 0 ? <Crown className="h-6 w-6" /> : index + 1}
                                     </div>

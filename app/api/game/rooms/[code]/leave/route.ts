@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { removePlayerFromRoom, getPlayer } from '@/lib/game/room-manager';
 import { playerLeftEvent } from '@/lib/game/event-manager';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/utils/logger';
 
 // POST - Leave room
 export async function POST(
@@ -42,7 +43,7 @@ export async function POST(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error leaving room:', error);
+        logger.error('Error leaving room', { context: 'GameAPI', data: error });
         return NextResponse.json(
             { success: false, error: 'خطأ في مغادرة الغرفة' },
             { status: 500 }

@@ -3,16 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "game:dev": "node server.js",
+    "dev": "NODE_OPTIONS='--openssl-legacy-provider --tls-cipher-list=ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-GCM-SHA384' next dev",
     "build": "next build",
-    "start": "node server.js",
+    "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.958.0",
+    "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.87.3",
+    "@supabase/supabase-js": "^2.89.0",
+    "@tanstack/react-query": "^5.90.12",
     "@upstash/redis": "^1.35.8",
+    "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
@@ -21,10 +24,12 @@
     "react": "19.2.1",
     "react-confetti": "^6.4.0",
     "react-dom": "19.2.1",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
+    "react-image-crop": "^11.0.10",
+    "resend": "^6.6.0",
     "tailwind-merge": "^3.4.0",
-    "ua-parser-js": "^2.0.7"
+    "ua-parser-js": "^2.0.7",
+    "undici": "^7.16.0",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

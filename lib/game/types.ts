@@ -161,3 +161,10 @@ export interface GameQuestion {
     category: string;
     difficulty: Difficulty;
 }
+
+// Re-export TimerState from redis module for backwards compatibility
+export type { TimerState } from '../redis';
+
+// Re-export user types for game context
+export { extractGameUser } from './user-types';
+export type { GameUser, ScoreUpdate } from './user-types';

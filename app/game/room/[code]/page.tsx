@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import {
     Users,
@@ -13,16 +13,13 @@ import {
     ArrowLeft,
     Play,
     Loader2,
-    Shield,
-    Zap,
     UserPlus,
-    Share2,
     Swords,
-    Volume2,
-    Star,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { RoomConfig, RoomPlayer } from "@/lib/game/types";
+import { logger } from "@/lib/utils/logger";
+import { RoomConfig, RoomPlayer, GameUser, extractGameUser } from "@/lib/game/types";
+import { GameBackground, GameLoadingSpinner, GameMusic, useGameMusic } from "@/components/game";
 
 export default function WaitingRoomPage() {
     const params = useParams();
@@ -32,18 +29,21 @@ export default function WaitingRoomPage() {
     const [room, setRoom] = useState<RoomConfig | null>(null);
     const [players, setPlayers] = useState<RoomPlayer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<GameUser | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState("");
-    const [countdown, setCountdown] = useState<number | null>(null);
+
+    // موسيقى خلفية
+    const { isMusicPlaying, toggleMusic } = useGameMusic();
 
     useEffect(() => {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            setCurrentUser(user);
-            if (!user) router.push("/login");
+            const gameUser = extractGameUser(user);
+            setCurrentUser(gameUser);
+            if (!gameUser) router.push("/login");
         };
         checkAuth();
     }, [router]);
@@ -67,7 +67,7 @@ export default function WaitingRoomPage() {
                 setError(data.error || "الغرفة غير موجودة");
             }
         } catch (err) {
-            console.error("Error fetching room:", err);
+            logger.error('Error fetching room', { context: 'WaitingRoomPage', data: err });
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +91,7 @@ export default function WaitingRoomPage() {
             const data = await res.json();
             if (data.success) setIsReady(data.isReady);
         } catch (err) {
-            console.error("Error toggling ready:", err);
+            logger.error('Error toggling ready', { context: 'WaitingRoomPage', data: err });
         }
     };
 
@@ -104,7 +104,7 @@ export default function WaitingRoomPage() {
             });
             router.push("/game");
         } catch (err) {
-            console.error("Error leaving room:", err);
+            logger.error('Error leaving room', { context: 'WaitingRoomPage', data: err });
         }
     };
 
@@ -122,7 +122,7 @@ export default function WaitingRoomPage() {
                 setIsStarting(false);
             }
         } catch (err) {
-            console.error("Error starting game:", err);
+            logger.error('Error starting game', { context: 'WaitingRoomPage', data: err });
             setIsStarting(false);
         }
     };
@@ -137,17 +137,7 @@ export default function WaitingRoomPage() {
     const allReady = players.length >= 2 && players.every(p => p.isReady);
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-4">
-                        <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full" />
-                        <div className="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                    <p className="text-gray-500">جاري التحميل...</p>
-                </div>
-            </div>
-        );
+        return <GameLoadingSpinner message="جاري التحميل..." />;
     }
 
     if (error) {
@@ -172,6 +162,14 @@ export default function WaitingRoomPage() {
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[150px]" />
                 <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-[150px]" />
             </div>
+
+            {/* Background Music */}
+            <GameMusic
+                isPlaying={isMusicPlaying}
+                onToggle={toggleMusic}
+                volume={0.3}
+                showVolumeControl
+            />
 
             {/* Top Bar */}
             <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/30 backdrop-blur-xl">

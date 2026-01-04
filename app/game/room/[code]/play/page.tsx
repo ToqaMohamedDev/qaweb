@@ -1,55 +1,119 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+/**
+ * ============================================================================
+ * PLAY GAME PAGE - V2 (CLIENT DISPLAY ONLY)
+ * ============================================================================
+ * 
+ * ⚠️ CRITICAL ARCHITECTURE:
+ * 
+ * 1. SERVER is the SINGLE SOURCE OF TRUTH
+ *    - Timer is controlled by server (SSE timer_sync)
+ *    - Question start/end is controlled by server (SSE events)
+ *    - Score calculation is done by server (question_result event)
+ * 
+ * 2. CLIENT does DISPLAY ONLY
+ *    - Display timer from server sync
+ *    - Display scores from server events
+ *    - Display question/answers from server events
+ *    - Submit answers to server
+ * 
+ * 3. NO CLIENT-SIDE LOGIC FOR:
+ *    ❌ Ending questions (no timeout that calls end-question)
+ *    ❌ Starting next question
+ *    ❌ Calculating or updating scores
+ *    ❌ Any game flow control
+ */
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Flame,
-    Clock,
     CheckCircle2,
     XCircle,
-    Trophy,
-    Zap,
     Crown,
-    Users,
-    Loader2,
-    Swords,
-    Target,
     Star,
+    RefreshCw,
+    Wifi,
+    WifiOff,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { RoomConfig, RoomPlayer, GameQuestion } from "@/lib/game/types";
+import { logger } from "@/lib/utils/logger";
+import { RoomConfig, RoomPlayer, GameQuestion, GameUser, extractGameUser } from "@/lib/game/types";
+import { GameMusic, useGameMusic } from "@/components/game";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface ScoreUpdate {
+    odUserId: string;
+    score: number;
+    delta: number;
+}
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function PlayGamePage() {
     const params = useParams();
     const router = useRouter();
     const code = params.code as string;
 
+    // ========================================
+    // STATE
+    // ========================================
     const [room, setRoom] = useState<RoomConfig | null>(null);
     const [players, setPlayers] = useState<RoomPlayer[]>([]);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<GameUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Connection state
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+
+    // Question state (from server)
     const [question, setQuestion] = useState<GameQuestion | null>(null);
     const [questionNumber, setQuestionNumber] = useState(0);
     const [timeLeft, setTimeLeft] = useState(15);
-    const [suggestions, setSuggestions] = useState<{ [key: number]: string[] }>({});
+    const [serverEndsAt, setServerEndsAt] = useState<number | null>(null);
+
+    // Answer state
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+    const [hasAnswered, setHasAnswered] = useState(false);
     const [showResult, setShowResult] = useState(false);
+    const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [streak, setStreak] = useState(0);
     const [pointsEarned, setPointsEarned] = useState(0);
 
+    // Team mode
+    const [suggestions, setSuggestions] = useState<Record<number, string[]>>({});
+
+    // Refs
+    const eventSourceRef = useRef<EventSource | null>(null);
+    const retryCountRef = useRef(0);
+
+    // موسيقى خلفية
+    const { isMusicPlaying, toggleMusic } = useGameMusic();
+
     const myPlayer = players.find(p => p.odUserId === currentUser?.id);
 
+    // ========================================
+    // AUTH CHECK
+    // ========================================
     useEffect(() => {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            setCurrentUser(user);
+            setCurrentUser(extractGameUser(user));
         };
         checkAuth();
     }, []);
 
+    // ========================================
+    // INITIAL STATE FETCH
+    // ========================================
     const fetchGameState = useCallback(async () => {
         try {
             const res = await fetch(`/api/game/rooms/${code}`);
@@ -59,19 +123,22 @@ export default function PlayGamePage() {
                 setRoom(data.room);
                 setPlayers(data.players.sort((a: RoomPlayer, b: RoomPlayer) => b.score - a.score));
 
-                if (data.currentQuestion /* && !question */) {
-                    // Check if question changed to update state
-                    if (!question || question.id !== data.currentQuestion.id) {
-                        setQuestionNumber(data.currentQuestion.questionNumber);
-                        setQuestion({
-                            id: data.currentQuestion.id,
-                            question: data.currentQuestion.question,
-                            options: data.currentQuestion.options,
-                            correctAnswer: -1,
-                            category: data.currentQuestion.category,
-                            difficulty: data.currentQuestion.difficulty
-                        });
-                        setTimeLeft(data.currentQuestion.timeRemaining);
+                // Restore question state if game is playing
+                if (data.room.status === 'playing' && data.currentQuestion) {
+                    setQuestion({
+                        id: data.currentQuestion.id || `q_${data.currentQuestion.questionNumber}`,
+                        question: data.currentQuestion.question,
+                        options: data.currentQuestion.options,
+                        correctAnswer: -1,
+                        category: data.currentQuestion.category || '',
+                        difficulty: data.currentQuestion.difficulty || 'medium',
+                    });
+                    setQuestionNumber(data.currentQuestion.questionNumber);
+                    setTimeLeft(data.currentQuestion.timeRemaining);
+
+                    // Use timer info for accurate sync
+                    if (data.timerInfo) {
+                        setServerEndsAt(data.timerInfo.endsAt);
                     }
                 }
 
@@ -80,7 +147,7 @@ export default function PlayGamePage() {
                 }
             }
         } catch (err) {
-            console.error("Error fetching game state:", err);
+            logger.error('Error fetching game state', { context: 'PlayGamePage', data: err });
         } finally {
             setIsLoading(false);
         }
@@ -89,123 +156,181 @@ export default function PlayGamePage() {
     useEffect(() => {
         if (currentUser) {
             fetchGameState();
-            const interval = setInterval(fetchGameState, 3000);
-            return () => clearInterval(interval);
         }
     }, [currentUser, fetchGameState]);
 
-    // SSE Connection
+    // ========================================
+    // SSE CONNECTION (RECEIVES ALL GAME STATE)
+    // ========================================
     useEffect(() => {
-        if (!room) return;
+        if (!room || !currentUser) return;
 
-        const eventSource = new EventSource(`/api/game/rooms/${code}/events`);
+        const connect = () => {
+            setConnectionStatus('connecting');
 
-        eventSource.onopen = () => {
-            console.log("Connected to game events");
-        };
+            const eventSource = new EventSource(`/api/game/rooms/${code}/events`);
+            eventSourceRef.current = eventSource;
 
-        eventSource.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
+            eventSource.onopen = () => {
+                setConnectionStatus('connected');
+                retryCountRef.current = 0;
+            };
 
-                // Filter events by team if needed (client-side filtering)
-                // For suggestions, strictly filter
-                if (data.type === 'answer_suggestion') {
-                    if (data.data.team === myPlayer?.team) {
-                        setSuggestions(prev => {
-                            const newSuggestions = { ...prev };
-                            if (!newSuggestions[data.data.suggestedAnswer]) {
-                                newSuggestions[data.data.suggestedAnswer] = [];
-                            }
-                            if (!newSuggestions[data.data.suggestedAnswer].includes(data.data.suggesterName)) {
-                                newSuggestions[data.data.suggestedAnswer].push(data.data.suggesterName);
-                            }
-                            return newSuggestions;
-                        });
-                    }
-                } else if (data.type === 'player_answered') {
-                    // Show that someone answered? 
-                    // Maybe show "Captain answered" notification
-                } else if (data.type === 'question_start') {
-                    // Reset state for new question
-                    setQuestionNumber(data.data.questionNumber);
-                    setQuestion({
-                        id: `q_${data.data.questionNumber}`,
-                        question: data.data.question,
-                        options: data.data.options,
-                        correctAnswer: -1, // Hidden
-                        category: '',
-                        difficulty: 'medium',
-                    });
-                    setTimeLeft(data.data.timeLimit || 15);
-                    setSelectedAnswer(null);
-                    setShowResult(false);
-                    setIsCorrect(null);
-                    setSuggestions({});
-                    setPointsEarned(0);
-                } else if (data.type === 'question_result') {
-                    // Show result
-                    const isMyTeamWinner = data.data.scores.find((s: any) => s.odUserId === currentUser?.id)?.delta > 0;
-                    if (isMyTeamWinner) {
-                        setPointsEarned(data.data.scores.find((s: any) => s.odUserId === currentUser?.id)?.delta);
-                        setIsCorrect(true);
-                    } else {
-                        setIsCorrect(false);
-                    }
-                    setShowResult(true);
-
-                    // Update players scores
-                    setPlayers(currentPlayers => {
-                        return currentPlayers.map(p => {
-                            const scoreUpdate = data.data.scores.find((s: any) => s.odUserId === p.odUserId);
-                            if (scoreUpdate) {
-                                return { ...p, score: scoreUpdate.score };
-                            }
-                            return p;
-                        }).sort((a, b) => b.score - a.score);
-                    });
-                } else if (data.type === 'game_ended') {
-                    router.push(`/game/room/${code}/results`);
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleSSEEvent(data);
+                } catch {
+                    // Ignore parse errors (heartbeats)
                 }
+            };
 
-            } catch (e) {
-                // Ignore parsing errors for heartbeats
-            }
+            eventSource.onerror = () => {
+                eventSource.close();
+                setConnectionStatus('disconnected');
+
+                // Retry with backoff
+                if (retryCountRef.current < 5) {
+                    retryCountRef.current++;
+                    setTimeout(connect, 2000 * retryCountRef.current);
+                }
+            };
         };
+
+        connect();
 
         return () => {
-            eventSource.close();
+            eventSourceRef.current?.close();
         };
-    }, [code, room?.id, myPlayer?.team, currentUser?.id, router]); // Re-connect if team changes (rare)
+    }, [code, room?.id, currentUser?.id]);
 
-    // Timer
-    useEffect(() => {
-        if (showResult || !question || timeLeft <= 0) return;
-
-        const timer = setInterval(() => {
-            setTimeLeft(t => {
-                if (t <= 1) {
-                    handleTimeout();
-                    return 0;
+    // ========================================
+    // SSE EVENT HANDLER
+    // ========================================
+    const handleSSEEvent = useCallback((data: any) => {
+        switch (data.type) {
+            case 'timer_sync':
+                // ✅ UPDATE TIMER FROM SERVER (display only!)
+                if (!showResult) {
+                    setTimeLeft(data.data.timeRemaining);
+                    setServerEndsAt(data.data.endsAt);
                 }
-                return t - 1;
-            });
-        }, 1000);
+                break;
+
+            case 'question_start':
+                // ✅ NEW QUESTION FROM SERVER
+                setQuestionNumber(data.data.questionNumber);
+                setQuestion({
+                    id: `q_${data.data.questionNumber}`,
+                    question: data.data.question,
+                    options: data.data.options,
+                    correctAnswer: -1,
+                    category: '',
+                    difficulty: 'medium',
+                });
+                setTimeLeft(data.data.timeLimit || 15);
+                setServerEndsAt(data.data.endsAt || Date.now() + (data.data.timeLimit * 1000));
+
+                // Reset all answer states
+                setSelectedAnswer(null);
+                setHasAnswered(false);
+                setShowResult(false);
+                setCorrectAnswer(null);
+                setIsCorrect(null);
+                setPointsEarned(0);
+                setSuggestions({});
+                break;
+
+            case 'question_result':
+                // ✅ SERVER ENDED THE QUESTION (with scores!)
+                setCorrectAnswer(data.data.correctAnswer);
+                setShowResult(true);
+                setTimeLeft(0);
+
+                // Get my score update
+                const myScoreUpdate = data.data.scores?.find(
+                    (s: ScoreUpdate) => s.odUserId === currentUser?.id
+                );
+                if (myScoreUpdate) {
+                    if (myScoreUpdate.delta > 0) {
+                        setPointsEarned(myScoreUpdate.delta);
+                        setIsCorrect(true);
+                        setStreak(s => s + 1);
+                    } else {
+                        setPointsEarned(0);
+                        if (selectedAnswer !== null) {
+                            setIsCorrect(selectedAnswer === data.data.correctAnswer);
+                        }
+                        if (selectedAnswer !== null && selectedAnswer !== data.data.correctAnswer) {
+                            setStreak(0);
+                        }
+                    }
+                }
+
+                // Update all player scores
+                if (data.data.scores) {
+                    setPlayers(prev => {
+                        const updated = prev.map(p => {
+                            const scoreUpdate = data.data.scores.find(
+                                (s: ScoreUpdate) => s.odUserId === p.odUserId
+                            );
+                            return scoreUpdate ? { ...p, score: scoreUpdate.score } : p;
+                        });
+                        return updated.sort((a, b) => b.score - a.score);
+                    });
+                }
+                break;
+
+            case 'player_answered':
+                // UI feedback only
+                break;
+
+            case 'answer_suggestion':
+                // Team mode suggestions
+                if (data.data.team === myPlayer?.team) {
+                    const idx = data.data.suggestedAnswer;
+                    setSuggestions(prev => {
+                        const current = prev[idx] || [];
+                        if (!current.includes(data.data.suggesterName)) {
+                            return { ...prev, [idx]: [...current, data.data.suggesterName] };
+                        }
+                        return prev;
+                    });
+                }
+                break;
+
+            case 'game_ended':
+                router.push(`/game/room/${code}/results`);
+                break;
+        }
+    }, [currentUser?.id, myPlayer?.team, router, code, showResult, selectedAnswer]);
+
+    // ========================================
+    // CLIENT TIMER DISPLAY (visual only!)
+    // ========================================
+    useEffect(() => {
+        if (showResult || !question || !serverEndsAt) return;
+
+        // Calculate from server endsAt - purely for display
+        const updateDisplay = () => {
+            const remaining = Math.max(0, Math.ceil((serverEndsAt - Date.now()) / 1000));
+            setTimeLeft(remaining);
+        };
+
+        updateDisplay();
+        const timer = setInterval(updateDisplay, 100);
 
         return () => clearInterval(timer);
-    }, [showResult, question, timeLeft]);
+    }, [showResult, question?.id, serverEndsAt]);
 
-    const handleTimeout = () => {
-        if (!showResult) {
-            setShowResult(true);
-            setIsCorrect(false);
-        }
-    };
-
+    // ========================================
+    // SUBMIT ANSWER (Server records, no scoring here!)
+    // ========================================
     const handleAnswer = async (answerIndex: number) => {
-        if (showResult || selectedAnswer !== null) return;
+        if (showResult || hasAnswered) return;
 
         setSelectedAnswer(answerIndex);
+        setHasAnswered(true);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -217,28 +342,37 @@ export default function PlayGamePage() {
                 },
                 body: JSON.stringify({
                     answer: answerIndex,
-                    questionNumber: room?.currentQuestion || 0,
+                    questionNumber: room?.currentQuestion ?? questionNumber,
                 }),
             });
 
             const data = await res.json();
 
-            if (data.success) {
-                setIsCorrect(data.isCorrect);
-                setPointsEarned(data.points || 0);
-                setShowResult(true);
+            if (!data.success) {
+                // Allow retry on error
+                setHasAnswered(false);
+            }
 
-                if (data.isCorrect) {
-                    setStreak(s => s + 1);
-                } else {
-                    setStreak(0);
-                }
+            // Note: We DON'T update points here!
+            // Points come from question_result event
+            // This is just for immediate "was it correct" feedback
+            if (data.isCorrect !== undefined) {
+                setIsCorrect(data.isCorrect);
+            }
+
+            // FFA: If someone already won
+            if (data.alreadyLocked) {
+                // Someone else won - wait for question_result
             }
         } catch (err) {
-            console.error("Error submitting answer:", err);
+            logger.error('Error submitting answer', { context: 'PlayGamePage', data: err });
+            setHasAnswered(false);
         }
     };
 
+    // ========================================
+    // TEAM MODE - SUGGEST ANSWER
+    // ========================================
     const handleSuggest = async (answerIndex: number) => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -248,13 +382,10 @@ export default function PlayGamePage() {
                     "Authorization": `Bearer ${session?.access_token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    answer: answerIndex,
-                }),
+                body: JSON.stringify({ answer: answerIndex }),
             });
-            // Optimistic UI? No, wait for event so we see our own name
         } catch (err) {
-            console.error("Error suggesting:", err);
+            logger.error('Error suggesting', { context: 'PlayGamePage', data: err });
         }
     };
 
@@ -269,7 +400,9 @@ export default function PlayGamePage() {
         }
     };
 
-
+    // ========================================
+    // LOADING STATE
+    // ========================================
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center">
@@ -286,16 +419,56 @@ export default function PlayGamePage() {
 
     const timerPercentage = (timeLeft / (room?.timePerQuestion || 15)) * 100;
 
+    // ========================================
+    // RENDER
+    // ========================================
     return (
         <div className="min-h-screen bg-[#0a0a1a] relative overflow-hidden" dir="rtl">
+            {/* Connection Status */}
+            <AnimatePresence>
+                {connectionStatus !== 'connected' && (
+                    <motion.div
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -50, opacity: 0 }}
+                        className={`fixed top-0 left-0 right-0 z-50 py-2 text-center text-sm font-bold ${connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            {connectionStatus === 'connecting' ? (
+                                <>
+                                    <Wifi className="w-4 h-4 animate-pulse" />
+                                    جاري الاتصال...
+                                </>
+                            ) : (
+                                <>
+                                    <WifiOff className="w-4 h-4" />
+                                    انقطع الاتصال - جاري إعادة المحاولة
+                                </>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Animated Background */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFhMWEzYSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20" />
 
                 {/* Dynamic Glow based on timer */}
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[200px] transition-colors duration-1000 ${timeLeft <= 5 ? 'bg-red-600/20' : timeLeft <= 10 ? 'bg-orange-600/15' : 'bg-indigo-600/10'
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[200px] transition-colors duration-1000 ${timeLeft <= 5 ? 'bg-red-600/20' :
+                    timeLeft <= 10 ? 'bg-orange-600/15' :
+                        'bg-indigo-600/10'
                     }`} />
             </div>
+
+            {/* Background Music */}
+            <GameMusic
+                isPlaying={isMusicPlaying}
+                onToggle={toggleMusic}
+                volume={0.3}
+                showVolumeControl
+            />
 
             <div className="relative z-10 max-w-4xl mx-auto p-4 h-screen flex flex-col">
                 {/* Top Bar - Scores */}
@@ -304,7 +477,7 @@ export default function PlayGamePage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-between mb-6 py-4"
                 >
-                    {/* My Score / Team Score */}
+                    {/* My Score */}
                     <div className="flex items-center gap-4">
                         <div className="relative">
                             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/30">
@@ -322,7 +495,9 @@ export default function PlayGamePage() {
                         </div>
                         <div>
                             <div className="text-3xl font-black text-white">{myPlayer?.score || 0}</div>
-                            <div className="text-xs text-gray-500">{room?.gameMode === 'team' ? `نقاط فريقك (${myPlayer?.team})` : 'نقاطك'}</div>
+                            <div className="text-xs text-gray-500">
+                                {room?.gameMode === 'team' ? `نقاط فريقك (${myPlayer?.team})` : 'نقاطك'}
+                            </div>
                         </div>
                     </div>
 
@@ -355,7 +530,9 @@ export default function PlayGamePage() {
                                 key={timeLeft}
                                 initial={{ scale: 1.3 }}
                                 animate={{ scale: 1 }}
-                                className={`text-2xl font-black ${timeLeft <= 5 ? 'text-red-500' : timeLeft <= 10 ? 'text-orange-500' : 'text-white'
+                                className={`text-2xl font-black ${timeLeft <= 5 ? 'text-red-500' :
+                                    timeLeft <= 10 ? 'text-orange-500' :
+                                        'text-white'
                                     }`}
                             >
                                 {timeLeft}
@@ -363,7 +540,7 @@ export default function PlayGamePage() {
                         </div>
                     </div>
 
-                    {/* Leader / Enemy Logic needs update for Team Mode but keeping simple for now */}
+                    {/* Leader */}
                     {players[0] && (
                         <div className="flex items-center gap-4 flex-row-reverse">
                             <div className="relative">
@@ -373,7 +550,9 @@ export default function PlayGamePage() {
                             </div>
                             <div className="text-left">
                                 <div className="text-3xl font-black text-white">{players[0].score}</div>
-                                <div className="text-xs text-gray-500 truncate max-w-[80px]">{players[0].odUserId === currentUser?.id ? 'أنت!' : players[0].odDisplayName}</div>
+                                <div className="text-xs text-gray-500 truncate max-w-[80px]">
+                                    {players[0].odUserId === currentUser?.id ? 'أنت!' : players[0].odDisplayName}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -387,8 +566,8 @@ export default function PlayGamePage() {
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
                             transition={{ delay: i * 0.05 }}
-                            className={`flex-1 h-2 rounded-full ${i < (room?.currentQuestion || 0) ? 'bg-green-500' :
-                                i === (room?.currentQuestion || 0) ? 'bg-gradient-to-r from-orange-500 to-pink-500' :
+                            className={`flex-1 h-2 rounded-full ${i < questionNumber ? 'bg-green-500' :
+                                i === questionNumber ? 'bg-gradient-to-r from-orange-500 to-pink-500' :
                                     'bg-white/10'
                                 }`}
                         />
@@ -421,7 +600,7 @@ export default function PlayGamePage() {
                         {/* Question Header */}
                         <div className="flex items-center justify-between mb-6">
                             <span className="px-4 py-1.5 rounded-full bg-white/10 text-gray-400 text-sm font-bold">
-                                السؤال {(room?.currentQuestion || 0) + 1} / {room?.questionCount || 10}
+                                السؤال {questionNumber + 1} / {room?.questionCount || 10}
                             </span>
                             <AnimatePresence>
                                 {pointsEarned > 0 && showResult && (
@@ -448,8 +627,8 @@ export default function PlayGamePage() {
                                 let bgClass = 'from-white/5 to-white/[0.02] border-white/10 hover:border-white/30 hover:from-white/10';
                                 let iconClass = 'bg-white/10 text-white';
 
-                                if (showResult) {
-                                    if (index === question.correctAnswer) {
+                                if (showResult && correctAnswer !== null) {
+                                    if (index === correctAnswer) {
                                         bgClass = 'from-green-500/30 to-green-500/10 border-green-500';
                                         iconClass = 'bg-green-500 text-white';
                                     } else if (index === selectedAnswer && !isCorrect) {
@@ -463,8 +642,7 @@ export default function PlayGamePage() {
 
                                 const isTeamMode = room?.gameMode === 'team';
                                 const isCaptain = myPlayer?.isCaptain;
-                                const canInteract = !showResult; // Non-captains can always suggest if not showResult
-
+                                const canInteract = !showResult && (!hasAnswered || (isTeamMode && !isCaptain));
                                 const suggestionCount = suggestions[index]?.length || 0;
 
                                 return (
@@ -472,9 +650,9 @@ export default function PlayGamePage() {
                                         key={index}
                                         whileHover={canInteract ? { scale: 1.02, y: -2 } : {}}
                                         whileTap={canInteract ? { scale: 0.98 } : {}}
-                                        onClick={() => onOptionClick(index)}
+                                        onClick={() => canInteract && onOptionClick(index)}
                                         disabled={!canInteract}
-                                        className={`relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br ${bgClass} border-2 transition-all text-right ${!canInteract ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br ${bgClass} border-2 transition-all text-right ${!canInteract ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                     >
                                         <div className="flex items-center gap-4">
                                             <span className={`w-12 h-12 rounded-xl ${iconClass} flex items-center justify-center font-black text-lg shrink-0`}>
@@ -489,7 +667,6 @@ export default function PlayGamePage() {
                                                         اضغط للاقتراح
                                                     </span>
                                                 )}
-                                                {/* Suggestions Display */}
                                                 {suggestionCount > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-2">
                                                         {suggestions[index].map((name, i) => (
@@ -505,8 +682,7 @@ export default function PlayGamePage() {
                                                     </div>
                                                 )}
                                             </div>
-                                            {/* (Icons Check/X) */}
-                                            {showResult && index === question.correctAnswer && (
+                                            {showResult && correctAnswer !== null && index === correctAnswer && (
                                                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                                     <CheckCircle2 className="h-7 w-7 text-green-400" />
                                                 </motion.div>
@@ -535,7 +711,8 @@ export default function PlayGamePage() {
                         {players.slice(0, 5).map((player, i) => (
                             <div
                                 key={player.odUserId}
-                                className={`flex items-center gap-3 shrink-0 ${player.odUserId === currentUser?.id ? 'text-orange-400' : 'text-gray-400'}`}
+                                className={`flex items-center gap-3 shrink-0 ${player.odUserId === currentUser?.id ? 'text-orange-400' : 'text-gray-400'
+                                    }`}
                             >
                                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? 'bg-amber-500 text-white' :
                                     i === 1 ? 'bg-gray-500 text-white' :
