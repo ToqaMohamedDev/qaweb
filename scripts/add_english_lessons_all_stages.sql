@@ -60,6 +60,7 @@ BEGIN
             description,
             content,
             order_index,
+            is_published,
             created_at
         ) VALUES (
             gen_random_uuid(),
@@ -69,6 +70,7 @@ BEGIN
             'Develop reading comprehension skills through various texts and exercises',
             'Learn how to read, understand, and analyze English texts effectively. This lesson covers strategies for better comprehension and critical thinking.',
             lesson_order,
+            true,
             NOW()
         );
         lesson_order := lesson_order + 1;
@@ -76,78 +78,78 @@ BEGIN
         -- 2. Vocabulary
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Vocabulary - المفردات',
             'Expand your English vocabulary with essential words and phrases',
             'Build a strong vocabulary foundation with commonly used English words, idioms, and expressions. Learn effective memorization techniques.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
         lesson_order := lesson_order + 1;
 
         -- 3. Grammar
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Grammar - القواعد',
             'Master English grammar rules and structures',
             'Comprehensive grammar lessons covering tenses, sentence structure, parts of speech, and more. Practice with real examples.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
         lesson_order := lesson_order + 1;
 
         -- 4. Translation
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Translation - الترجمة',
             'Learn translation techniques between English and Arabic',
             'Develop translation skills with practical exercises. Learn to translate accurately while maintaining the original meaning and context.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
         lesson_order := lesson_order + 1;
 
         -- 5. Literature (Great Expectations)
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Literature: Great Expectations - الأدب: آمال عظيمة',
             'Study Charles Dickens'' classic novel Great Expectations',
             'Explore the themes, characters, and literary techniques in Great Expectations. Analyze the plot and understand Victorian literature.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
         lesson_order := lesson_order + 1;
 
         -- 6. Paragraph & Essay Writing
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Paragraph & Essay Writing - كتابة الفقرات والمقالات',
             'Learn to write well-structured paragraphs and essays in English',
             'Master the art of English writing. Learn paragraph structure, essay organization, topic sentences, and effective conclusions.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
         lesson_order := lesson_order + 1;
 
         -- 7. Story
         INSERT INTO lessons (
             id, stage_id, subject_id, title, description, content,
-            order_index, created_at
+            order_index, is_published, created_at
         ) VALUES (
             gen_random_uuid(), stage_record.id, english_subject_id,
             'Story Writing & Analysis - كتابة وتحليل القصص',
             'Learn creative writing and story analysis techniques',
             'Develop creative writing skills by learning story elements, plot development, character creation, and narrative techniques.',
-            lesson_order, NOW()
+            lesson_order, true, NOW()
         );
 
         RAISE NOTICE 'Added 7 lessons for stage: %', stage_record.name;
