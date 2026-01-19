@@ -168,3 +168,8 @@ return response;
 ## 10. Fix Origin Detection (Proxy Headers)
 **المشكلة:** `request.url` قد يعود بعنوان داخلي (Localhost) في بيئة Vercel، مما يجعل الـ Redirect والـ Cookie Setting يتم على الدومين الخاطئ، فلا تظهر الكوكيز في المتصفح.
 **الحل:** حساب الـ Origin ديناميكياً باستخدام الهيدر `x-forwarded-host` و `x-forwarded-proto`.
+
+## 11. Fix Cookie Setting via NextResponse
+**المشكلة:** `cookieStore.set()` في الـ Callback قد لا يعمل بشكل صحيح على Vercel، بينما Email Login يعمل لأنه يستخدم Client-side Supabase.
+**الحل:** جمع الكوكيز في Array ثم كتابتها مباشرة على `NextResponse.cookies.set()` قبل الـ Redirect.
+**الحالة:** هذا هو الحل المعتمد للفرق بين Email و Google Login.

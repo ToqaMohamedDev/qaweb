@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
     // CRITICAL: Get the correct origin from headers to handle Vercel's proxy
-    // request.url can sometimes be internal (localhost) which breaks cookie setting domain
     const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
     const protocol = request.headers.get('x-forwarded-proto') || 'https';
     const origin = `${protocol}://${host}`;
@@ -15,13 +14,16 @@ export async function GET(request: Request) {
     const errorParam = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
-    // Handle errors returned directly from provider
+    // Handle errors from provider
     if (errorParam) {
         return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorDescription || errorParam)}`);
     }
 
     if (code) {
         const cookieStore = await cookies();
+
+        // Collect cookies to set on the final response
+        const cookiesToSet: { name: string; value: string; options: any }[] = [];
 
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,14 +33,11 @@ export async function GET(request: Request) {
                     getAll() {
                         return cookieStore.getAll();
                     },
-                    setAll(cookiesToSet) {
-                        try {
-                            cookiesToSet.forEach(({ name, value, options }) =>
-                                cookieStore.set(name, value, options)
-                            );
-                        } catch {
-                            // Ignored
-                        }
+                    setAll(cookies) {
+                        // Don't set on cookieStore - collect them for the response
+                        cookies.forEach(cookie => {
+                            cookiesToSet.push(cookie);
+                        });
                     },
                 },
             }
@@ -47,10 +46,25 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
-            return NextResponse.redirect(`${origin}${next}`);
+            // Create redirect response
+            const response = NextResponse.redirect(`${origin}${next}`);
+
+            // CRITICAL: Set cookies on the response object directly
+            // This ensures they are sent with the redirect
+            cookiesToSet.forEach(({ name, value, options }) => {
+                response.cookies.set(name, value, {
+                    ...options,
+                    // Force production-safe settings
+                    path: options?.path || '/',
+                    secure: true,
+                    sameSite: 'lax',
+                });
+            });
+
+            console.log(`[Auth Callback] Success! Setting ${cookiesToSet.length} cookies and redirecting to ${origin}${next}`);
+            return response;
         } else {
             console.error('[Auth Callback] Exchange Error:', error);
-            // Return detailed error for debugging
             return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}&code=exchange_failed`);
         }
     }
