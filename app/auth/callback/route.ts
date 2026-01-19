@@ -91,7 +91,17 @@ export async function GET(request: Request) {
         );
 
         // تبادل الكود بالجلسة
+        console.log('[AuthCallback] Exchanging code for session...');
         const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+        console.log('[AuthCallback] Exchange result:', {
+            hasError: !!error,
+            hasUser: !!data?.user,
+            userId: data?.user?.id,
+            sessionExpiry: data?.session?.expires_at
+        });
+        if (error) {
+            console.error('[AuthCallback] Exchange error:', error.message);
+        }
 
         if (!error && data?.user) {
             // Create an admin client to fetch profile securely, bypassing RLS
