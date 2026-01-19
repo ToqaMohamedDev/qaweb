@@ -18,14 +18,16 @@ const SplashScreenWrapper = dynamic(() => import('@/components/SplashScreen').th
 
 interface ClientProvidersProps {
     children: ReactNode;
+    user?: any;
+    profile?: any;
 }
 
-export function ClientProviders({ children }: ClientProvidersProps) {
+export function ClientProviders({ children, user, profile }: ClientProvidersProps) {
     return (
         <ThemeProvider>
             <QueryProvider>
                 <SplashScreenWrapper>
-                    <AuthProvider>
+                    <AuthProvider user={user} profile={profile}>
                         <OneSignalProvider>
                             {/* Main Content */}
                             <div id="main-content" style={{ minHeight: '100dvh', position: 'relative' }} suppressHydrationWarning>
