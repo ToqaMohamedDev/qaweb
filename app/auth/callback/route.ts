@@ -54,9 +54,8 @@ export async function GET(request: Request) {
             cookiesToSet.forEach(({ name, value, options }) => {
                 response.cookies.set(name, value, {
                     ...options,
-                    // Force production-safe settings
                     path: options?.path || '/',
-                    secure: true,
+                    secure: protocol === 'https',
                     sameSite: 'lax',
                 });
             });
