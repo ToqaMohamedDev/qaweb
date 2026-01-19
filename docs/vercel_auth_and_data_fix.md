@@ -100,3 +100,26 @@ return response;
 **المشكلة:** بالرغم من ضبط الكوكيز في الـ Callback، الـ Middleware كان يعيد كتابتها بـ `httpOnly: true` (الافتراضي) عند كل زيارة، مما يخفيها عن الـ Browser Client.
 
 **الحل:** إضافة `httpOnly: false` لـ `middleware.ts` أيضاً لضمان الرؤية الدائمة.
+
+## 6. Server-Side Auth Hydration (تمرير الجلسة من السيرفر)
+**الهدف:** تجاوز مشكلة قراءة الكوكيز (HttpOnly) في المتصفح عن طريق جلب بيانات المستخدم في `RootLayout` (السيرفر) وتمريرها مباشرة لـ `AuthProvider`.
+
+**التنفيذ:**
+1. تعديل `app/layout.tsx` لجلب `user` و `profile` باستخدام `createServerClient`.
+2. تمرير البيانات عبر `ClientProviders` إلى `AuthProvider`.
+3. تعديل `AuthProvider` لاستخدام هذه البيانات فوراً (Hydration) عوضاً عن انتظار `getSession`.
+
+**النتيجة (تشخيص Vercel Logs):**
+- **نجاح:** ظهر في اللوج `[AuthProvider] Hydrating session from server props` مما يعني أن البيانات وصلت للعميل.
+- **نجاح:** تعرف المتصفح على المستخدم (`SIGNED_IN`).
+- **فشل:** ظهر خطأ **React Error #418 (Hydration Mismatch)**. هذا يعني اختلاف بين ما رسمه السيرفر وما توقعه المتصفح، مما قد يؤدي لكسر الواجهة أو إعادة تحميل غير نهائية، وهو ما يفسر استمرار "التعليق".
+
+## 7. API Mediator Pattern (الحل النهائي)
+**الهدف:** حل مشكلة قراءة الـ HttpOnly Cookies ومشكلة الـ Hydration Error معاً.
+
+**التنفيذ:**
+1. إنشاء API Route جديد `/api/auth/session` يعمل كجسر (Bridge).
+2. الـ Client (`AuthProvider`) يطلب هذا الـ API عند البدء.
+3. الـ API (يعمل على السيرفر) يقرأ الكوكيز، ويتحقق من Supabase، ويرجع بيانات المستخدم كـ JSON.
+4. إزالة تمرير البيانات من `layout.tsx` لتجنب أخطاء React Hydration.
+
