@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createExamPublishedEmail, sendEmail } from '@/lib/services/email.service';
+import { notifyNewExam } from '@/lib/onesignal/server';
 
 // إرسال إشعارات للمشتركين عند نشر امتحان جديد
 export async function POST(request: NextRequest) {
     try {
-        const { examId, examTitle, teacherId, teacherName } = await request.json();
+        const { examId, examTitle, teacherId, teacherName, examType = 'arabic' } = await request.json();
 
         if (!examId || !teacherId) {
             return NextResponse.json(
@@ -43,7 +44,22 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // إنشاء إشعارات لكل مشترك
+        // 🔔 إرسال Push Notification عبر OneSignal
+        const pushSuccess = await notifyNewExam({
+            teacherId,
+            teacherName: teacherName || 'المدرس',
+            examId,
+            examTitle: examTitle || 'امتحان جديد',
+            examType,
+        });
+
+        if (pushSuccess) {
+            console.log('✅ OneSignal push notification sent');
+        } else {
+            console.warn('⚠️ OneSignal push notification failed (will continue with in-app notifications)');
+        }
+
+        // إنشاء إشعارات داخل التطبيق لكل مشترك
         const notifications = subscribers.map(sub => ({
             user_id: sub.user_id,
             type: 'new_content',
@@ -52,7 +68,7 @@ export async function POST(request: NextRequest) {
             data: {
                 exam_id: examId,
                 teacher_id: teacherId,
-                redirect_route: `/arabic/teacher-exam/${examId}`,
+                redirect_route: `/${examType}/teacher-exam/${examId}`,
                 action: 'new_exam'
             },
             priority: 5
@@ -78,13 +94,15 @@ export async function POST(request: NextRequest) {
             subscribers.map(s => s.user_id),
             examId,
             examTitle || 'امتحان جديد',
-            teacherName || 'المدرس'
+            teacherName || 'المدرس',
+            examType
         ).catch(err => console.error('Background email error:', err));
 
         return NextResponse.json({
             success: true,
             message: `Notifications sent to ${subscribers.length} subscribers`,
             notified: subscribers.length,
+            pushNotificationSent: pushSuccess,
             notification_ids: insertedNotifications?.map(n => n.id) || []
         });
 
@@ -105,7 +123,8 @@ async function sendEmailToSubscribers(
     userIds: string[],
     examId: string,
     examTitle: string,
-    teacherName: string
+    teacherName: string,
+    examType: string = 'arabic'
 ) {
     try {
         // جلب بيانات المستخدمين مع تفضيلات البريد

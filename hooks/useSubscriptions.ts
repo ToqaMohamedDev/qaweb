@@ -108,6 +108,14 @@ export function useSubscriptions(userId: string | null) {
                     return { ...prev, subscriptions: newSubs, subscribingTo: newSubscribing };
                 });
 
+                // إزالة Tag من OneSignal
+                try {
+                    const { unsubscribeFromTeacher } = await import('@/lib/onesignal');
+                    await unsubscribeFromTeacher(teacherId);
+                } catch (e) {
+                    console.warn('Failed to remove OneSignal tag:', e);
+                }
+
                 // Get new count
                 const { count } = await supabase
                     .from('teacher_subscriptions')
@@ -134,6 +142,14 @@ export function useSubscriptions(userId: string | null) {
                     newSubscribing.delete(teacherId);
                     return { ...prev, subscriptions: newSubs, subscribingTo: newSubscribing };
                 });
+
+                // إضافة Tag لـ OneSignal للإشعارات
+                try {
+                    const { subscribeToTeacher } = await import('@/lib/onesignal');
+                    await subscribeToTeacher(teacherId);
+                } catch (e) {
+                    console.warn('Failed to add OneSignal tag:', e);
+                }
 
                 // Get new count
                 const { count } = await supabase

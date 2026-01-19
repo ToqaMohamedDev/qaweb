@@ -8,6 +8,7 @@ import { Suspense, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { QueryProvider, AuthProvider } from '@/lib/providers';
+import { OneSignalProvider } from '@/components/providers/OneSignalProvider';
 
 // Lazy load heavy components
 const ChatWidget = dynamic(() => import('@/components/ChatWidget'), { ssr: false });
@@ -25,21 +26,24 @@ export function ClientProviders({ children }: ClientProvidersProps) {
             <QueryProvider>
                 <SplashScreenWrapper>
                     <AuthProvider>
-                        {/* Main Content */}
-                        <div id="main-content" style={{ minHeight: '100dvh', position: 'relative' }} suppressHydrationWarning>
+                        <OneSignalProvider>
+                            {/* Main Content */}
+                            <div id="main-content" style={{ minHeight: '100dvh', position: 'relative' }} suppressHydrationWarning>
+                                <Suspense fallback={null}>
+                                    {children}
+                                </Suspense>
+                            </div>
+                            {/* Lazy loaded components */}
                             <Suspense fallback={null}>
-                                {children}
+                                <ChatWidget />
+                                <VisitorTracker />
+                                <ToastContainer />
                             </Suspense>
-                        </div>
-                        {/* Lazy loaded components */}
-                        <Suspense fallback={null}>
-                            <ChatWidget />
-                            <VisitorTracker />
-                            <ToastContainer />
-                        </Suspense>
+                        </OneSignalProvider>
                     </AuthProvider>
                 </SplashScreenWrapper>
             </QueryProvider>
         </ThemeProvider>
     );
 }
+
