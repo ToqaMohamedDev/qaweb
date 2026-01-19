@@ -48,11 +48,11 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
     // تهيئة OneSignal عند تحميل التطبيق (في الخلفية - لن يمنع التطبيق)
     useEffect(() => {
         // تأخير التهيئة لضمان تحميل التطبيق أولاً
-        const timeoutId = setTimeout(() => {
-            initializeOneSignal();
-        }, 2000); // انتظر 2 ثانية بعد تحميل التطبيق
+        // const timeoutId = setTimeout(() => {
+        //     initializeOneSignal();
+        // }, 2000); // انتظر 2 ثانية بعد تحميل التطبيق
 
-        return () => clearTimeout(timeoutId);
+        // return () => clearTimeout(timeoutId);
     }, []);
 
     const initializeOneSignal = async () => {
