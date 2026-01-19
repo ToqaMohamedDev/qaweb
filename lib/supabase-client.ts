@@ -46,3 +46,11 @@ export const supabase = new Proxy({} as ReturnType<typeof getSupabaseClient>, {
         return (client as unknown as Record<string, unknown>)[prop as string];
     }
 });
+
+/**
+ * Force refresh the client instance
+ * Use this after login/logout to ensure fresh state
+ */
+export function resetSupabaseClient() {
+    browserClient = null;
+}

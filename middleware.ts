@@ -2,9 +2,10 @@
  * Middleware for handling Supabase Authentication & Routing
  * =======================================================
  * 
- * 1. Refreshes the user's session on every request (Supabase Requirement)
+ * CRITICAL: This middleware runs on EVERY request and:
+ * 1. Refreshes the user's session (keeps auth cookies fresh)
  * 2. Protects sensitive routes (requires login/role)
- * 3. Redirects authenticated users from auth pages to home
+ * 3. Redirects authenticated users from auth pages
  */
 
 import { createServerClient } from '@supabase/ssr';
@@ -15,7 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // =============================================
 
 // الصفحات التي لا تحتاج authentication
-const PUBLIC_ROUTES = [
+const PUBLIC_ROUTES = new Set([
     '/',
     '/login',
     '/signup',
@@ -29,22 +30,18 @@ const PUBLIC_ROUTES = [
     '/contact',
     '/terms',
     '/privacy',
-];
+    '/support',
+    '/game',
+    '/game/create',
+]);
 
 // الصفحات التي تبدأ بهذه المسارات عامة
 const PUBLIC_PREFIXES = [
     '/arabic/',
     '/english/',
     '/teachers/',
-    '/api/public',
-    '/api/webhooks', // Important for Stripe/etc
+    '/api/',
 ];
-
-// الصفحات المحمية حسب الدور
-const PROTECTED_ROUTES = {
-    admin: '/admin',
-    teacher: '/teacher',
-};
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -54,8 +51,8 @@ export async function middleware(request: NextRequest) {
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/static') ||
-        pathname.includes('.') ||
-        pathname.startsWith('/favicon.ico')
+        pathname.startsWith('/favicon') ||
+        pathname.includes('.')
     ) {
         return NextResponse.next();
     }
@@ -75,43 +72,55 @@ export async function middleware(request: NextRequest) {
                     return request.cookies.getAll();
                 },
                 setAll(cookiesToSet) {
-                    // Update request cookies for subsequent checks
+                    // Update request cookies
                     cookiesToSet.forEach(({ name, value }) =>
                         request.cookies.set(name, value)
                     );
 
+                    // Create new response with updated cookies
                     supabaseResponse = NextResponse.next({
                         request,
                     });
 
-                    // Update response cookies to persist session
+                    // Set cookies on response
                     cookiesToSet.forEach(({ name, value, options }) =>
-                        supabaseResponse.cookies.set(name, value, options)
+                        supabaseResponse.cookies.set(name, value, {
+                            ...options,
+                            // Ensure cookies work on Vercel
+                            path: '/',
+                            sameSite: 'lax',
+                            secure: process.env.NODE_ENV === 'production',
+                        })
                     );
                 },
             },
         }
     );
 
-    // IMPORTANT: This refreshes the session token if expired
-    const { data: { user }, error } = await supabase.auth.getUser();
+    // CRITICAL: Always call getUser() to refresh session
+    // This updates the auth cookies if they're expired
+    const { data: { user } } = await supabase.auth.getUser();
 
     // 2. CHECK ROUTE TYPE
     // =================================================
-    const isPublicRoute = PUBLIC_ROUTES.includes(pathname) ||
+    const isPublicRoute = PUBLIC_ROUTES.has(pathname) ||
         PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
 
-    // 3. PUBLIC ROUTES - ALLOW ALL
+    // 3. PUBLIC ROUTES - ALWAYS RETURN WITH REFRESHED COOKIES
     // =================================================
     if (isPublicRoute) {
         return supabaseResponse;
     }
 
-    // 4. AUTH ROUTES (Login/Signup) - REDIRECT IF LOGGED IN
+    // 4. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
     // =================================================
     if ((pathname === '/login' || pathname === '/signup') && user) {
-        const url = new URL('/', request.url);
-        return NextResponse.redirect(url);
+        const response = NextResponse.redirect(new URL('/', request.url));
+        // Copy cookies to redirect response
+        supabaseResponse.cookies.getAll().forEach(cookie => {
+            response.cookies.set(cookie.name, cookie.value);
+        });
+        return response;
     }
 
     // 5. PROTECTED ROUTES - REQUIRES LOGIN
@@ -119,50 +128,32 @@ export async function middleware(request: NextRequest) {
     if (!user) {
         const redirectUrl = new URL('/login', request.url);
         redirectUrl.searchParams.set('redirect', pathname);
-        // Important: Return redirect but we lose cookie updates if we don't handle them?
-        // Usually redirects for non-auth users don't need cookie updates unless we were clearing them.
         return NextResponse.redirect(redirectUrl);
     }
 
-    // 6. ROLE-BASED PROTECTION
+    // 6. ROLE-BASED PROTECTION (only for admin/teacher routes)
     // =================================================
-    // Only fetch profile if we are in a role-protected route
-    // to save DB calls on normal pages
-    if (
-        pathname.startsWith(PROTECTED_ROUTES.admin) ||
-        pathname.startsWith(PROTECTED_ROUTES.teacher) ||
-        pathname === '/onboarding' ||
-        (!pathname.startsWith('/profile') && !pathname.startsWith('/game')) // Check strict role enforcement
-    ) {
+    if (pathname.startsWith('/admin') || pathname.startsWith('/teacher')) {
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role, role_selected')
+            .select('role')
             .eq('id', user.id)
             .single();
 
-        // 6a. Force Onboarding if role not selected
-        if (profile && !profile.role_selected && pathname !== '/onboarding') {
-            const url = new URL('/onboarding', request.url);
-            return NextResponse.redirect(url);
+        // Admin Protection
+        if (pathname.startsWith('/admin') && profile?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/', request.url));
         }
 
-        // 6b. Admin Protection
-        if (pathname.startsWith(PROTECTED_ROUTES.admin)) {
-            if (profile?.role !== 'admin') {
-                const url = new URL('/', request.url);
-                return NextResponse.redirect(url);
-            }
-        }
-
-        // 6c. Teacher Protection
-        if (pathname.startsWith(PROTECTED_ROUTES.teacher)) {
-            if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
-                const url = new URL('/', request.url);
-                return NextResponse.redirect(url);
-            }
+        // Teacher Protection
+        if (pathname.startsWith('/teacher') &&
+            profile?.role !== 'teacher' &&
+            profile?.role !== 'admin') {
+            return NextResponse.redirect(new URL('/', request.url));
         }
     }
 
+    // Return response with updated cookies
     return supabaseResponse;
 }
 
@@ -172,9 +163,9 @@ export const config = {
          * Match all request paths except:
          * - _next/static (static files)
          * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - public folder
+         * - favicon.ico
+         * - static files
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
     ],
 };
