@@ -92,6 +92,7 @@ export async function middleware(request: NextRequest) {
                             path: '/',
                             secure: process.env.NODE_ENV === 'production',
                             sameSite: 'lax',
+                            httpOnly: false, // CRITICAL: Ensure client-side can read the session
                         })
                     );
                 },
