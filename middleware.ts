@@ -100,14 +100,15 @@ export async function middleware(request: NextRequest) {
 
     // 2. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
     // =================================================
-    if ((pathname === '/login' || pathname === '/signup') && user) {
-        const response = NextResponse.redirect(new URL('/', request.url));
-        // Copy cookies to redirect response to persist session
-        supabaseResponse.cookies.getAll().forEach(cookie => {
-            response.cookies.set(cookie.name, cookie.value);
-        });
-        return response;
-    }
+    // DISABLED: Allowing access to login/signup even if logged in, to prevent loops during debugging.
+    // if ((pathname === '/login' || pathname === '/signup') && user) {
+    //    const response = NextResponse.redirect(new URL('/', request.url));
+    //    // Copy cookies to redirect response to persist session
+    //    supabaseResponse.cookies.getAll().forEach(cookie => {
+    //        response.cookies.set(cookie.name, cookie.value);
+    //    });
+    //    return response;
+    // }
 
     // 3. CHECK IF PUBLIC ROUTE
     // =================================================
