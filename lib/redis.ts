@@ -32,16 +32,18 @@ const MAX_ROOM_CODE_ATTEMPTS = 10;
 
 /**
  * Validates Redis environment variables
- * @throws Error if required environment variables are missing
+ * @returns Config object or null if not configured
  */
-function validateRedisConfig(): { url: string; token: string } {
+function validateRedisConfig(): { url: string; token: string } | null {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     if (!url || !token) {
-        throw new Error(
-            'Redis configuration error: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables are required'
-        );
+        // Don't throw - just log warning and return null
+        if (typeof window === 'undefined') {
+            console.warn('⚠️ Redis not configured: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required for game features');
+        }
+        return null;
     }
 
     return { url, token };
@@ -49,17 +51,48 @@ function validateRedisConfig(): { url: string; token: string } {
 
 /**
  * Creates a Redis client instance with singleton pattern
+ * @returns Redis client or null if not configured
  */
-function createRedisClient(): Redis {
+function createRedisClient(): Redis | null {
     const config = validateRedisConfig();
+    if (!config) {
+        return null;
+    }
     return new Redis({
         url: config.url,
         token: config.token,
     });
 }
 
-/** Singleton Redis client instance */
-export const redis = createRedisClient();
+/** Singleton Redis client instance (may be null if not configured) */
+const _redisClient = createRedisClient();
+
+/**
+ * Check if Redis is available
+ */
+export function isRedisAvailable(): boolean {
+    return _redisClient !== null;
+}
+
+/**
+ * Get Redis client with null check
+ * Use this for safe access to Redis
+ * @returns Redis client
+ * @throws Error if Redis is not configured
+ */
+export function getRedis(): Redis {
+    if (!_redisClient) {
+        throw new Error('Redis is not configured. Game features are disabled.');
+    }
+    return _redisClient;
+}
+
+/** 
+ * Singleton Redis client instance
+ * WARNING: This may be null if UPSTASH env vars are not set.
+ * Use isRedisAvailable() to check, or getRedis() for safe access.
+ */
+export const redis = _redisClient as Redis;
 
 // ============================================================================
 // Redis Key Management
@@ -161,9 +194,14 @@ export function generateRoomCode(): string {
 export async function generateUniqueRoomCode(
     maxAttempts: number = MAX_ROOM_CODE_ATTEMPTS
 ): Promise<string> {
+    // If Redis is not available, just generate a random code
+    if (!redis) {
+        return generateRoomCode();
+    }
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const code = generateRoomCode();
-        const exists = await redis.exists(REDIS_KEYS.room(code));
+        const exists = await getRedis().exists(REDIS_KEYS.room(code));
 
         if (!exists) {
             return code;
@@ -221,7 +259,7 @@ export async function setTimerState(state: TimerState): Promise<RedisResult> {
         const serialized = serializeTimerState(state);
 
         // Use pipeline for atomic operations
-        const pipeline = redis.pipeline();
+        const pipeline = getRedis().pipeline();
         pipeline.hset(timerKey, serialized);
         pipeline.expire(timerKey, ROOM_TTL);
         pipeline.zadd(REDIS_KEYS.activeTimers, {
@@ -246,7 +284,7 @@ export async function setTimerState(state: TimerState): Promise<RedisResult> {
  */
 export async function getTimerState(code: string): Promise<TimerState | null> {
     try {
-        const data = await redis.hgetall(REDIS_KEYS.roomTimer(code));
+        const data = await getRedis().hgetall(REDIS_KEYS.roomTimer(code));
 
         if (!data || Object.keys(data).length === 0) {
             return null;
@@ -287,7 +325,7 @@ export async function getTimeRemaining(code: string): Promise<number> {
  */
 export async function clearTimerState(code: string): Promise<RedisResult> {
     try {
-        const pipeline = redis.pipeline();
+        const pipeline = getRedis().pipeline();
         pipeline.del(REDIS_KEYS.roomTimer(code));
         pipeline.zrem(REDIS_KEYS.activeTimers, code);
 
@@ -375,7 +413,7 @@ export async function resumeTimer(code: string): Promise<RedisResult> {
 export async function getExpiredTimers(): Promise<string[]> {
     try {
         const now = Date.now();
-        const expired = await redis.zrange(
+        const expired = await getRedis().zrange(
             REDIS_KEYS.activeTimers,
             0,
             now,
@@ -422,7 +460,7 @@ export const RedisUtils = {
     async deleteRoomData(code: string): Promise<RedisResult> {
         try {
             const keys = this.getRoomKeys(code);
-            const pipeline = redis.pipeline();
+            const pipeline = getRedis().pipeline();
 
             // Delete all room-specific keys
             for (const key of keys) {
@@ -451,7 +489,7 @@ export const RedisUtils = {
      */
     async roomExists(code: string): Promise<boolean> {
         try {
-            const exists = await redis.exists(REDIS_KEYS.room(code));
+            const exists = await getRedis().exists(REDIS_KEYS.room(code));
             return exists === 1;
         } catch {
             return false;
@@ -466,7 +504,7 @@ export const RedisUtils = {
     async extendRoomTTL(code: string, ttl: number = ROOM_TTL): Promise<RedisResult> {
         try {
             const keys = this.getRoomKeys(code);
-            const pipeline = redis.pipeline();
+            const pipeline = getRedis().pipeline();
 
             for (const key of keys) {
                 pipeline.expire(key, ttl);
@@ -493,7 +531,7 @@ export const RedisUtils = {
  */
 export async function checkRedisHealth(): Promise<boolean> {
     try {
-        const result = await redis.ping();
+        const result = await getRedis().ping();
         return result === 'PONG';
     } catch {
         return false;
@@ -512,7 +550,7 @@ export async function getRedisStatus(): Promise<{
     const startTime = Date.now();
 
     try {
-        await redis.ping();
+        await getRedis().ping();
         const latencyMs = Date.now() - startTime;
 
         return {
