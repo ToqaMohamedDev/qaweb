@@ -27,18 +27,24 @@ export function useHomeLessons() {
 
         try {
             console.log('[useLessons] Starting fetch...');
+            console.log('[useLessons] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
             // Get 3rd secondary stage
-            const { data: stage, error: stageError } = await supabase
+            const stagePromise = supabase
                 .from('educational_stages')
                 .select('id, name')
                 .eq('slug', DEFAULT_STAGE_SLUG)
                 .single();
 
+            // Log before await
+            console.log('[useLessons] Fetching stage...');
+
+            const { data: stage, error: stageError } = await stagePromise;
+
             console.log('[useLessons] Stage result:', { stage, error: stageError });
 
             if (stageError) {
-                console.error('[useLessons] Stage error:', stageError);
+                console.error('[useLessons] Stage error details:', JSON.stringify(stageError, null, 2));
             }
 
             if (!stage) {
