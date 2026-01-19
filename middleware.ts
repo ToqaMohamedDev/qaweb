@@ -57,18 +57,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 1. CHECK IF PUBLIC ROUTE - SKIP MIDDLEWARE COMPLETELY
-    // =================================================
-    const isPublicRoute = PUBLIC_ROUTES.has(pathname) ||
-        PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
-
-    // For public routes, just pass through without any Supabase calls
-    if (isPublicRoute) {
-        return NextResponse.next();
-    }
-
     // 1. INITIALIZE SUPABASE CLIENT & REFRESH SESSION
     // =================================================
+    // CRITICAL: We MUST initialize Supabase logic even for public routes
+    // to ensure session cookies are refreshed/maintained.
+
     let supabaseResponse = NextResponse.next({
         request,
     });
@@ -96,10 +89,9 @@ export async function middleware(request: NextRequest) {
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, {
                             ...options,
-                            // Ensure cookies work on Vercel
                             path: '/',
-                            sameSite: 'lax',
                             secure: process.env.NODE_ENV === 'production',
+                            sameSite: 'lax',
                         })
                     );
                 },
@@ -111,28 +103,33 @@ export async function middleware(request: NextRequest) {
     // This updates the auth cookies if they're expired
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 4. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
+    // 2. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
     // =================================================
     if ((pathname === '/login' || pathname === '/signup') && user) {
         const response = NextResponse.redirect(new URL('/', request.url));
-        // Copy cookies to redirect response
+        // Copy cookies to redirect response to persist session
         supabaseResponse.cookies.getAll().forEach(cookie => {
             response.cookies.set(cookie.name, cookie.value);
         });
         return response;
     }
 
-    // 5. PROTECTED ROUTES - REQUIRES LOGIN
+    // 3. CHECK IF PUBLIC ROUTE
     // =================================================
-    if (!user) {
+    const isPublicRoute = PUBLIC_ROUTES.has(pathname) ||
+        PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
+
+    // 4. PROTECTED ROUTES - REQUIRES LOGIN
+    // =================================================
+    if (!user && !isPublicRoute) {
         const redirectUrl = new URL('/login', request.url);
         redirectUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(redirectUrl);
     }
 
-    // 6. ROLE-BASED PROTECTION (only for admin/teacher routes)
+    // 5. ROLE-BASED PROTECTION (only for admin/teacher routes)
     // =================================================
-    if (pathname.startsWith('/admin') || pathname.startsWith('/teacher')) {
+    if (user && (pathname.startsWith('/admin') || pathname.startsWith('/teacher'))) {
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')

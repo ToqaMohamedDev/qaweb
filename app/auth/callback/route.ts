@@ -167,16 +167,18 @@ export async function GET(request: Request) {
             const response = NextResponse.redirect(redirectTo);
 
             // CRITICAL: Set all auth cookies on the response
-            for (const cookie of cookiesToSet) {
-                response.cookies.set(cookie.name, cookie.value, {
-                    path: cookie.options.path || '/',
-                    maxAge: cookie.options.maxAge,
+            cookiesToSet.forEach((cookie) => {
+                response.cookies.set({
+                    name: cookie.name,
+                    value: cookie.value,
                     domain: cookie.options.domain,
-                    secure: cookie.options.secure ?? process.env.NODE_ENV === 'production',
-                    httpOnly: cookie.options.httpOnly ?? false,
-                    sameSite: (cookie.options.sameSite as 'lax' | 'strict' | 'none') || 'lax',
+                    path: cookie.options.path ?? '/',
+                    maxAge: cookie.options.maxAge,
+                    httpOnly: cookie.options.httpOnly ?? false, // Ensure client-side access availability if needed
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax', // Lax is generally safest for OAuth redirects
                 });
-            }
+            });
 
             console.log('[AuthCallback] Redirecting to:', redirectTo, 'with', cookiesToSet.length, 'cookies');
             return response;
