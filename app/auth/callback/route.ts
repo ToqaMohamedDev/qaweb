@@ -6,6 +6,13 @@ export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     const next = searchParams.get('next') ?? '/';
+    const errorParam = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    // Handle errors returned directly from provider
+    if (errorParam) {
+        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorDescription || errorParam)}`);
+    }
 
     if (code) {
         const cookieStore = await cookies();
@@ -15,14 +22,17 @@ export async function GET(request: Request) {
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
-                    get(name: string) {
-                        return cookieStore.get(name)?.value;
+                    getAll() {
+                        return cookieStore.getAll();
                     },
-                    set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set({ name, value, ...options });
-                    },
-                    remove(name: string, options: CookieOptions) {
-                        cookieStore.delete({ name, ...options });
+                    setAll(cookiesToSet) {
+                        try {
+                            cookiesToSet.forEach(({ name, value, options }) =>
+                                cookieStore.set(name, value, options)
+                            );
+                        } catch {
+                            // Ignored
+                        }
                     },
                 },
             }
@@ -32,9 +42,12 @@ export async function GET(request: Request) {
 
         if (!error) {
             return NextResponse.redirect(`${origin}${next}`);
+        } else {
+            console.error('[Auth Callback] Exchange Error:', error);
+            // Return detailed error for debugging
+            return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}&code=exchange_failed`);
         }
     }
 
-    // Return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=auth_code_error`);
+    return NextResponse.redirect(`${origin}/login?error=no_code_provided`);
 }
