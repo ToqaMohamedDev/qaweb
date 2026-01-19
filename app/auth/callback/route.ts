@@ -54,7 +54,7 @@ export async function GET(request: Request) {
                     path: '/', // Force root path
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax', // Required for Google Auth redirection flow
-                    httpOnly: cookie.httpOnly,
+                    httpOnly: false,
                     maxAge: 60 * 60 * 24 * 7 // 1 week (or keep original if available, but cookieStore doesn't always expose original maxAge)
                 });
             });
