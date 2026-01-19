@@ -27,7 +27,22 @@ export function useHomeLessons() {
 
         try {
             console.log('[useLessons] Starting fetch...');
-            console.log('[useLessons] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+
+            // Check client-side auth state
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            console.log('[useLessons] Client session:', {
+                hasSession: !!session,
+                userId: session?.user?.id,
+                error: sessionError?.message
+            });
+
+            // Also try getUser
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            console.log('[useLessons] Client user:', {
+                hasUser: !!user,
+                userId: user?.id,
+                error: userError?.message
+            });
 
             // Get 3rd secondary stage
             const stagePromise = supabase
