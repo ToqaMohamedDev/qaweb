@@ -7,6 +7,12 @@
 
 import { getSupabaseClient, supabase } from './supabase-client';
 
+// Debug: Log Supabase configuration
+if (typeof window !== 'undefined') {
+    console.log('[Supabase] URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET ✓' : 'NOT SET ✗');
+    console.log('[Supabase] KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET ✓' : 'NOT SET ✗');
+}
+
 // Re-export core client functions
 export { getSupabaseClient, supabase };
 export { getSupabaseClient as createClient };
