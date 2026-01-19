@@ -28,33 +28,14 @@ export function useHomeLessons() {
         try {
             console.log('[useLessons] Starting fetch...');
 
-            // Check client-side auth state
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            console.log('[useLessons] Client session:', {
-                hasSession: !!session,
-                userId: session?.user?.id,
-                error: sessionError?.message
-            });
+            // Get 3rd secondary stage directly
+            console.log('[useLessons] Querying educational_stages...');
 
-            // Also try getUser
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            console.log('[useLessons] Client user:', {
-                hasUser: !!user,
-                userId: user?.id,
-                error: userError?.message
-            });
-
-            // Get 3rd secondary stage
-            const stagePromise = supabase
+            const { data: stage, error: stageError } = await supabase
                 .from('educational_stages')
                 .select('id, name')
                 .eq('slug', DEFAULT_STAGE_SLUG)
                 .single();
-
-            // Log before await
-            console.log('[useLessons] Fetching stage...');
-
-            const { data: stage, error: stageError } = await stagePromise;
 
             console.log('[useLessons] Stage result:', { stage, error: stageError });
 
