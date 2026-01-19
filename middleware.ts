@@ -57,6 +57,16 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
+    // 1. CHECK IF PUBLIC ROUTE - SKIP MIDDLEWARE COMPLETELY
+    // =================================================
+    const isPublicRoute = PUBLIC_ROUTES.has(pathname) ||
+        PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
+
+    // For public routes, just pass through without any Supabase calls
+    if (isPublicRoute) {
+        return NextResponse.next();
+    }
+
     // 1. INITIALIZE SUPABASE CLIENT & REFRESH SESSION
     // =================================================
     let supabaseResponse = NextResponse.next({
@@ -100,17 +110,6 @@ export async function middleware(request: NextRequest) {
     // CRITICAL: Always call getUser() to refresh session
     // This updates the auth cookies if they're expired
     const { data: { user } } = await supabase.auth.getUser();
-
-    // 2. CHECK ROUTE TYPE
-    // =================================================
-    const isPublicRoute = PUBLIC_ROUTES.has(pathname) ||
-        PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix));
-
-    // 3. PUBLIC ROUTES - ALWAYS RETURN WITH REFRESHED COOKIES
-    // =================================================
-    if (isPublicRoute) {
-        return supabaseResponse;
-    }
 
     // 4. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
     // =================================================
