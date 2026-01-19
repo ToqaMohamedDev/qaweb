@@ -3,7 +3,13 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url);
+    // CRITICAL: Get the correct origin from headers to handle Vercel's proxy
+    // request.url can sometimes be internal (localhost) which breaks cookie setting domain
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const origin = `${protocol}://${host}`;
+
+    const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const next = searchParams.get('next') ?? '/';
     const errorParam = searchParams.get('error');
