@@ -44,34 +44,33 @@ async function trackUserDevice(supabase: any, userId: string, request: Request) 
             p_country: null,
             p_city: null,
         };
-        console.log('[AuthCallback] RPC params:', JSON.stringify(rpcParams));
 
         // Call the upsert function
         const { data, error } = await supabase.rpc('upsert_user_device', rpcParams);
 
         if (error) {
             console.log('[AuthCallback] RPC ERROR:', JSON.stringify(error));
-            logger.error('Failed to track device - RPC error', { context: 'AuthCallback', data: error });
         } else {
             console.log('[AuthCallback] RPC SUCCESS! Device ID:', data);
         }
     } catch (error) {
         console.log('[AuthCallback] EXCEPTION:', error);
-        logger.error('Failed to track device', { context: 'AuthCallback', data: error });
         // Don't fail the login if device tracking fails
     }
 }
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url);
-    const code = searchParams.get('code');
-    // إذا كان هناك معلم "next" للتوجيه، استخدمه، وإلا اذهب للصفحة الرئيسية
-    const next = searchParams.get('next') ?? '/';
+    const requestUrl = new URL(request.url);
+    const code = requestUrl.searchParams.get('code');
+    const next = requestUrl.searchParams.get('next') ?? '/';
+    const origin = requestUrl.origin;
 
     if (code) {
         const cookieStore = await cookies();
 
-        // إنشاء Server Client يمكنه التعامل مع Cookies
+        // Track cookies that need to be set
+        const cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }> = [];
+
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -81,85 +80,108 @@ export async function GET(request: Request) {
                         return cookieStore.get(name)?.value;
                     },
                     set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set({ name, value, ...options });
+                        // Store cookies to set them on the response later
+                        cookiesToSet.push({ name, value, options });
+                        // Also set in cookieStore for immediate use
+                        try {
+                            cookieStore.set({ name, value, ...options });
+                        } catch (e) {
+                            // Ignore errors during headers already sent
+                        }
                     },
                     remove(name: string, options: CookieOptions) {
-                        cookieStore.delete({ name, ...options });
+                        cookiesToSet.push({ name, value: '', options: { ...options, maxAge: 0 } });
+                        try {
+                            cookieStore.delete({ name, ...options });
+                        } catch (e) {
+                            // Ignore errors
+                        }
                     },
                 },
             }
         );
 
-        // تبادل الكود بالجلسة
         console.log('[AuthCallback] Exchanging code for session...');
         const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+
         console.log('[AuthCallback] Exchange result:', {
             hasError: !!error,
             hasUser: !!data?.user,
             userId: data?.user?.id,
-            sessionExpiry: data?.session?.expires_at
+            cookiesToSet: cookiesToSet.length
         });
+
         if (error) {
             console.error('[AuthCallback] Exchange error:', error.message);
+            return NextResponse.redirect(`${origin}/login?error=auth_code_error`);
         }
 
-        if (!error && data?.user) {
-            // Create an admin client to fetch profile securely, bypassing RLS
-            // We use the direct supabase-js client here for admin privileges
-            const { createClient: createAdminClient } = require('@supabase/supabase-js');
-            const supabaseAdmin = createAdminClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY!,
-                {
-                    auth: {
-                        autoRefreshToken: false,
-                        persistSession: false
+        if (data?.user) {
+            let redirectTo = `${origin}${next}`;
+
+            // Check if new user needs onboarding
+            try {
+                const { createClient: createAdminClient } = require('@supabase/supabase-js');
+                const supabaseAdmin = createAdminClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+                    {
+                        auth: {
+                            autoRefreshToken: false,
+                            persistSession: false
+                        }
                     }
+                );
+
+                const { data: profile } = await supabaseAdmin
+                    .from('profiles')
+                    .select('id, role_selected')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (!profile) {
+                    // Create profile for new user
+                    await supabaseAdmin.from('profiles').insert({
+                        id: data.user.id,
+                        email: data.user.email,
+                        name: data.user.user_metadata.full_name || data.user.user_metadata.name || 'مستخدم جديد',
+                        avatar_url: data.user.user_metadata.avatar_url || data.user.user_metadata.picture,
+                        role: 'student',
+                        role_selected: false,
+                        is_teacher_approved: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    });
+                    redirectTo = `${origin}/onboarding`;
+                } else if (!profile.role_selected) {
+                    redirectTo = `${origin}/onboarding`;
                 }
-            );
 
-            // ✅ Check profile using Admin client
-            const { data: profile } = await supabaseAdmin
-                .from('profiles')
-                .select('id, role_selected')
-                .eq('id', data.user.id)
-                .single();
+                // Track device
+                await trackUserDevice(supabase, data.user.id, request);
+            } catch (profileError) {
+                console.error('[AuthCallback] Profile error:', profileError);
+            }
 
-            let isNewUser = false;
+            // Create redirect response and manually set cookies
+            const response = NextResponse.redirect(redirectTo);
 
-            if (!profile) {
-                // إذا لم يوجد ملف شخصي، قم بإنشائه الآن (مستخدم جديد بجوجل)
-                isNewUser = true;
-                await supabase.from('profiles').insert({
-                    id: data.user.id,
-                    email: data.user.email,
-                    name: data.user.user_metadata.full_name || data.user.user_metadata.name || 'مستخدم جديد',
-                    avatar_url: data.user.user_metadata.avatar_url || data.user.user_metadata.picture,
-                    role: 'student', // دور مؤقت سيتم تغييره في onboarding
-                    role_selected: false, // لم يختر الدور بعد
-                    is_teacher_approved: false,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
+            // CRITICAL: Set all auth cookies on the response
+            for (const cookie of cookiesToSet) {
+                response.cookies.set(cookie.name, cookie.value, {
+                    path: cookie.options.path || '/',
+                    maxAge: cookie.options.maxAge,
+                    domain: cookie.options.domain,
+                    secure: cookie.options.secure ?? process.env.NODE_ENV === 'production',
+                    httpOnly: cookie.options.httpOnly ?? false,
+                    sameSite: (cookie.options.sameSite as 'lax' | 'strict' | 'none') || 'lax',
                 });
-            } else if (!profile.role_selected) {
-                // المستخدم موجود لكن لم يختر دوره بعد
-                isNewUser = true;
             }
 
-            // 📱 تتبع الجهاز
-            await trackUserDevice(supabase, data.user.id, request);
-
-            // توجيه المستخدمين الجدد لصفحة اختيار الدور
-            if (isNewUser) {
-                return NextResponse.redirect(`${origin}/onboarding`);
-            }
-
-            // الجلسة محفوظة الآن! يمكننا تحويل المستخدم
-            return NextResponse.redirect(`${origin}${next}`);
+            console.log('[AuthCallback] Redirecting to:', redirectTo, 'with', cookiesToSet.length, 'cookies');
+            return response;
         }
     }
 
-    // في حال حدوث خطأ، أعد المستخدم لصفحة تسجيل الدخول مع رسالة خطأ
     return NextResponse.redirect(`${origin}/login?error=auth_code_error`);
 }
-
