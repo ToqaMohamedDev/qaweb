@@ -26,14 +26,23 @@ export function useHomeLessons() {
         setStatus('loading');
 
         try {
+            console.log('[useLessons] Starting fetch...');
+
             // Get 3rd secondary stage
-            const { data: stage } = await supabase
+            const { data: stage, error: stageError } = await supabase
                 .from('educational_stages')
                 .select('id, name')
                 .eq('slug', DEFAULT_STAGE_SLUG)
                 .single();
 
+            console.log('[useLessons] Stage result:', { stage, error: stageError });
+
+            if (stageError) {
+                console.error('[useLessons] Stage error:', stageError);
+            }
+
             if (!stage) {
+                console.warn('[useLessons] No stage found for slug:', DEFAULT_STAGE_SLUG);
                 setStatus('success');
                 return;
             }
