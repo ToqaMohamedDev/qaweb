@@ -70,7 +70,6 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = await cookies();
-        const isProduction = process.env.NODE_ENV === 'production';
 
         // إنشاء Server Client يمكنه التعامل مع Cookies
         const supabase = createServerClient(
@@ -82,24 +81,10 @@ export async function GET(request: Request) {
                         return cookieStore.get(name)?.value;
                     },
                     set(name: string, value: string, options: CookieOptions) {
-                        // Ensure proper cookie settings for production
-                        const cookieOptions = {
-                            name,
-                            value,
-                            ...options,
-                            path: '/',
-                            sameSite: 'lax' as const,
-                            secure: isProduction,
-                            httpOnly: true,
-                        };
-                        cookieStore.set(cookieOptions);
+                        cookieStore.set({ name, value, ...options });
                     },
                     remove(name: string, options: CookieOptions) {
-                        cookieStore.delete({
-                            name,
-                            ...options,
-                            path: '/',
-                        });
+                        cookieStore.delete({ name, ...options });
                     },
                 },
             }
