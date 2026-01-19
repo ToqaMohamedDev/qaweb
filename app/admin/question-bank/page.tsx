@@ -22,29 +22,51 @@ import {
     MessageSquare,
     List,
 } from "lucide-react";
-import { useQuestions, useDeleteQuestion, useDeleteQuestions, useStages, useSubjects, useLessons } from "@/lib/queries";
+import { useQuestionBanks, useDeleteQuestionBank, useStages, useSubjects, useLessons } from "@/lib/queries";
 import { LoadingSpinner, NoQuestionsFound } from "@/components/shared";
 import { DeleteConfirmModal } from "@/components/admin";
 import { useUIStore } from "@/lib/stores";
-import { LessonQuestion } from "@/lib/types";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES & HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
-interface ExtendedQuestion extends Omit<LessonQuestion, 'text' | 'options' | 'media' | 'explanation' | 'section_title'> {
-    text: { ar: string; en: string } | null;
-    options: any[] | null;
-    media: { content: any } | null;
-    explanation: { ar: string } | null;
-    section_title?: { ar: string } | null;
-    group_id?: string | null;
+interface QuestionItem {
+    id: string;
+    type: string;
+    section_title?: { ar: string; en: string };
+    text: { ar: string; en: string };
+    options: any[];
+    correct_option_id?: string;
+    difficulty: string;
+    points: number;
+    order_index: number;
+    hint?: { ar: string; en: string };
+    explanation?: { ar: string; en: string };
+    is_active: boolean;
+    metadata?: any;
 }
 
-interface QuestionGroup {
-    groupId: string;
-    sectionTitle: string;
-    questions: ExtendedQuestion[];
+interface QuestionBankData {
+    id: string;
+    lesson_id: string;
+    stage_id: string | null;
+    subject_id: string | null;
+    title: { ar: string; en: string } | null;
+    description: { ar: string; en: string } | null;
+    content_type: string | null;
+    content_data: any | null;
+    questions: QuestionItem[] | null;
+    total_questions: number | null;
+    total_points: number | null;
+    created_by: string | null;
+    is_active: boolean | null;
+    created_at: string | null;
+    updated_at: string | null;
+    // Relations
+    lessons?: { id: string; title: string } | null;
+    educational_stages?: { id: string; name: string; slug: string } | null;
+    subjects?: { id: string; name: string; slug: string } | null;
 }
 
 const difficultyConfig = {
@@ -55,6 +77,7 @@ const difficultyConfig = {
 
 const typeLabels: Record<string, string> = {
     'mcq': 'اختيار من متعدد',
+    'truefalse': 'صح/خطأ',
     'true_false': 'صح/خطأ',
     'essay': 'مقالي',
     'fill_blank': 'ملء فراغات',
@@ -71,130 +94,100 @@ export default function QuestionBankPage() {
     // ─── UI State ───
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilters, setShowFilters] = useState(false);
-    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; type: 'question' | 'group'; id: string | null; name: string; count?: number }>({ isOpen: false, type: 'question', id: null, name: "", count: 0 });
+    const [expandedBanks, setExpandedBanks] = useState<Set<string>>(new Set());
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; type: 'bank' | 'question'; bankId: string | null; questionId: string | null; name: string; count?: number }>({
+        isOpen: false, type: 'bank', bankId: null, questionId: null, name: "", count: 0
+    });
     const { addToast } = useUIStore();
 
     // ─── Filter State ───
     const [selectedStage, setSelectedStage] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
     const [selectedLesson, setSelectedLesson] = useState('');
-    const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>([]);
 
     // ─── Queries ───
     const { data: stages = [] } = useStages();
     const { data: subjects = [] } = useSubjects();
     const { data: lessons = [] } = useLessons({ stage_id: selectedStage, subject_id: selectedSubject });
 
-    const questionsResult = useQuestions({
+    const questionBanksResult = useQuestionBanks({
         stage_id: selectedStage || undefined,
         subject_id: selectedSubject || undefined,
         lesson_id: selectedLesson || undefined,
-        difficulty: selectedDifficulty.length === 1 ? selectedDifficulty[0] as any : undefined,
-        search: searchQuery || undefined,
     });
-    const questions: ExtendedQuestion[] = (questionsResult.data || []) as any;
-    const isLoading = questionsResult.isLoading;
-    const refetch = questionsResult.refetch;
+    const questionBanks: QuestionBankData[] = (questionBanksResult.data || []) as any;
+    const isLoading = questionBanksResult.isLoading;
+    const refetch = questionBanksResult.refetch;
 
-    const deleteQuestionMutation = useDeleteQuestion();
-    const deleteQuestionsMutation = useDeleteQuestions();
+    const deleteBankMutation = useDeleteQuestionBank();
+    const isDeleting = deleteBankMutation.isPending;
 
-    const isDeleting = deleteQuestionMutation.isPending || deleteQuestionsMutation.isPending;
+    // ─── Stats ───
+    const stats = useMemo(() => {
+        let totalQuestions = 0;
+        let easy = 0, medium = 0, hard = 0;
 
-    // ─── Grouping Logic ───
-    const groupedQuestions = useMemo(() => {
-        const groups: QuestionGroup[] = [];
-        const groupMap = new Map<string, ExtendedQuestion[]>();
-
-        let filteredQuestions = questions;
-        if (selectedDifficulty.length > 1) {
-            filteredQuestions = questions.filter(q => q.difficulty && selectedDifficulty.includes(q.difficulty));
-        }
-
-        filteredQuestions.forEach(q => {
-            const titleAr = q.section_title?.ar || '';
-            const groupKey = q.group_id || `${titleAr || 'بدون عنوان'}_${q.created_at?.split('T')[0] || 'unknown'}`;
-            if (!groupMap.has(groupKey)) {
-                groupMap.set(groupKey, []);
-            }
-            groupMap.get(groupKey)!.push(q);
-        });
-
-        groupMap.forEach((qs, groupKey) => {
-            const sectionTitle = qs[0]?.section_title?.ar || 'أسئلة بدون عنوان';
-            groups.push({
-                groupId: groupKey,
-                sectionTitle,
-                questions: qs.sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+        questionBanks.forEach(bank => {
+            const questions = bank.questions || [];
+            totalQuestions += questions.length;
+            questions.forEach(q => {
+                if (q.difficulty === 'easy') easy++;
+                else if (q.difficulty === 'medium') medium++;
+                else if (q.difficulty === 'hard') hard++;
             });
         });
 
-        return groups.sort((a, b) => {
-            const dateA = a.questions[0]?.created_at || '';
-            const dateB = b.questions[0]?.created_at || '';
-            return dateB.localeCompare(dateA);
-        });
-    }, [questions, selectedDifficulty]);
-
-    // ─── Stats ───
-    const stats = useMemo(() => ({
-        total: questions.length,
-        groups: groupedQuestions.length,
-        easy: questions.filter(q => q.difficulty === 'easy').length,
-        medium: questions.filter(q => q.difficulty === 'medium').length,
-        hard: questions.filter(q => q.difficulty === 'hard').length,
-    }), [questions, groupedQuestions]);
+        return {
+            totalBanks: questionBanks.length,
+            totalQuestions,
+            easy,
+            medium,
+            hard,
+        };
+    }, [questionBanks]);
 
     // ─── Handlers ───
-    const openDeleteQuestionModal = (question: ExtendedQuestion) => {
-        const textAr = question.text?.ar || '';
-        const textEn = question.text?.en || '';
-        setDeleteModal({ isOpen: true, type: 'question', id: question.id, name: textAr || textEn || 'هذا السؤال' });
-    };
-
-    const openDeleteGroupModal = (groupId: string) => {
-        const group = groupedQuestions.find(g => g.groupId === groupId);
-        setDeleteModal({ isOpen: true, type: 'group', id: groupId, name: group?.sectionTitle || 'هذه المجموعة', count: group?.questions.length || 0 });
+    const openDeleteBankModal = (bank: QuestionBankData) => {
+        const title = (bank.title as any)?.ar || 'هذا البنك';
+        setDeleteModal({
+            isOpen: true,
+            type: 'bank',
+            bankId: bank.id,
+            questionId: null,
+            name: title,
+            count: bank.questions?.length || 0
+        });
     };
 
     const confirmDelete = async () => {
-        if (!deleteModal.id) return;
-
-        try {
-            if (deleteModal.type === 'question') {
-                await deleteQuestionMutation.mutateAsync(deleteModal.id);
-            } else {
-                const group = groupedQuestions.find(g => g.groupId === deleteModal.id);
-                if (group) {
-                    const ids = group.questions.map(q => q.id);
-                    await deleteQuestionsMutation.mutateAsync(ids);
-                }
+        if (deleteModal.type === 'bank' && deleteModal.bankId) {
+            try {
+                await deleteBankMutation.mutateAsync(deleteModal.bankId);
+                setDeleteModal({ isOpen: false, type: 'bank', bankId: null, questionId: null, name: "", count: 0 });
+                addToast({ type: 'success', message: 'تم حذف بنك الأسئلة بنجاح' });
+                refetch();
+            } catch (error) {
+                addToast({ type: 'error', message: 'حدث خطأ أثناء الحذف' });
             }
-            setDeleteModal({ isOpen: false, type: 'question', id: null, name: "", count: 0 });
-            addToast({ type: 'success', message: 'تم الحذف بنجاح' });
-        } catch (error) {
-            addToast({ type: 'error', message: 'حدث خطأ أثناء الحذف' });
         }
     };
 
-    const toggleGroup = (groupId: string) => {
-        const updated = new Set(expandedGroups);
-        if (updated.has(groupId)) {
-            updated.delete(groupId);
+    const toggleBank = (bankId: string) => {
+        const updated = new Set(expandedBanks);
+        if (updated.has(bankId)) {
+            updated.delete(bankId);
         } else {
-            updated.add(groupId);
+            updated.add(bankId);
         }
-        setExpandedGroups(updated);
+        setExpandedBanks(updated);
     };
 
-    const expandAll = () => setExpandedGroups(new Set(groupedQuestions.map(g => g.groupId)));
-    const collapseAll = () => setExpandedGroups(new Set());
+    const expandAll = () => setExpandedBanks(new Set(questionBanks.map(b => b.id)));
+    const collapseAll = () => setExpandedBanks(new Set());
 
     // ─── Render ───
-
-    const getQuestionText = (q: ExtendedQuestion) => q.text?.ar || q.text?.en || 'بدون نص';
-    const getMediaContent = (q: ExtendedQuestion) => q.media?.content;
+    const getBankTitle = (bank: QuestionBankData) => (bank.title as any)?.ar || 'بنك أسئلة';
+    const getQuestionText = (q: QuestionItem) => q.text?.ar || q.text?.en || 'بدون نص';
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 pb-20" dir="rtl">
@@ -216,7 +209,7 @@ export default function QuestionBankPage() {
                         <div>
                             <h1 className="text-2xl font-bold">بنك الأسئلة</h1>
                             <p className="text-white/70 text-sm">
-                                {stats.total} سؤال في {stats.groups} مجموعة
+                                {stats.totalQuestions} سؤال في {stats.totalBanks} بنك
                             </p>
                         </div>
                     </div>
@@ -225,7 +218,7 @@ export default function QuestionBankPage() {
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm transition-all shadow-lg"
                     >
                         <Plus className="h-5 w-5" />
-                        <span>إضافة أسئلة</span>
+                        <span>إضافة بنك أسئلة</span>
                     </Link>
                 </div>
             </motion.div>
@@ -238,7 +231,7 @@ export default function QuestionBankPage() {
                             <FileQuestion className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalQuestions}</p>
                             <p className="text-xs text-gray-500">إجمالي الأسئلة</p>
                         </div>
                     </div>
@@ -249,8 +242,8 @@ export default function QuestionBankPage() {
                             <List className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.groups}</p>
-                            <p className="text-xs text-gray-500">مجموعات</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalBanks}</p>
+                            <p className="text-xs text-gray-500">بنوك الأسئلة</p>
                         </div>
                     </div>
                 </div>
@@ -278,7 +271,7 @@ export default function QuestionBankPage() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="ابحث في الأسئلة أو عناوين الأقسام..."
+                            placeholder="ابحث في بنوك الأسئلة..."
                             className="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 dark:border-[#2e2e3a] bg-gray-50 dark:bg-[#252530] focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                         />
                     </div>
@@ -321,7 +314,7 @@ export default function QuestionBankPage() {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100 dark:border-gray-800"
+                            className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-gray-800"
                         >
                             {/* Stage */}
                             <div>
@@ -372,97 +365,89 @@ export default function QuestionBankPage() {
                                     {lessons.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
                                 </select>
                             </div>
-
-                            {/* Difficulty */}
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                                    <BarChart3 className="h-3 w-3 inline ml-1" />
-                                    الصعوبة
-                                </label>
-                                <div className="flex gap-2">
-                                    {(['easy', 'medium', 'hard'] as const).map(diff => (
-                                        <button
-                                            key={diff}
-                                            onClick={() => {
-                                                setSelectedDifficulty(prev =>
-                                                    prev.includes(diff)
-                                                        ? prev.filter(d => d !== diff)
-                                                        : [...prev, diff]
-                                                );
-                                            }}
-                                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedDifficulty.includes(diff)
-                                                ? `${difficultyConfig[diff].bg} ${difficultyConfig[diff].color}`
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-                                                }`}
-                                        >
-                                            {difficultyConfig[diff].label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
-            {/* Questions List */}
+            {/* Question Banks List */}
             <div className="space-y-4">
                 {isLoading ? (
                     <div className="flex justify-center py-20">
-                        <LoadingSpinner size="lg" text="جاري تحميل الأسئلة..." />
+                        <LoadingSpinner size="lg" text="جاري تحميل بنوك الأسئلة..." />
                     </div>
-                ) : questions.length === 0 ? (
+                ) : questionBanks.length === 0 ? (
                     <NoQuestionsFound onCreateQuestion={() => window.location.href = '/admin/question-bank/create'} />
                 ) : (
-                    groupedQuestions.map((group, groupIndex) => (
+                    questionBanks.map((bank, bankIndex) => (
                         <motion.div
-                            key={group.groupId}
+                            key={bank.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: groupIndex * 0.05 }}
+                            transition={{ delay: bankIndex * 0.05 }}
                             className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200 dark:border-[#2e2e3a] overflow-hidden hover:border-primary-300 dark:hover:border-primary-700 transition-all"
                         >
-                            {/* Group Header */}
+                            {/* Bank Header */}
                             <div
                                 className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#252530] border-b border-gray-200 dark:border-[#2e2e3a] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
-                                onClick={() => toggleGroup(group.groupId)}
+                                onClick={() => toggleBank(bank.id)}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-primary-600 rounded-lg">
-                                        <Layers className="h-5 w-5 text-white" />
+                                        <Database className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                            {group.sectionTitle}
+                                            {getBankTitle(bank)}
                                         </h3>
-                                        <p className="text-sm text-gray-500">
-                                            {group.questions.length} سؤال
-                                            {getMediaContent(group.questions[0])?.type === 'reading' && (
-                                                <span className="mr-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs">📖 نص قراءة</span>
+                                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-1">
+                                            <span>{bank.total_questions || 0} سؤال</span>
+                                            <span>•</span>
+                                            <span>{bank.total_points || 0} نقطة</span>
+                                            {bank.educational_stages?.name && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs">
+                                                        🎓 {bank.educational_stages.name}
+                                                    </span>
+                                                </>
                                             )}
-                                            {getMediaContent(group.questions[0])?.type === 'poetry' && (
-                                                <span className="mr-2 px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">🎭 شعر</span>
+                                            {bank.subjects?.name && (
+                                                <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs">
+                                                    📚 {bank.subjects.name}
+                                                </span>
                                             )}
-                                        </p>
+                                            {bank.lessons?.title && (
+                                                <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
+                                                    📖 {bank.lessons.title}
+                                                </span>
+                                            )}
+                                            {bank.content_type === 'reading' && (
+                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs">📖 نص قراءة</span>
+                                            )}
+                                            {bank.content_type === 'poetry' && (
+                                                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">🎭 شعر</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Link
-                                        href={`/admin/question-bank/edit-group?groupId=${encodeURIComponent(group.groupId)}&lesson=${group.questions[0]?.lesson_id || ''}`}
+                                        href={`/admin/question-bank/edit/${bank.id}`}
                                         onClick={(e) => e.stopPropagation()}
                                         className="p-2 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg text-primary-600"
-                                        title="تعديل المجموعة"
+                                        title="تعديل البنك"
                                     >
                                         <Edit3 className="h-4 w-4" />
                                     </Link>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); openDeleteGroupModal(group.groupId); }}
+                                        onClick={(e) => { e.stopPropagation(); openDeleteBankModal(bank); }}
                                         className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-500"
-                                        title="حذف المجموعة"
+                                        title="حذف البنك"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
-                                    {expandedGroups.has(group.groupId) ? (
+                                    {expandedBanks.has(bank.id) ? (
                                         <ChevronUp className="h-5 w-5 text-gray-400" />
                                     ) : (
                                         <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -470,32 +455,32 @@ export default function QuestionBankPage() {
                                 </div>
                             </div>
 
-                            {/* Reading/Poetry Content Display */}
-                            {expandedGroups.has(group.groupId) && getMediaContent(group.questions[0]) && (
+                            {/* Content Data Display (Reading/Poetry) */}
+                            {expandedBanks.has(bank.id) && bank.content_data && (
                                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900/30 dark:to-gray-900/30">
-                                    {getMediaContent(group.questions[0]).type === 'reading' && (
+                                    {bank.content_type === 'reading' && (
                                         <div className="space-y-2">
-                                            {getMediaContent(group.questions[0]).title && (
+                                            {bank.content_data.title && (
                                                 <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                                                     <BookOpen className="h-5 w-5" />
-                                                    {getMediaContent(group.questions[0]).title}
+                                                    {bank.content_data.title}
                                                 </h4>
                                             )}
                                             <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-emerald-200 dark:border-emerald-800 text-gray-700 dark:text-gray-300 leading-relaxed">
-                                                {getMediaContent(group.questions[0]).text}
+                                                {bank.content_data.text}
                                             </div>
                                         </div>
                                     )}
-                                    {getMediaContent(group.questions[0]).type === 'poetry' && (
+                                    {bank.content_type === 'poetry' && (
                                         <div className="space-y-2">
-                                            {getMediaContent(group.questions[0]).title && (
+                                            {bank.content_data.title && (
                                                 <h4 className="text-lg font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                                                    🎭 {getMediaContent(group.questions[0]).title}
+                                                    🎭 {bank.content_data.title}
                                                 </h4>
                                             )}
                                             <div className="p-4 bg-amber-50/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
                                                 <div className="space-y-2 text-center">
-                                                    {getMediaContent(group.questions[0]).verses?.map((verse: any, vIndex: number) => (
+                                                    {bank.content_data.verses?.map((verse: any, vIndex: number) => (
                                                         <div key={vIndex} className="flex items-center justify-center gap-8 text-gray-800 dark:text-gray-200">
                                                             <span className="text-lg">{verse.first || verse.firstLine}</span>
                                                             <span className="text-amber-400">⋯</span>
@@ -509,16 +494,16 @@ export default function QuestionBankPage() {
                                 </div>
                             )}
 
-                            {/* Group Questions */}
+                            {/* Bank Questions */}
                             <AnimatePresence>
-                                {expandedGroups.has(group.groupId) && (
+                                {expandedBanks.has(bank.id) && (
                                     <motion.div
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: 'auto', opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
                                         className="divide-y divide-gray-100 dark:divide-gray-800"
                                     >
-                                        {group.questions.map((question, qIndex) => (
+                                        {(bank.questions || []).map((question, qIndex) => (
                                             <div
                                                 key={question.id}
                                                 className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -533,7 +518,7 @@ export default function QuestionBankPage() {
                                                             {getQuestionText(question)}
                                                         </p>
 
-                                                        {question.type === 'mcq' && question.options && (
+                                                        {(question.type === 'mcq' || question.type === 'truefalse') && question.options && (
                                                             <div className="grid grid-cols-2 gap-2 mb-3">
                                                                 {question.options.map((opt: any, i: number) => (
                                                                     <div
@@ -544,7 +529,7 @@ export default function QuestionBankPage() {
                                                                             }`}
                                                                     >
                                                                         {opt.isCorrect && <CheckCircle2 className="h-4 w-4 flex-shrink-0" />}
-                                                                        <span>{opt.text}</span>
+                                                                        <span>{opt.text || opt.textAr}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -561,33 +546,16 @@ export default function QuestionBankPage() {
                                                         )}
 
                                                         <div className="flex items-center gap-3 mt-3">
-                                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard'].bg} ${difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard'].color}`}>
-                                                                {difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard'].label}
+                                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard']?.bg || 'bg-gray-100'} ${difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard']?.color || 'text-gray-600'}`}>
+                                                                {difficultyConfig[question.difficulty as 'easy' | 'medium' | 'hard']?.label || question.difficulty}
                                                             </span>
                                                             <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600">
-                                                                {typeLabels[question.type || 'mcq'] || question.type}
+                                                                {typeLabels[question.type] || question.type}
                                                             </span>
                                                             <span className="text-xs text-gray-500">
                                                                 {question.points} نقطة
                                                             </span>
                                                         </div>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                                        <Link
-                                                            href={`/admin/question-bank/${question.id}/edit`}
-                                                            className="p-2 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg text-primary-600"
-                                                            title="تعديل"
-                                                        >
-                                                            <Edit3 className="h-4 w-4" />
-                                                        </Link>
-                                                        <button
-                                                            onClick={() => openDeleteQuestionModal(question)}
-                                                            className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-500"
-                                                            title="حذف"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -602,15 +570,11 @@ export default function QuestionBankPage() {
 
             <DeleteConfirmModal
                 isOpen={deleteModal.isOpen}
-                onCancel={() => setDeleteModal({ isOpen: false, type: 'question', id: null, name: "", count: 0 })}
+                onCancel={() => setDeleteModal({ isOpen: false, type: 'bank', bankId: null, questionId: null, name: "", count: 0 })}
                 onConfirm={confirmDelete}
-                title={deleteModal.type === 'question' ? "حذف السؤال" : "حذف المجموعة"}
+                title="حذف بنك الأسئلة"
                 itemName={deleteModal.name}
-                description={
-                    deleteModal.type === 'group'
-                        ? `سيتم حذف ${deleteModal.count} سؤال تابع للمجموعة. هذا الإجراء لا يمكن التراجع عنه.`
-                        : "هذا الإجراء لا يمكن التراجع عنه"
-                }
+                description={`سيتم حذف البنك وجميع الأسئلة (${deleteModal.count} سؤال). هذا الإجراء لا يمكن التراجع عنه.`}
                 isDeleting={isDeleting}
             />
         </div>

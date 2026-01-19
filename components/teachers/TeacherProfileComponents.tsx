@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import {
     FileText, Clock, Play, Bell, BellOff, Share2,
     UserPlus, UserCheck, ChevronDown, CheckCircle2,
-    BookOpen, GraduationCap, Globe, Phone
+    BookOpen, GraduationCap, Globe, Phone, Sparkles, ClipboardList
 } from 'lucide-react';
 import { Avatar } from '@/components/common';
 import { formatCount, formatRelativeDate } from '@/lib/utils/formatters';
@@ -102,68 +102,78 @@ export interface TeacherExamCardProps {
     index: number;
 }
 
-export function TeacherExamCard({ exam, teacher, index }: TeacherExamCardProps) {
+export function TeacherExamCard({ exam, index }: TeacherExamCardProps) {
     const getExamLink = () => {
         if (exam.type === 'english_comprehensive_exam') return `/english/teacher-exam/${exam.id}`;
         return `/arabic/teacher-exam/${exam.id}`;
     };
 
+    const isArabic = exam.type !== 'english_comprehensive_exam';
+
+    // Format date
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+    };
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.3 }}
-            whileHover={{ y: -4 }}
+            transition={{ delay: index * 0.04, duration: 0.25 }}
             className="group"
         >
             <Link href={getExamLink()} className="block">
-                <div className="bg-white dark:bg-[#1c1c24] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#2e2e3a] hover:border-violet-200 dark:hover:border-violet-800/50 transition-all duration-300 shadow-sm hover:shadow-lg dark:shadow-none">
-                    {/* Thumbnail */}
-                    <div className="relative aspect-video overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-violet-100 via-purple-50 to-indigo-100 dark:from-violet-950/50 dark:via-purple-950/30 dark:to-indigo-950/50 flex items-center justify-center">
-                            <FileText className="h-12 w-12 text-violet-400/40 dark:text-violet-300/20" />
-                        </div>
+                {/* Modern Compact Card */}
+                <div className="relative overflow-hidden rounded-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-violet-500/15">
+                    {/* Gradient Border */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-xl p-[1px]" />
 
-                        {/* Hover Play Button */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
-                            <div className="w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
-                                <Play className="h-6 w-6 text-violet-600 mr-[-2px]" fill="currentColor" />
+                    {/* Background */}
+                    <div className="absolute inset-[1px] rounded-[11px] bg-white dark:bg-slate-900" />
+
+                    {/* Card Content */}
+                    <div className="relative p-4">
+                        {/* Header - Badge & Icon */}
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                {/* Icon */}
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-md shadow-violet-500/25 flex items-center justify-center">
+                                    <ClipboardList className="h-4 w-4 text-white" />
+                                </div>
+                                {/* Badge */}
+                                <span className="px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-semibold">
+                                    {isArabic ? 'عربي' : 'English'}
+                                </span>
+                            </div>
+                            {/* Arrow */}
+                            <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 transition-colors">
+                                <Play className="h-3 w-3 text-gray-400 dark:text-gray-500 group-hover:text-violet-500 transition-colors" />
                             </div>
                         </div>
 
-                        {/* Duration Badge */}
-                        <div className="absolute bottom-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm rounded-lg text-xs text-white font-medium flex items-center gap-1.5">
-                            <Clock className="h-3 w-3" /> {exam.duration} دقيقة
-                        </div>
-
-                        {/* Draft Badge for unpublished exams */}
-                        {exam.isPublished === false && (
-                            <div className="absolute top-3 right-3 px-2.5 py-1 bg-amber-500 rounded-lg text-xs text-white font-medium">
-                                مسودة
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                        <h3 className="text-gray-900 dark:text-white font-semibold text-sm leading-5 line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors mb-3">
+                        {/* Title */}
+                        <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                             {exam.title || "امتحان"}
                         </h3>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Avatar
-                                    src={teacher.photoURL}
-                                    name={teacher.name}
-                                    size="xs"
-                                    ring
-                                    ringColor="ring-gray-100 dark:ring-[#2e2e3a]"
-                                    customGradient="from-violet-500 to-purple-600"
-                                />
-                                <span className="text-gray-500 dark:text-gray-400 text-xs">{teacher.name}</span>
+
+                        {/* Stats Row */}
+                        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                            {exam.duration && (
+                                <div className="flex items-center gap-1">
+                                    <Clock className="h-3.5 w-3.5 text-violet-500" />
+                                    <span>{exam.duration} د</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                                <GraduationCap className="h-3.5 w-3.5 text-emerald-500" />
+                                <span>3 ث</span>
                             </div>
-                            <span className="text-gray-400 dark:text-gray-500 text-xs">
-                                {formatRelativeDate(exam.created_at)}
-                            </span>
+                            {exam.created_at && (
+                                <div className="flex items-center gap-1 mr-auto">
+                                    <span className="text-gray-400 dark:text-gray-500">{formatDate(exam.created_at)}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -358,25 +368,35 @@ export function AboutTab({ teacher }: AboutTabProps) {
     const hasSocials = teacher.phone || teacher.website ||
         Object.values(teacher.socialLinks || {}).some(v => v);
 
+    const CardWrapper = ({ children, title, icon: Icon, colorClass }: any) => (
+        <div className="relative overflow-hidden rounded-2xl group">
+            <div className={`absolute inset-0 bg-gradient-to-br from-${colorClass}-500/20 via-${colorClass}-500/10 to-${colorClass}-500/5 rounded-2xl p-[1px]`}>
+                <div className="absolute inset-[1px] rounded-[15px] bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
+            </div>
+
+            <div className="relative rounded-2xl bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:via-slate-800/80 dark:to-slate-900/90 backdrop-blur-xl p-6 shadow-lg dark:shadow-xl border border-gray-100 dark:border-transparent">
+                <div className={`absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-${colorClass}-400/40 to-transparent hidden dark:block`} />
+
+                <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                    <Icon className={`h-5 w-5 text-${colorClass}-600 dark:text-${colorClass}-400`} />
+                    {title}
+                </h2>
+                {children}
+            </div>
+        </div>
+    );
+
     return (
         <div className="max-w-4xl space-y-6">
             {/* Description Card */}
-            <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
-                <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-violet-500" />
-                    الوصف
-                </h2>
+            <CardWrapper title="الوصف" icon={BookOpen} colorClass="violet">
                 <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {teacher.bio || "لا يوجد وصف متاح."}
                 </p>
-            </div>
+            </CardWrapper>
 
             {/* Professional Info Card */}
-            <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
-                <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
-                    <GraduationCap className="h-5 w-5 text-blue-500" />
-                    المعلومات المهنية
-                </h2>
+            <CardWrapper title="المعلومات المهنية" icon={GraduationCap} colorClass="blue">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {teacher.teacherTitle && (
                         <InfoCard label="اللقب" value={teacher.teacherTitle} />
@@ -391,22 +411,18 @@ export function AboutTab({ teacher }: AboutTabProps) {
                         <InfoCard label="أسلوب التدريس" value={teacher.teachingStyle} fullWidth />
                     )}
                 </div>
-            </div>
+            </CardWrapper>
 
             {/* Contacts Card */}
             {hasSocials && (
-                <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-6 border border-gray-100 dark:border-[#2e2e3a]">
-                    <h2 className="text-gray-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-cyan-500" />
-                        التواصل
-                    </h2>
+                <CardWrapper title="التواصل" icon={Globe} colorClass="cyan">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {teacher.phone && (
                             <a
                                 href={`tel:${teacher.phone}`}
-                                className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252530] rounded-xl hover:bg-gray-100 dark:hover:bg-[#2e2e3a] transition-colors"
+                                className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-gray-200 dark:border-slate-700/50"
                             >
-                                <Phone className="h-5 w-5 text-green-500" />
+                                <Phone className="h-5 w-5 text-green-600 dark:text-green-500" />
                                 <span className="text-gray-700 dark:text-gray-300">{teacher.phone}</span>
                             </a>
                         )}
@@ -415,14 +431,14 @@ export function AboutTab({ teacher }: AboutTabProps) {
                                 href={teacher.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#252530] rounded-xl hover:bg-gray-100 dark:hover:bg-[#2e2e3a] transition-colors"
+                                className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-gray-200 dark:border-slate-700/50"
                             >
-                                <Globe className="h-5 w-5 text-blue-500" />
+                                <Globe className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                                 <span className="text-gray-700 dark:text-gray-300 truncate">الموقع الإلكتروني</span>
                             </a>
                         )}
                     </div>
-                </div>
+                </CardWrapper>
             )}
         </div>
     );
@@ -434,7 +450,7 @@ export function AboutTab({ teacher }: AboutTabProps) {
 
 function InfoCard({ label, value, fullWidth = false }: { label: string; value: string; fullWidth?: boolean }) {
     return (
-        <div className={`p-4 bg-gray-50 dark:bg-[#252530] rounded-xl ${fullWidth ? 'col-span-full' : ''}`}>
+        <div className={`p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-slate-700/50 hover:border-gray-300 dark:hover:border-slate-600/50 transition-colors ${fullWidth ? 'col-span-full' : ''}`}>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
             <p className="font-medium text-gray-900 dark:text-white">{value}</p>
         </div>

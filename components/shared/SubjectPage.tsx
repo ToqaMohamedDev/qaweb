@@ -199,7 +199,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
 
                 setLessons(lessonsData || []);
 
-                // Fetch comprehensive_exams
+                // Fetch comprehensive_exams (امتحانات الأدمن فقط)
                 const { data: comprehensiveData } = await supabase
                     .from("comprehensive_exams")
                     .select("id, exam_title, exam_description, duration_minutes, total_marks")
@@ -218,7 +218,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                     type: 'comprehensive' as const
                 }));
 
-                // Set exams
+                // Set exams (comprehensive only - امتحانات الأدمن فقط)
                 setExams(formattedComprehensive);
 
             } catch (error) {
@@ -247,12 +247,12 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
         <>
             <StructuredData data={courseStructuredData} />
             <div
-                className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]"
+                className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]"
                 dir={direction}
             >
                 <Navbar />
 
-                <main className="relative z-10">
+                <main className="relative z-10 min-h-[calc(100vh-80px)]">
                     {/* Header Section */}
                     <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-5 max-w-6xl">
                         {/* Back Button */}
@@ -426,31 +426,61 @@ function LessonsGrid({ lessons, isLoading, subject, translations: t, isArabic, s
         >
             {lessons.map((lesson) => (
                 <motion.div key={lesson.id} variants={itemVariants}>
-                    <Link href={`/${subject}/${lesson.id}`} className="block group h-full">
-                        <div className="h-full bg-white dark:bg-[#1c1c24] rounded-xl p-4 border border-gray-200/60 dark:border-[#2e2e3a] hover:border-primary-400 dark:hover:border-primary-600 shadow-sm hover:shadow-lg transition-all duration-200 group-hover:-translate-y-1">
-                            <div className="p-2.5 rounded-lg bg-primary-100 dark:bg-primary-900/30 w-fit mb-3 group-hover:scale-105 transition-transform">
-                                {isArabic ? (
-                                    <FileText className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                                ) : (
-                                    <BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                                )}
-                            </div>
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                {lesson.title}
-                            </h3>
-                            {/* Description - يظهر في صفحات المواد فقط */}
-                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
-                                {lesson.description || ""}
-                            </p>
-                            {/* Stage Badge - المرحلة التعليمية */}
-                            {stageName && (
-                                <div className="flex items-center gap-1">
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100/80 dark:bg-amber-900/30 text-[10px] font-medium text-amber-700 dark:text-amber-300">
-                                        <GraduationCap className="h-3 w-3" />
-                                        <span className="truncate max-w-[120px]">{stageName}</span>
-                                    </span>
+                    <Link href={`/${subject}/${lesson.id}`} className="block group">
+                        {/* Premium Glassmorphism Card - Purple Theme */}
+                        <div className="relative overflow-hidden rounded-2xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-violet-500/20">
+                            {/* Gradient Border - Purple only */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 rounded-2xl p-[1.5px]" />
+
+                            {/* Glass Background */}
+                            <div className="absolute inset-[1.5px] rounded-[14px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl" />
+
+                            {/* Purple Cloud Glow Effect */}
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/8 via-transparent to-purple-500/8 dark:from-violet-500/15 dark:via-transparent dark:to-purple-500/15" />
+                            <div className="absolute -top-10 -right-10 w-24 h-24 bg-violet-500/15 dark:bg-violet-500/25 rounded-full blur-2xl" />
+                            <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-purple-500/10 dark:bg-purple-500/20 rounded-full blur-xl" />
+
+                            {/* Card Content */}
+                            <div className="relative rounded-2xl p-4">
+                                {/* Top Glow Line */}
+                                <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-violet-400/30 to-transparent" />
+
+                                {/* Icon - Purple gradient */}
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25 flex items-center justify-center mb-3 group-hover:shadow-xl group-hover:shadow-violet-500/35 transition-all">
+                                    {isArabic ? (
+                                        <FileText className="h-5 w-5 text-white" />
+                                    ) : (
+                                        <BookOpen className="h-5 w-5 text-white" />
+                                    )}
                                 </div>
-                            )}
+
+                                {/* Title */}
+                                <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors line-clamp-2">
+                                    {lesson.title}
+                                </h3>
+
+                                {/* Description */}
+                                {lesson.description && (
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                                        {lesson.description}
+                                    </p>
+                                )}
+
+                                {/* Stage Badge - Purple theme */}
+                                {stageName && (
+                                    <div className="flex items-center gap-1 pt-2 border-t border-violet-200/40 dark:border-violet-500/20">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-500/10 dark:bg-violet-500/15 backdrop-blur-sm border border-violet-300/30 dark:border-violet-400/20 text-[10px] font-medium text-violet-700 dark:text-violet-300">
+                                            <GraduationCap className="h-3 w-3" />
+                                            <span className="truncate max-w-[80px]">{stageName}</span>
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Corner Sparkle */}
+                                <div className="absolute bottom-2 right-2">
+                                    <Sparkles className="h-4 w-4 text-violet-400/50 group-hover:text-violet-500 transition-colors" />
+                                </div>
+                            </div>
                         </div>
                     </Link>
                 </motion.div>
@@ -467,6 +497,8 @@ interface ExamsGridProps {
 }
 
 function ExamsGrid({ exams, isLoading, subject, translations: t }: ExamsGridProps) {
+    const isArabic = subject === 'arabic';
+
     if (isLoading) {
         return <HomePageLessonsGridSkeleton count={6} />;
     }
@@ -491,57 +523,80 @@ function ExamsGrid({ exams, isLoading, subject, translations: t }: ExamsGridProp
             initial="hidden"
             animate="visible"
             exit={{ opacity: 0 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
         >
             {exams.map((exam) => (
                 <motion.div key={`${exam.type}-${exam.id}`} variants={itemVariants}>
                     <Link
                         href={`/${subject}/exam/${exam.id}`}
-                        className="block group h-full"
+                        className="block group"
                     >
-                        <div className="h-full bg-white dark:bg-[#1c1c24] rounded-xl p-4 border border-violet-200/60 dark:border-violet-800/40 hover:border-violet-400 dark:hover:border-violet-600 shadow-sm hover:shadow-lg transition-all duration-200 group-hover:-translate-y-1">
-                            <div className="flex items-start gap-3">
-                                <div className={`p-2.5 rounded-lg shrink-0 group-hover:scale-105 transition-transform ${exam.type === 'comprehensive'
-                                    ? 'bg-violet-100 dark:bg-violet-900/30'
-                                    : 'bg-purple-100 dark:bg-purple-900/30'
-                                    }`}>
-                                    <ClipboardList className={`h-5 w-5 ${exam.type === 'comprehensive'
-                                        ? 'text-violet-600 dark:text-violet-400'
-                                        : 'text-purple-600 dark:text-purple-400'
-                                        }`} />
+                        {/* Premium Glassmorphism Card */}
+                        <div className="relative overflow-hidden rounded-2xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-violet-500/20">
+                            {/* Gradient Border */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl p-[1.5px]" />
+
+                            {/* Glass Background */}
+                            <div className="absolute inset-[1.5px] rounded-[14px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl" />
+
+                            {/* Violet Cloud Glow Effect */}
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/10 via-transparent to-purple-500/10 dark:from-violet-500/20 dark:via-transparent dark:to-purple-500/20" />
+                            <div className="absolute -top-12 -right-12 w-32 h-32 bg-violet-500/20 dark:bg-violet-500/30 rounded-full blur-3xl" />
+                            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-purple-500/15 dark:bg-purple-500/25 rounded-full blur-2xl" />
+
+                            {/* Card Content */}
+                            <div className="relative rounded-2xl p-5">
+                                {/* Top Glow Line */}
+                                <div className="absolute top-0 left-10 right-10 h-[1px] bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
+
+                                {/* Header Row */}
+                                <div className="flex items-center justify-between mb-4">
+                                    {/* Badge - Premium gradient */}
+                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-xs font-bold text-white shadow-lg shadow-violet-500/30">
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        {exam.type === 'comprehensive' ? t.comprehensiveExam : t.exam}
+                                    </span>
+
+                                    {/* Icon Circle - Premium gradient */}
+                                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg shadow-violet-500/30 flex items-center justify-center group-hover:shadow-xl group-hover:shadow-violet-500/40 transition-all">
+                                        <ClipboardList className="h-5 w-5 text-white" />
+                                    </div>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${exam.type === 'comprehensive'
-                                            ? 'bg-violet-100/80 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
-                                            : 'bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                                            }`}>
-                                            <Sparkles className="h-3 w-3" />
-                                            {exam.type === 'comprehensive' ? t.comprehensiveExam : t.exam}
-                                        </span>
+
+                                {/* Title */}
+                                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-3 group-hover:text-violet-600 dark:group-hover:text-violet-200 transition-colors">
+                                    {exam.title}
+                                </h3>
+
+                                {/* Meta Info */}
+                                <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-violet-300/80 mb-4">
+                                    <div className="flex items-center gap-1.5">
+                                        <GraduationCap className="h-4 w-4 text-violet-500" />
+                                        <span>{isArabic ? 'الصف الثالث الثانوي' : '3rd Secondary'}</span>
                                     </div>
-                                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                        {exam.title}
-                                    </h3>
-                                    {exam.description && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
-                                            {exam.description}
-                                        </p>
+                                    <div className="w-1 h-1 rounded-full bg-violet-400/50" />
+                                    <span>{isArabic ? 'لغة عربية' : 'English'}</span>
+                                </div>
+
+                                {/* Stats Row */}
+                                <div className="flex items-center gap-4 pt-3 border-t border-violet-200/50 dark:border-violet-500/20">
+                                    {exam.duration_minutes && (
+                                        <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-violet-300/70">
+                                            <Clock className="h-4 w-4 text-violet-500" />
+                                            <span>{exam.duration_minutes} {t.minutes}</span>
+                                        </div>
                                     )}
-                                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                                        {exam.duration_minutes && (
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-3.5 w-3.5" />
-                                                <span>{exam.duration_minutes} {t.minutes}</span>
-                                            </div>
-                                        )}
-                                        {exam.total_marks && (
-                                            <div className="flex items-center gap-1">
-                                                <FileText className="h-3.5 w-3.5" />
-                                                <span>{exam.total_marks} {t.grade}</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {exam.total_marks && (
+                                        <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-violet-300/70">
+                                            <FileText className="h-4 w-4 text-violet-500" />
+                                            <span>{exam.total_marks} {t.grade}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Corner Sparkle */}
+                                <div className="absolute bottom-3 right-3">
+                                    <Sparkles className="h-5 w-5 text-violet-400/60 group-hover:text-violet-500 transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -551,3 +606,4 @@ function ExamsGrid({ exams, isLoading, subject, translations: t }: ExamsGridProp
         </motion.div>
     );
 }
+

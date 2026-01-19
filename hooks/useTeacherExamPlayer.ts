@@ -131,9 +131,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     const router = useRouter();
     const supabase = createClient();
 
-    // تحديد اسم الجدول بناءً على المصدر
-    const examsTable = examSource === 'teacher' ? 'teacher_exams' : 'comprehensive_exams';
-    const attemptsTable = examSource === 'teacher' ? 'teacher_exam_attempts' : 'comprehensive_exam_attempts';
+    // State (سنحدد الجدول الفعلي ديناميكياً عند جلب البيانات)
 
     // State
     const [exam, setExam] = useState<TransformedExam | null>(null);
@@ -147,6 +145,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     const [isPracticeMode, setIsPracticeMode] = useState(false);
     const [previousResult, setPreviousResult] = useState<{ score: number; maxScore: number } | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [usedAttemptsTable, setUsedAttemptsTable] = useState<'comprehensive_exam_attempts' | 'teacher_exam_attempts'>('comprehensive_exam_attempts');
 
     // Time Limited Exam State
     const [availabilityTimeLeft, setAvailabilityTimeLeft] = useState<number | null>(null);
@@ -175,27 +174,50 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
             try {
                 // Debug logging
                 console.log('=== useTeacherExamPlayer Debug ===');
-                console.log('examsTable:', examsTable);
                 console.log('examId:', examId);
                 console.log('requireAuth:', requireAuth);
 
-                // 1. Fetch exam from the appropriate table
-                const { data: examData, error: examError } = await supabase
-                    .from(examsTable)
+                // 1. Try to fetch from comprehensive_exams first
+                let examData: any = null;
+                let examTableUsed = 'comprehensive_exams';
+
+                const { data: comprehensiveExam, error: comprehensiveError } = await supabase
+                    .from('comprehensive_exams')
                     .select('*')
                     .eq('id', examId)
-                    .single();
+                    .maybeSingle();
+
+                if (comprehensiveExam) {
+                    examData = comprehensiveExam;
+                    examTableUsed = 'comprehensive_exams';
+                    console.log('Found exam in comprehensive_exams');
+                } else {
+                    // 2. If not found, try teacher_exams
+                    const { data: teacherExam, error: teacherError } = await supabase
+                        .from('teacher_exams')
+                        .select('*')
+                        .eq('id', examId)
+                        .maybeSingle();
+
+                    if (teacherExam) {
+                        examData = teacherExam;
+                        examTableUsed = 'teacher_exams';
+                        console.log('Found exam in teacher_exams');
+                    } else {
+                        // Not found in either table
+                        throw new Error('الامتحان غير موجود');
+                    }
+                }
 
                 console.log('examData:', examData);
-                console.log('examError:', examError);
-
-                if (examError) {
-                    console.error('Supabase fetch error:', JSON.stringify(examError, null, 2));
-                    throw examError;
-                }
-                if (!examData) throw new Error('الامتحان غير موجود');
+                console.log('examTableUsed:', examTableUsed);
 
                 const rawExam = examData as Record<string, any>;
+                // Store which table we're using for attempts
+                const actualAttemptsTable = examTableUsed === 'teacher_exams'
+                    ? 'teacher_exam_attempts'
+                    : 'comprehensive_exam_attempts';
+                setUsedAttemptsTable(actualAttemptsTable);
 
                 // Transform sections to blocks - الحفاظ على subsections
                 let blocksData: ExamBlock[] = [];
@@ -314,7 +336,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                 if (user) {
                     // First check if there's a completed attempt
                     const { data: completedAttempt } = await supabase
-                        .from(attemptsTable)
+                        .from(actualAttemptsTable)
                         .select('id, total_score, max_score, status')
                         .eq('exam_id', rawExam.id)
                         .eq('student_id', user.id)
@@ -329,7 +351,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
 
                     // Check for in_progress attempt
                     const { data: inProgressAttempt } = await supabase
-                        .from(attemptsTable)
+                        .from(actualAttemptsTable)
                         .select('id, answers')
                         .eq('exam_id', rawExam.id)
                         .eq('student_id', user.id)
@@ -347,7 +369,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                         attemptStartedRef.current = true;
                         // Create new attempt (first time)
                         const { data: newAttempt } = await supabase
-                            .from(attemptsTable)
+                            .from(actualAttemptsTable)
                             .insert({
                                 exam_id: rawExam.id,
                                 student_id: user.id,
@@ -454,7 +476,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         if (attemptId) {
             try {
                 await supabase
-                    .from(attemptsTable)
+                    .from(usedAttemptsTable)
                     .update({
                         answers: newAnswers,
                         updated_at: new Date().toISOString()
@@ -464,7 +486,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                 console.error('Error auto-saving answers:', err);
             }
         }
-    }, [answers, attemptId, supabase, attemptsTable]);
+    }, [answers, attemptId, supabase, usedAttemptsTable]);
 
     // Get block progress
     const getBlockProgress = useCallback((blockIndex: number) => {
@@ -515,7 +537,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                 });
 
                 const { error: updateError } = await supabase
-                    .from(attemptsTable)
+                    .from(usedAttemptsTable)
                     .update({
                         answers,
                         completed_at: new Date().toISOString(),

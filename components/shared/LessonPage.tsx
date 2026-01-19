@@ -22,16 +22,23 @@ interface Question {
     options: string[];
     correctAnswer: number;
     explanation: string;
+    type: string;
 }
 
-interface QuestionGroup {
-    groupId: string;
-    sectionTitle: string;
-    mediaType: 'reading' | 'poetry' | null;
-    mediaTitle?: string;
-    mediaText?: string;
-    mediaVerses?: { first: string; second: string }[];
+interface QuestionSection {
+    type: string;
+    typeLabel: string;
     questions: Question[];
+}
+
+interface QuestionBank {
+    bankId: string;
+    bankTitle: string;
+    mediaType: 'reading' | 'poetry' | null;
+    mediaTitle: string;
+    mediaText: string;
+    mediaVerses: { first: string; second: string }[];
+    sections: QuestionSection[];
 }
 
 interface Lesson {
@@ -40,12 +47,13 @@ interface Lesson {
     description: string;
 }
 
-interface GroupState {
+interface BankState {
+    activeSectionIndex: number;
     currentQuestion: number;
     selectedAnswer: number | null;
     showResult: boolean;
-    score: number;
-    answeredQuestions: Set<number>;
+    scores: Map<string, number>;
+    answeredQuestions: Map<string, Set<number>>;
     isComplete: boolean;
     isExpanded: boolean;
 }
@@ -75,6 +83,8 @@ interface Translations {
     previousQuestion: string;
     nextQuestion: string;
     explanation: string;
+    nextSection: string;
+    totalScore: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -102,6 +112,8 @@ const translations: Record<'arabic' | 'english', Translations> = {
         previousQuestion: 'السؤال السابق',
         nextQuestion: 'السؤال التالي',
         explanation: 'التوضيح',
+        nextSection: 'القسم التالي',
+        totalScore: 'النتيجة الإجمالية',
     },
     english: {
         lessonNotFound: 'Lesson not found',
@@ -123,8 +135,23 @@ const translations: Record<'arabic' | 'english', Translations> = {
         previousQuestion: 'Previous Question',
         nextQuestion: 'Next Question',
         explanation: 'Explanation',
+        nextSection: 'Next Section',
+        totalScore: 'Total Score',
     },
 };
+
+// Question type labels
+const typeLabels: Record<string, { ar: string; en: string }> = {
+    'mcq': { ar: 'اختيار من متعدد', en: 'Multiple Choice' },
+    'truefalse': { ar: 'صح أو خطأ', en: 'True or False' },
+    'true_false': { ar: 'صح أو خطأ', en: 'True or False' },
+    'fill_blank': { ar: 'أكمل الفراغات', en: 'Fill in the Blanks' },
+    'essay': { ar: 'مقالي', en: 'Essay' },
+    'parsing': { ar: 'إعراب', en: 'Parsing' },
+    'extraction': { ar: 'استخراج', en: 'Extraction' },
+};
+
+const typeOrder = ['mcq', 'truefalse', 'true_false', 'fill_blank', 'parsing', 'extraction', 'essay'];
 
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
@@ -132,8 +159,8 @@ const translations: Record<'arabic' | 'english', Translations> = {
 
 export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
     const [lesson, setLesson] = useState<Lesson | null>(null);
-    const [questionGroups, setQuestionGroups] = useState<QuestionGroup[]>([]);
-    const [groupStates, setGroupStates] = useState<Map<string, GroupState>>(new Map());
+    const [banks, setBanks] = useState<QuestionBank[]>([]);
+    const [bankStates, setBankStates] = useState<Map<string, BankState>>(new Map());
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -172,44 +199,42 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                         : (lessonData.description as string) || '',
                 });
 
-                // 2. Fetch Questions from Question Bank
-                const { data: questionsData, error: questionsError } = await supabase
-                    .from('lesson_questions')
+                // 2. Fetch Question Banks
+                const { data: banksData, error: banksError } = await supabase
+                    .from('question_banks')
                     .select('*')
                     .eq('lesson_id', lessonId)
                     .eq('is_active', true)
-                    .order('order_index', { ascending: true });
+                    .order('created_at', { ascending: true });
 
-                if (questionsError) throw questionsError;
+                if (banksError) throw banksError;
 
-                if (!questionsData || questionsData.length === 0) {
-                    setQuestionGroups([]);
+                if (!banksData || banksData.length === 0) {
+                    setBanks([]);
                     return;
                 }
 
-                // 3. Group questions by group_id
-                const groupMap = new Map<string, any[]>();
-                questionsData.forEach((q: any) => {
-                    const groupKey = q.group_id ||
-                        `${(q.section_title?.[langKey] || q.section_title?.ar || 'General')}_${q.created_at?.split('T')[0] || 'unknown'}`;
+                // 3. Build QuestionBank array
+                const loadedBanks: QuestionBank[] = [];
+                const initialStates = new Map<string, BankState>();
 
-                    if (!groupMap.has(groupKey)) {
-                        groupMap.set(groupKey, []);
+                banksData.forEach((bank: any, bankIdx: number) => {
+                    const bankQuestions = bank.questions || [];
+                    if (bankQuestions.length === 0) return;
+
+                    // Get bank title
+                    let bankTitle = '';
+                    if (bank.title) {
+                        bankTitle = typeof bank.title === 'object'
+                            ? bank.title[langKey] || bank.title.ar || ''
+                            : bank.title || '';
                     }
-                    groupMap.get(groupKey)!.push(q);
-                });
-
-                // 4. Build QuestionGroup array
-                const groups: QuestionGroup[] = [];
-                const initialStates = new Map<string, GroupState>();
-
-                groupMap.forEach((rawQuestions, groupKey) => {
-                    const firstQ = rawQuestions[0];
-
-                    // Section title
-                    const sectionTitle = typeof firstQ.section_title === 'object'
-                        ? firstQ.section_title[langKey] || firstQ.section_title.ar || (isArabic ? 'أسئلة' : 'Questions')
-                        : firstQ.section_title || (isArabic ? 'أسئلة' : 'Questions');
+                    if (!bankTitle && bank.content_data?.title) {
+                        bankTitle = bank.content_data.title;
+                    }
+                    if (!bankTitle) {
+                        bankTitle = isArabic ? 'بنك أسئلة' : 'Question Bank';
+                    }
 
                     // Media content
                     let mediaType: 'reading' | 'poetry' | null = null;
@@ -217,80 +242,122 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                     let mediaText = '';
                     let mediaVerses: { first: string; second: string }[] = [];
 
-                    if (firstQ.media?.content) {
-                        const media = firstQ.media.content;
-                        if (media.type === 'reading') {
+                    if (bank.content_data) {
+                        const content = bank.content_data;
+                        if (content.type === 'reading' || bank.content_type === 'reading') {
                             mediaType = 'reading';
-                            mediaTitle = media.title || '';
-                            mediaText = media.text || '';
-                        } else if (media.type === 'poetry') {
+                            mediaTitle = content.title || '';
+                            mediaText = content.text || '';
+                        } else if (content.type === 'poetry' || bank.content_type === 'poetry') {
                             mediaType = 'poetry';
-                            mediaTitle = media.title || '';
-                            mediaVerses = media.verses || [];
+                            mediaTitle = content.title || '';
+                            mediaVerses = (content.verses || []).map((v: any) => ({
+                                first: v.first || v.firstLine || '',
+                                second: v.second || v.secondLine || ''
+                            }));
                         }
                     }
 
-                    // Transform questions
-                    const questions: Question[] = rawQuestions.map((q: any) => {
-                        const questionText = typeof q.text === 'object'
-                            ? q.text[langKey] || q.text.ar || ''
-                            : q.text || '';
-
-                        let options: string[] = [];
-                        let correctAnswerIndex = 0;
-
-                        if (q.options && Array.isArray(q.options)) {
-                            options = q.options.map((opt: any, idx: number) => {
-                                if (typeof opt === 'object') {
-                                    if (opt.isCorrect) correctAnswerIndex = idx;
-                                    return opt[isArabic ? 'textAr' : 'textEn'] || opt.text || opt.textAr || '';
-                                }
-                                return String(opt);
-                            });
+                    // Group questions by type
+                    const questionsByType = new Map<string, any[]>();
+                    bankQuestions.forEach((q: any) => {
+                        const qType = q.type || 'mcq';
+                        if (!questionsByType.has(qType)) {
+                            questionsByType.set(qType, []);
                         }
-
-                        if (q.correct_option_id) {
-                            const parsedId = parseInt(q.correct_option_id);
-                            if (!isNaN(parsedId)) correctAnswerIndex = parsedId;
-                        } else if (q.correct_answer) {
-                            if (typeof q.correct_answer === 'number') {
-                                correctAnswerIndex = q.correct_answer;
-                            } else if (typeof q.correct_answer === 'object') {
-                                correctAnswerIndex = q.correct_answer.value ?? q.correct_answer.index ?? 0;
-                            }
-                        }
-
-                        const explanation = typeof q.explanation === 'object' && q.explanation !== null
-                            ? q.explanation[langKey] || q.explanation.ar || ''
-                            : q.explanation || '';
-
-                        return { id: q.id, question: questionText, options, correctAnswer: correctAnswerIndex, explanation };
+                        questionsByType.get(qType)!.push(q);
                     });
 
-                    groups.push({
-                        groupId: groupKey,
-                        sectionTitle,
+                    // Sort types
+                    const sortedTypes = [...questionsByType.keys()].sort((a, b) => {
+                        const idxA = typeOrder.indexOf(a);
+                        const idxB = typeOrder.indexOf(b);
+                        return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+                    });
+
+                    // Build sections
+                    const sections: QuestionSection[] = [];
+                    const scores = new Map<string, number>();
+                    const answeredQuestions = new Map<string, Set<number>>();
+
+                    sortedTypes.forEach((qType) => {
+                        const typeQuestions = questionsByType.get(qType) || [];
+                        if (typeQuestions.length === 0) return;
+
+                        typeQuestions.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0));
+
+                        const questions: Question[] = typeQuestions.map((q: any) => {
+                            const questionText = typeof q.text === 'object'
+                                ? q.text[langKey] || q.text.ar || ''
+                                : q.text || '';
+
+                            let options: string[] = [];
+                            let correctAnswerIndex = 0;
+
+                            if (q.options && Array.isArray(q.options)) {
+                                options = q.options.map((opt: any, idx: number) => {
+                                    if (typeof opt === 'object') {
+                                        if (opt.isCorrect) correctAnswerIndex = idx;
+                                        return opt[isArabic ? 'textAr' : 'textEn'] || opt.text || opt.textAr || '';
+                                    }
+                                    return String(opt);
+                                });
+                            }
+
+                            if (q.correct_option_id) {
+                                const parsedId = parseInt(q.correct_option_id);
+                                if (!isNaN(parsedId)) correctAnswerIndex = parsedId;
+                            } else if (q.correct_answer) {
+                                if (typeof q.correct_answer === 'number') {
+                                    correctAnswerIndex = q.correct_answer;
+                                } else if (typeof q.correct_answer === 'object') {
+                                    correctAnswerIndex = q.correct_answer.value ?? q.correct_answer.index ?? 0;
+                                }
+                            }
+
+                            const explanation = typeof q.explanation === 'object' && q.explanation !== null
+                                ? q.explanation[langKey] || q.explanation.ar || ''
+                                : q.explanation || '';
+
+                            return { id: q.id, question: questionText, options, correctAnswer: correctAnswerIndex, explanation, type: qType };
+                        });
+
+                        const typeLabelObj = typeLabels[qType] || { ar: qType, en: qType };
+                        sections.push({
+                            type: qType,
+                            typeLabel: isArabic ? typeLabelObj.ar : typeLabelObj.en,
+                            questions,
+                        });
+
+                        scores.set(qType, 0);
+                        answeredQuestions.set(qType, new Set());
+                    });
+
+                    loadedBanks.push({
+                        bankId: bank.id,
+                        bankTitle,
                         mediaType,
                         mediaTitle,
                         mediaText,
                         mediaVerses,
-                        questions,
+                        sections,
                     });
 
-                    // Initialize group state
-                    initialStates.set(groupKey, {
+                    // Initialize state
+                    initialStates.set(bank.id, {
+                        activeSectionIndex: 0,
                         currentQuestion: 0,
                         selectedAnswer: null,
                         showResult: false,
-                        score: 0,
-                        answeredQuestions: new Set(),
+                        scores,
+                        answeredQuestions,
                         isComplete: false,
-                        isExpanded: groups.length === 1,
+                        isExpanded: bankIdx === 0,
                     });
                 });
 
-                setQuestionGroups(groups);
-                setGroupStates(initialStates);
+                setBanks(loadedBanks);
+                setBankStates(initialStates);
 
             } catch (err: any) {
                 logger.error("Error fetching lesson", { context: `${subject}LessonPage`, data: err });
@@ -306,100 +373,146 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
     }, [lessonId, subject, t.lessonNotFound, isArabic, langKey]);
 
     // ═══════════════════════════════════════════════════════════════════════
-    // GROUP STATE HANDLERS
+    // STATE HANDLERS
     // ═══════════════════════════════════════════════════════════════════════
 
-    const updateGroupState = useCallback((groupId: string, updates: Partial<GroupState>) => {
-        setGroupStates(prev => {
+    const updateBankState = useCallback((bankId: string, updates: Partial<BankState>) => {
+        setBankStates(prev => {
             const newMap = new Map(prev);
-            const current = newMap.get(groupId);
+            const current = newMap.get(bankId);
             if (current) {
-                newMap.set(groupId, { ...current, ...updates });
+                newMap.set(bankId, { ...current, ...updates });
             }
             return newMap;
         });
     }, []);
 
-    const toggleGroup = useCallback((groupId: string) => {
-        setGroupStates(prev => {
+    const toggleBank = useCallback((bankId: string) => {
+        setBankStates(prev => {
             const newMap = new Map(prev);
-            const current = newMap.get(groupId);
+            const current = newMap.get(bankId);
             if (current) {
-                newMap.set(groupId, { ...current, isExpanded: !current.isExpanded });
+                newMap.set(bankId, { ...current, isExpanded: !current.isExpanded });
             }
             return newMap;
         });
     }, []);
 
-    const handleAnswerSelect = useCallback((groupId: string, answerIdx: number) => {
-        setGroupStates(prev => {
+    const switchSection = useCallback((bankId: string, sectionIndex: number) => {
+        setBankStates(prev => {
             const newMap = new Map(prev);
-            const state = newMap.get(groupId);
+            const current = newMap.get(bankId);
+            if (current) {
+                newMap.set(bankId, {
+                    ...current,
+                    activeSectionIndex: sectionIndex,
+                    currentQuestion: 0,
+                    selectedAnswer: null,
+                    showResult: false,
+                });
+            }
+            return newMap;
+        });
+    }, []);
+
+    const handleAnswerSelect = useCallback((bankId: string, answerIdx: number) => {
+        setBankStates(prev => {
+            const newMap = new Map(prev);
+            const state = newMap.get(bankId);
             if (state && !state.showResult) {
-                newMap.set(groupId, { ...state, selectedAnswer: answerIdx });
+                newMap.set(bankId, { ...state, selectedAnswer: answerIdx });
             }
             return newMap;
         });
     }, []);
 
-    const handleSubmit = useCallback((groupId: string, group: QuestionGroup) => {
-        setGroupStates(prev => {
+    const handleSubmit = useCallback((bankId: string, bank: QuestionBank) => {
+        setBankStates(prev => {
             const newMap = new Map(prev);
-            const state = newMap.get(groupId);
+            const state = newMap.get(bankId);
             if (!state || state.selectedAnswer === null) return prev;
 
-            const currentQ = group.questions[state.currentQuestion];
+            const section = bank.sections[state.activeSectionIndex];
+            const currentQ = section.questions[state.currentQuestion];
             const isCorrect = state.selectedAnswer === currentQ.correctAnswer;
-            const newAnswered = new Set(state.answeredQuestions).add(state.currentQuestion);
 
-            newMap.set(groupId, {
+            const newScores = new Map(state.scores);
+            const newAnswered = new Map(state.answeredQuestions);
+            const sectionAnswered = new Set(newAnswered.get(section.type) || []);
+
+            if (isCorrect && !sectionAnswered.has(state.currentQuestion)) {
+                newScores.set(section.type, (newScores.get(section.type) || 0) + 1);
+            }
+            sectionAnswered.add(state.currentQuestion);
+            newAnswered.set(section.type, sectionAnswered);
+
+            newMap.set(bankId, {
                 ...state,
                 showResult: true,
-                score: isCorrect && !state.answeredQuestions.has(state.currentQuestion)
-                    ? state.score + 1
-                    : state.score,
+                scores: newScores,
                 answeredQuestions: newAnswered,
             });
             return newMap;
         });
     }, []);
 
-    const handleNext = useCallback((groupId: string, group: QuestionGroup) => {
-        setGroupStates(prev => {
+    const handleNext = useCallback((bankId: string, bank: QuestionBank) => {
+        setBankStates(prev => {
             const newMap = new Map(prev);
-            const state = newMap.get(groupId);
+            const state = newMap.get(bankId);
             if (!state) return prev;
 
-            if (state.currentQuestion < group.questions.length - 1) {
-                newMap.set(groupId, {
+            const section = bank.sections[state.activeSectionIndex];
+
+            if (state.currentQuestion < section.questions.length - 1) {
+                // Next question in same section
+                newMap.set(bankId, {
                     ...state,
                     currentQuestion: state.currentQuestion + 1,
                     selectedAnswer: null,
                     showResult: false,
                 });
+            } else if (state.activeSectionIndex < bank.sections.length - 1) {
+                // Move to next section
+                newMap.set(bankId, {
+                    ...state,
+                    activeSectionIndex: state.activeSectionIndex + 1,
+                    currentQuestion: 0,
+                    selectedAnswer: null,
+                    showResult: false,
+                });
             } else {
-                newMap.set(groupId, { ...state, isComplete: true });
+                // All sections complete
+                newMap.set(bankId, { ...state, isComplete: true });
             }
             return newMap;
         });
     }, []);
 
-    const handleRestart = useCallback((groupId: string) => {
-        updateGroupState(groupId, {
+    const handleRestart = useCallback((bankId: string, bank: QuestionBank) => {
+        const scores = new Map<string, number>();
+        const answeredQuestions = new Map<string, Set<number>>();
+        bank.sections.forEach(s => {
+            scores.set(s.type, 0);
+            answeredQuestions.set(s.type, new Set());
+        });
+
+        updateBankState(bankId, {
+            activeSectionIndex: 0,
             currentQuestion: 0,
             selectedAnswer: null,
             showResult: false,
-            score: 0,
-            answeredQuestions: new Set(),
+            scores,
+            answeredQuestions,
             isComplete: false,
         });
-    }, [updateGroupState]);
+    }, [updateBankState]);
 
     // ═══════════════════════════════════════════════════════════════════════
     // RENDER
     // ═══════════════════════════════════════════════════════════════════════
 
-    const totalQuestions = questionGroups.reduce((acc, g) => acc + g.questions.length, 0);
+    const totalQuestions = banks.reduce((acc, b) => acc + b.sections.reduce((a, s) => a + s.questions.length, 0), 0);
 
     if (isLoading) {
         return (
@@ -422,7 +535,7 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
         );
     }
 
-    if (questionGroups.length === 0) {
+    if (banks.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]" dir={direction}>
                 <Navbar />
@@ -469,79 +582,88 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                         <div className="flex items-center gap-3 text-sm text-gray-500">
                             <span className="flex items-center gap-1"><Target className="h-4 w-4" />{totalQuestions} {t.question}</span>
                             <span>•</span>
-                            <span>{questionGroups.length} {t.group}</span>
+                            <span>{banks.length} {t.group}</span>
                         </div>
                     </motion.div>
 
-                    {/* Question Groups */}
-                    <div className="space-y-4">
-                        {questionGroups.map((group, groupIdx) => {
-                            const state = groupStates.get(group.groupId);
+                    {/* Question Banks */}
+                    <div className="space-y-6">
+                        {banks.map((bank, bankIdx) => {
+                            const state = bankStates.get(bank.bankId);
                             if (!state) return null;
 
-                            const currentQ = group.questions[state.currentQuestion];
-                            const pct = group.questions.length > 0 ? Math.round((state.score / group.questions.length) * 100) : 0;
+                            const activeSection = bank.sections[state.activeSectionIndex];
+                            const currentQ = activeSection?.questions[state.currentQuestion];
+
+                            // Calculate total score
+                            let totalScore = 0;
+                            let totalAnswered = 0;
+                            state.scores.forEach(v => { totalScore += v; });
+                            state.answeredQuestions.forEach(s => { totalAnswered += s.size; });
+                            const totalQ = bank.sections.reduce((a, s) => a + s.questions.length, 0);
+                            const pct = totalQ > 0 ? Math.round((totalScore / totalQ) * 100) : 0;
 
                             return (
                                 <motion.div
-                                    key={group.groupId}
+                                    key={bank.bankId}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: groupIdx * 0.1 }}
-                                    className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200/60 dark:border-[#2e2e3a] shadow-sm overflow-hidden"
+                                    transition={{ delay: bankIdx * 0.1 }}
+                                    className="bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200/60 dark:border-[#2e2e3a] shadow-lg overflow-hidden"
                                 >
-                                    {/* Group Header */}
+                                    {/* Bank Header */}
                                     <button
-                                        onClick={() => toggleGroup(group.groupId)}
-                                        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                        onClick={() => toggleBank(bank.bankId)}
+                                        className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-colors"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-                                                {groupIdx + 1}
+                                            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold text-xl">
+                                                {bankIdx + 1}
                                             </div>
                                             <div className={isArabic ? "text-right" : "text-left"}>
-                                                <h3 className="font-bold text-gray-900 dark:text-white">{group.sectionTitle}</h3>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                    <span>{group.questions.length} {t.question}</span>
-                                                    {group.mediaType === 'reading' && <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">📖 {t.readingText}</span>}
-                                                    {group.mediaType === 'poetry' && <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">🎭 {t.poetry}</span>}
-                                                    {state.isComplete && <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">✓ {pct}%</span>}
+                                                <h3 className="font-bold text-lg">{bank.bankTitle}</h3>
+                                                <div className="flex items-center gap-2 text-xs text-white/80">
+                                                    <span>{totalQ} {t.question}</span>
+                                                    <span>•</span>
+                                                    <span>{bank.sections.length} أقسام</span>
+                                                    {bank.mediaType === 'reading' && <span className="px-2 py-0.5 rounded bg-white/20">📖 {t.readingText}</span>}
+                                                    {bank.mediaType === 'poetry' && <span className="px-2 py-0.5 rounded bg-white/20">🎭 {t.poetry}</span>}
+                                                    {state.isComplete && <span className="px-2 py-0.5 rounded bg-green-400/30">✓ {pct}%</span>}
                                                 </div>
                                             </div>
                                         </div>
-                                        {state.isExpanded ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
+                                        {state.isExpanded ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
                                     </button>
 
-                                    {/* Group Content */}
+                                    {/* Bank Content */}
                                     <AnimatePresence>
                                         {state.isExpanded && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: "auto", opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="border-t border-gray-200 dark:border-gray-700"
                                             >
-                                                <div className="p-4 sm:p-6 space-y-4">
+                                                <div className="p-5 space-y-5">
                                                     {/* Reading Content */}
-                                                    {group.mediaType === 'reading' && group.mediaText && (
-                                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
+                                                    {bank.mediaType === 'reading' && bank.mediaText && (
+                                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-5 border border-emerald-200 dark:border-emerald-800">
                                                             <div className="flex items-center gap-2 mb-3">
                                                                 <BookOpen className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                                                <h4 className="font-bold text-emerald-800 dark:text-emerald-200">{group.mediaTitle || t.readingText}</h4>
+                                                                <h4 className="font-bold text-emerald-800 dark:text-emerald-200">{bank.mediaTitle || t.readingText}</h4>
                                                             </div>
-                                                            <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{group.mediaText}</p>
+                                                            <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{bank.mediaText}</p>
                                                         </div>
                                                     )}
 
                                                     {/* Poetry Content */}
-                                                    {group.mediaType === 'poetry' && group.mediaVerses && group.mediaVerses.length > 0 && (
-                                                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                                                    {bank.mediaType === 'poetry' && bank.mediaVerses.length > 0 && (
+                                                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-5 border border-amber-200 dark:border-amber-800">
                                                             <div className="flex items-center gap-2 mb-3">
                                                                 <span className="text-xl">🎭</span>
-                                                                <h4 className="font-bold text-amber-800 dark:text-amber-200">{group.mediaTitle || t.poetry}</h4>
+                                                                <h4 className="font-bold text-amber-800 dark:text-amber-200">{bank.mediaTitle || t.poetry}</h4>
                                                             </div>
                                                             <div className="space-y-2">
-                                                                {group.mediaVerses.map((verse, idx) => (
+                                                                {bank.mediaVerses.map((verse, idx) => (
                                                                     <div key={idx} className="flex items-center justify-center gap-4 py-1 text-gray-800 dark:text-gray-200">
                                                                         <span className="flex-1 text-left">{verse.first}</span>
                                                                         <span className="text-amber-500 font-bold">⋯</span>
@@ -552,82 +674,87 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                                         </div>
                                                     )}
 
-                                                    {/* Quiz */}
+                                                    {/* Quiz Content */}
                                                     {!state.isComplete ? (
                                                         <>
-                                                            {/* Progress & Question Navigation */}
-                                                            <div className="flex items-center justify-between gap-2">
-                                                                <button
-                                                                    onClick={() => updateGroupState(group.groupId, {
-                                                                        currentQuestion: state.currentQuestion - 1,
-                                                                        selectedAnswer: null,
-                                                                        showResult: false,
-                                                                    })}
-                                                                    disabled={state.currentQuestion === 0}
-                                                                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                                                    title={t.previousQuestion}
-                                                                >
-                                                                    <BackArrow className="h-5 w-5" />
-                                                                </button>
+                                                            {/* Section Tabs */}
+                                                            <div className="flex gap-2 flex-wrap">
+                                                                {bank.sections.map((section, idx) => {
+                                                                    const sectionAnswered = state.answeredQuestions.get(section.type)?.size || 0;
+                                                                    const isActive = idx === state.activeSectionIndex;
+                                                                    const isDone = sectionAnswered === section.questions.length;
 
-                                                                <div className="flex-1 text-center">
-                                                                    <span className="text-sm text-gray-500">
-                                                                        {t.questionOf.replace('{current}', String(state.currentQuestion + 1)).replace('{total}', String(group.questions.length))}
-                                                                    </span>
-                                                                    <div className="text-xs font-semibold text-primary-600">{t.score}: {state.score}/{state.answeredQuestions.size}</div>
-                                                                </div>
-
-                                                                <button
-                                                                    onClick={() => updateGroupState(group.groupId, {
-                                                                        currentQuestion: state.currentQuestion + 1,
-                                                                        selectedAnswer: null,
-                                                                        showResult: false,
-                                                                    })}
-                                                                    disabled={state.currentQuestion >= group.questions.length - 1}
-                                                                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                                                                    title={t.nextQuestion}
-                                                                >
-                                                                    <ForwardArrow className="h-5 w-5" />
-                                                                </button>
+                                                                    return (
+                                                                        <button
+                                                                            key={section.type}
+                                                                            onClick={() => switchSection(bank.bankId, idx)}
+                                                                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${isActive
+                                                                                    ? 'bg-indigo-500 text-white shadow-lg'
+                                                                                    : isDone
+                                                                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                                                                }`}
+                                                                        >
+                                                                            {isDone && <CheckCircle2 className="h-4 w-4" />}
+                                                                            {section.typeLabel}
+                                                                            <span className="text-xs opacity-70">({section.questions.length})</span>
+                                                                        </button>
+                                                                    );
+                                                                })}
                                                             </div>
 
-                                                            {/* Progress Bar */}
-                                                            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                                <motion.div
-                                                                    className="h-full bg-gradient-to-r from-primary-500 to-primary-600"
-                                                                    animate={{ width: `${((state.currentQuestion + 1) / group.questions.length) * 100}%` }}
-                                                                />
-                                                            </div>
+                                                            {/* Current Section Content */}
+                                                            {activeSection && currentQ && (
+                                                                <div className="space-y-4 pt-2">
+                                                                    {/* Progress */}
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <button
+                                                                            onClick={() => updateBankState(bank.bankId, {
+                                                                                currentQuestion: state.currentQuestion - 1,
+                                                                                selectedAnswer: null,
+                                                                                showResult: false,
+                                                                            })}
+                                                                            disabled={state.currentQuestion === 0}
+                                                                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                                        >
+                                                                            <BackArrow className="h-5 w-5" />
+                                                                        </button>
 
-                                                            {/* Question Dots Navigation */}
-                                                            <div className="flex items-center justify-center gap-1 flex-wrap">
-                                                                {group.questions.map((_, qIdx) => (
-                                                                    <button
-                                                                        key={qIdx}
-                                                                        onClick={() => updateGroupState(group.groupId, {
-                                                                            currentQuestion: qIdx,
-                                                                            selectedAnswer: null,
-                                                                            showResult: false,
-                                                                        })}
-                                                                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${qIdx === state.currentQuestion
-                                                                            ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                                                                            : state.answeredQuestions.has(qIdx)
-                                                                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                                                            }`}
-                                                                    >
-                                                                        {qIdx + 1}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
+                                                                        <div className="flex-1 text-center">
+                                                                            <span className="text-sm text-gray-500">
+                                                                                {t.questionOf.replace('{current}', String(state.currentQuestion + 1)).replace('{total}', String(activeSection.questions.length))}
+                                                                            </span>
+                                                                            <div className="text-xs font-semibold text-primary-600">
+                                                                                {t.score}: {state.scores.get(activeSection.type) || 0}/{state.answeredQuestions.get(activeSection.type)?.size || 0}
+                                                                            </div>
+                                                                        </div>
 
-                                                            {/* Question */}
-                                                            {currentQ && (
-                                                                <>
+                                                                        <button
+                                                                            onClick={() => updateBankState(bank.bankId, {
+                                                                                currentQuestion: state.currentQuestion + 1,
+                                                                                selectedAnswer: null,
+                                                                                showResult: false,
+                                                                            })}
+                                                                            disabled={state.currentQuestion >= activeSection.questions.length - 1}
+                                                                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                                                        >
+                                                                            <ForwardArrow className="h-5 w-5" />
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {/* Progress Bar */}
+                                                                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                                        <motion.div
+                                                                            className="h-full bg-gradient-to-r from-primary-500 to-primary-600"
+                                                                            animate={{ width: `${((state.currentQuestion + 1) / activeSection.questions.length) * 100}%` }}
+                                                                        />
+                                                                    </div>
+
+                                                                    {/* Question */}
                                                                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">{currentQ.question}</h2>
 
                                                                     {/* Options */}
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                         {currentQ.options.map((opt, i) => {
                                                                             let cls = "border-gray-200 dark:border-gray-700 hover:border-primary-400";
                                                                             if (state.showResult) {
@@ -640,17 +767,17 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                                                             return (
                                                                                 <button
                                                                                     key={i}
-                                                                                    onClick={() => handleAnswerSelect(group.groupId, i)}
+                                                                                    onClick={() => handleAnswerSelect(bank.bankId, i)}
                                                                                     disabled={state.showResult}
-                                                                                    className={`w-full ${isArabic ? 'text-right' : 'text-left'} p-3 rounded-xl border-2 transition-all ${cls}`}
+                                                                                    className={`w-full ${isArabic ? 'text-right' : 'text-left'} p-4 rounded-xl border-2 transition-all ${cls}`}
                                                                                 >
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <span className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold shrink-0">
+                                                                                    <div className="flex items-center gap-3">
+                                                                                        <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-sm font-bold shrink-0">
                                                                                             {String.fromCharCode(65 + i)}
                                                                                         </span>
-                                                                                        <span className="flex-1 text-gray-900 dark:text-white text-sm line-clamp-2">{opt}</span>
-                                                                                        {state.showResult && i === currentQ.correctAnswer && <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />}
-                                                                                        {state.showResult && i === state.selectedAnswer && i !== currentQ.correctAnswer && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                                                                                        <span className="flex-1 text-gray-900 dark:text-white">{opt}</span>
+                                                                                        {state.showResult && i === currentQ.correctAnswer && <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />}
+                                                                                        {state.showResult && i === state.selectedAnswer && i !== currentQ.correctAnswer && <XCircle className="h-5 w-5 text-red-500 shrink-0" />}
                                                                                     </div>
                                                                                 </button>
                                                                             );
@@ -664,7 +791,7 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                                                                 initial={{ opacity: 0, height: 0 }}
                                                                                 animate={{ opacity: 1, height: "auto" }}
                                                                                 exit={{ opacity: 0, height: 0 }}
-                                                                                className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                                                                                className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
                                                                             >
                                                                                 <p className="text-sm text-blue-800 dark:text-blue-200"><b>{t.explanation}:</b> {currentQ.explanation}</p>
                                                                             </motion.div>
@@ -675,40 +802,55 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                                                     <div className="flex gap-3">
                                                                         {!state.showResult ? (
                                                                             <button
-                                                                                onClick={() => handleSubmit(group.groupId, group)}
+                                                                                onClick={() => handleSubmit(bank.bankId, bank)}
                                                                                 disabled={state.selectedAnswer === null}
-                                                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold disabled:opacity-50 text-sm"
+                                                                                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold disabled:opacity-50"
                                                                             >
                                                                                 {t.confirm}
                                                                             </button>
                                                                         ) : (
                                                                             <button
-                                                                                onClick={() => handleNext(group.groupId, group)}
-                                                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm"
+                                                                                onClick={() => handleNext(bank.bankId, bank)}
+                                                                                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold"
                                                                             >
-                                                                                {state.currentQuestion < group.questions.length - 1 ? (
+                                                                                {state.currentQuestion < activeSection.questions.length - 1 ? (
                                                                                     <>{t.next}<ChevronLeft className={`h-4 w-4 ${!isArabic && 'rotate-180'}`} /></>
+                                                                                ) : state.activeSectionIndex < bank.sections.length - 1 ? (
+                                                                                    <>{t.nextSection}<ChevronLeft className={`h-4 w-4 ${!isArabic && 'rotate-180'}`} /></>
                                                                                 ) : (
                                                                                     <><Trophy className="h-4 w-4" />{t.result}</>
                                                                                 )}
                                                                             </button>
                                                                         )}
                                                                     </div>
-                                                                </>
+                                                                </div>
                                                             )}
                                                         </>
                                                     ) : (
-                                                        /* Group Complete */
-                                                        <div className="text-center py-4">
-                                                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                                                <Trophy className="h-8 w-8 text-white" />
+                                                        /* Bank Complete - Final Score */
+                                                        <div className="text-center py-6">
+                                                            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg">
+                                                                <Trophy className="h-10 w-10 text-white" />
                                                             </div>
-                                                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{t.wellDone}</h3>
-                                                            <div className="text-3xl font-extrabold text-primary-600 mb-1">{pct}%</div>
-                                                            <p className="text-gray-500 mb-4">{t.correctOf.replace('{score}', String(state.score)).replace('{total}', String(group.questions.length))}</p>
+                                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.wellDone}</h3>
+                                                            <div className="text-4xl font-extrabold text-primary-600 mb-2">{pct}%</div>
+                                                            <p className="text-gray-500 mb-4">{t.correctOf.replace('{score}', String(totalScore)).replace('{total}', String(totalQ))}</p>
+
+                                                            {/* Section breakdown */}
+                                                            <div className="flex flex-wrap justify-center gap-2 mb-6">
+                                                                {bank.sections.map((section) => {
+                                                                    const sectionScore = state.scores.get(section.type) || 0;
+                                                                    return (
+                                                                        <span key={section.type} className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm">
+                                                                            {section.typeLabel}: {sectionScore}/{section.questions.length}
+                                                                        </span>
+                                                                    );
+                                                                })}
+                                                            </div>
+
                                                             <button
-                                                                onClick={() => handleRestart(group.groupId)}
-                                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-sm"
+                                                                onClick={() => handleRestart(bank.bankId, bank)}
+                                                                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700"
                                                             >
                                                                 <RotateCcw className="h-4 w-4" />{t.retry}
                                                             </button>

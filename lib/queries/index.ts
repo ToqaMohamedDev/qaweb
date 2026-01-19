@@ -20,6 +20,7 @@ type Subject = Tables['subjects']['Row'];
 type Lesson = Tables['lessons']['Row'];
 type Exam = Tables['comprehensive_exams']['Row'];
 type Question = Tables['lesson_questions']['Row'];
+type QuestionBank = Tables['question_banks']['Row'];
 type Profile = Tables['profiles']['Row'];
 
 // ==========================================
@@ -466,12 +467,16 @@ export function useExams(options?: UseExamsOptions): UseQueryResult<Exam> {
 
 export function useExam(id: string): { data: Exam | null; isLoading: boolean; error: string | null } {
     const [data, setData] = useState<Exam | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(!!id); // فقط loading لو فيه id
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!id) return;
+            if (!id) {
+                setIsLoading(false);
+                return;
+            }
+            setIsLoading(true);
             const supabase = createClient();
             try {
                 const { data: result, error: err } = await supabase
@@ -720,8 +725,125 @@ export function useDeleteQuestions(): UseMutationResult<string[], void> {
 }
 
 // ==========================================
-// Users Hooks
+// Question Banks Hooks (الجدول الجديد - صف واحد لكل بنك)
 // ==========================================
+
+interface UseQuestionBanksOptions {
+    stage_id?: string;
+    subject_id?: string;
+    lesson_id?: string;
+    search?: string;
+}
+
+export function useQuestionBanks(options?: UseQuestionBanksOptions): UseQueryResult<QuestionBank & { lessons?: any; educational_stages?: any; subjects?: any }> {
+    const [data, setData] = useState<(QuestionBank & { lessons?: any; educational_stages?: any; subjects?: any })[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const refetch = useCallback(async () => {
+        const supabase = createClient();
+        setIsLoading(true);
+        try {
+            let query = supabase
+                .from('question_banks')
+                .select('*, lessons(id, title, stage_id, subject_id), educational_stages(id, name, slug), subjects(id, name, slug)')
+                .order('created_at', { ascending: false });
+
+            if (options?.lesson_id) {
+                query = query.eq('lesson_id', options.lesson_id);
+            }
+            if (options?.stage_id) {
+                query = query.eq('stage_id', options.stage_id);
+            }
+            if (options?.subject_id) {
+                query = query.eq('subject_id', options.subject_id);
+            }
+
+            const { data: result, error: err } = await query;
+
+            if (err) throw err;
+            setData((result || []) as any);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Error fetching question banks');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [options?.stage_id, options?.subject_id, options?.lesson_id, options?.search]);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { data, isLoading, error, refetch };
+}
+
+export function useDeleteQuestionBank(): UseMutationResult<string, void> {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string): Promise<void> => {
+        const supabase = createClient();
+        setIsPending(true);
+        setError(null);
+        try {
+            const { error: err } = await supabase
+                .from('question_banks')
+                .delete()
+                .eq('id', id);
+
+            if (err) throw err;
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Error deleting question bank';
+            setError(msg);
+            throw new Error(msg);
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useUpdateQuestionBank(): UseMutationResult<{ id: string; questions: any[] }, QuestionBank> {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: { id: string; questions: any[] }): Promise<QuestionBank> => {
+        const supabase = createClient();
+        setIsPending(true);
+        setError(null);
+        try {
+            const { id, questions } = input;
+            const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
+
+            const { data, error: err } = await supabase
+                .from('question_banks')
+                .update({
+                    questions,
+                    total_questions: questions.length,
+                    total_points: totalPoints,
+                })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (err) throw err;
+            return data;
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Error updating question bank';
+            setError(msg);
+            throw new Error(msg);
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+// ==========================================
+// Users Hooks
+// ===========================================
 
 export function useUsers(): UseQueryResult<Profile> {
     const [data, setData] = useState<Profile[]>([]);

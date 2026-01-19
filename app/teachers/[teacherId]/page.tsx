@@ -989,7 +989,6 @@ function ExamsSection({ exams, teacher, isLoading = false }: { exams: TeacherExa
 
 function ExamCard({
     exam,
-    teacher,
     index,
 }: {
     exam: TeacherExam;
@@ -1036,63 +1035,39 @@ function ExamCard({
 
                         {/* Content */}
                         <div className="relative z-10">
-                            {/* Badge - Top Right */}
-                            <div className="flex justify-end mb-3">
-                                <span className="px-4 py-1.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-bold rounded-lg shadow-md">
-                                    {getExamTypeLabel()}
-                                </span>
-                            </div>
+
 
                             {/* Title - Centered */}
                             <h3 className="text-gray-900 dark:text-white font-bold text-lg text-center leading-relaxed line-clamp-2 mb-5">
                                 {exam.title}
                             </h3>
 
-                            {/* Stats Box */}
-                            <div className="bg-gray-50 dark:bg-white/10 dark:backdrop-blur-md rounded-xl border border-gray-100 dark:border-white/20 p-4 mb-5">
-                                <div className="flex items-center justify-center gap-8">
-                                    {/* Duration */}
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-                                            <Clock className="h-4 w-4 text-white" />
-                                        </div>
-                                        <span className="text-gray-700 dark:text-white/90 text-sm font-medium">
-                                            {exam.duration || '—'} دقيقة
-                                        </span>
+                            {/* Stats Grid - More Spacious */}
+                            <div className="grid grid-cols-2 gap-3 mb-5">
+                                {/* Duration */}
+                                <div className="bg-gray-50 dark:bg-white/10 rounded-xl p-3 text-center border border-gray-100 dark:border-white/10">
+                                    <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                                        <Clock className="h-5 w-5 text-white" />
                                     </div>
+                                    <p className="text-lg font-bold text-gray-900 dark:text-white">{exam.duration || '—'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">دقيقة</p>
+                                </div>
 
-                                    {/* Date */}
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-white/20 flex items-center justify-center border border-gray-300 dark:border-white/30">
-                                            <Calendar className="h-4 w-4 text-gray-600 dark:text-white/80" />
-                                        </div>
-                                        <span className="text-gray-700 dark:text-white/90 text-sm font-medium">
-                                            {formatExamDate(exam.created_at)}
-                                        </span>
+                                {/* Date */}
+                                <div className="bg-gray-50 dark:bg-white/10 rounded-xl p-3 text-center border border-gray-100 dark:border-white/10">
+                                    <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center shadow-sm">
+                                        <Calendar className="h-5 w-5 text-white" />
                                     </div>
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatExamDate(exam.created_at)}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">تاريخ النشر</p>
                                 </div>
                             </div>
 
-                            {/* Footer - Button & Teacher */}
-                            <div className="flex items-center justify-between">
-                                {/* Start Button */}
-                                <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-purple-500/25 transition-all duration-300">
-                                    <GraduationCap className="h-4 w-4" />
-                                    <span>ابدأ الامتحان</span>
-                                </button>
-
-                                {/* Teacher Info */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-gray-600 dark:text-white/80 text-sm font-medium">
-                                        {teacher.name}
-                                    </span>
-                                    <Avatar
-                                        src={teacher.photoURL}
-                                        name={teacher.name}
-                                        size="sm"
-                                    />
-                                </div>
-                            </div>
+                            {/* Start Button - Full Width */}
+                            <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-purple-500/25 transition-all duration-300">
+                                <GraduationCap className="h-5 w-5" />
+                                <span>ابدأ الامتحان</span>
+                            </button>
                         </div>
                     </div>
                 </div>

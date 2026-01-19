@@ -95,6 +95,8 @@ const t = {
         sections: 'قسم',
         cancel: 'إلغاء',
         save: 'حفظ الأسئلة',
+        bankTitle: 'عنوان القالب',
+        bankTitlePlaceholder: 'اكتب عنوان القالب (سيظهر للطالب)',
         classification: 'التصنيف',
         stage: 'المرحلة',
         subject: 'المادة',
@@ -166,6 +168,8 @@ const t = {
         sections: 'section',
         cancel: 'Cancel',
         save: 'Save Questions',
+        bankTitle: 'Template Title',
+        bankTitlePlaceholder: 'Write the template title (shown to students)',
         classification: 'Classification',
         stage: 'Stage',
         subject: 'Subject',
@@ -312,6 +316,7 @@ export default function CreateQuestionsPage() {
 
     // ─── Content State ───
     const [contentType, setContentType] = useState<ContentType>('none');
+    const [bankTitle, setBankTitle] = useState('');  // عنوان القالب الرئيسي
     const [readingTitle, setReadingTitle] = useState('');
     const [readingText, setReadingText] = useState('');
     const [poetryTitle, setPoetryTitle] = useState('');
@@ -492,7 +497,7 @@ export default function CreateQuestionsPage() {
     };
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SAVE HANDLER
+    // SAVE HANDLER - يحفظ في جدول question_banks كصف واحد
     // ═══════════════════════════════════════════════════════════════════════
 
     const handleSave = async () => {
@@ -524,11 +529,16 @@ export default function CreateQuestionsPage() {
         setError('');
 
         try {
-            let contentMeta = null;
+            // تجهيز بيانات المحتوى (نص قراءة أو شعر)
+            let contentData = null;
             if (contentType === 'reading') {
-                contentMeta = { type: 'reading', title: readingTitle.trim(), text: readingText.trim() };
+                contentData = {
+                    type: 'reading',
+                    title: readingTitle.trim(),
+                    text: readingText.trim()
+                };
             } else if (contentType === 'poetry') {
-                contentMeta = {
+                contentData = {
                     type: 'poetry',
                     title: poetryTitle.trim(),
                     verses: poetryVerses.filter(v => v.firstHalf.trim() || v.secondHalf.trim()).map(v => ({
@@ -538,28 +548,25 @@ export default function CreateQuestionsPage() {
                 };
             }
 
-            // إنشاء معرف فريد لهذه المجموعة من الأسئلة
-            const batchGroupId = `grp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-            const allQuestions: any[] = [];
+            // تجهيز مصفوفة الأسئلة - كل الأسئلة في مصفوفة واحدة
+            const questionsArray: any[] = [];
             let orderIndex = 0;
 
             sections.forEach(section => {
                 section.questions.forEach(q => {
                     const correctIndex = q.options.findIndex(o => o.isCorrect);
-
-                    // Determine if this question type has options
                     const hasOptions = q.type === 'mcq' || q.type === 'true_false';
 
-                    const questionPayload: any = {
-                        lesson_id: selectedLesson,
-                        group_id: batchGroupId, // معرف فريد لهذه المجموعة
-                        stage_id: selectedStage || null,
-                        subject_id: selectedSubject || null,
+                    // إنشاء معرف فريد لكل سؤال
+                    const questionId = `q-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+                    const questionData = {
+                        id: questionId,
+                        type: q.type === 'true_false' ? 'truefalse' : q.type,
                         section_title: { ar: section.titleAr.trim(), en: section.titleEn.trim() },
                         text: { ar: q.textAr.trim(), en: q.textEn.trim() },
-                        type: q.type === 'true_false' ? 'truefalse' : q.type,
-                        options: hasOptions ? q.options.map(o => ({
+                        options: hasOptions ? q.options.map((o, idx) => ({
+                            id: `opt-${idx}`,
                             text: o.textAr || o.textEn,
                             textAr: o.textAr,
                             textEn: o.textEn,
@@ -576,9 +583,8 @@ export default function CreateQuestionsPage() {
                         order_index: orderIndex++,
                         hint: { ar: q.hintAr.trim(), en: q.hintEn.trim() },
                         explanation: { ar: q.explanationAr.trim(), en: q.explanationEn.trim() },
-                        media: contentMeta ? { content: contentMeta } : null,
                         is_active: true,
-                        // New fields for special question types
+                        // حقول إضافية لأنواع الأسئلة الخاصة
                         metadata: {
                             ...(q.type === 'parsing' && { underlinedWord: q.underlinedWord?.trim() || '' }),
                             ...(q.type === 'fill_blank' && {
@@ -587,17 +593,45 @@ export default function CreateQuestionsPage() {
                             ...(q.type === 'extraction' && { extractionTarget: q.extractionTarget?.trim() || '' }),
                         },
                     };
-                    allQuestions.push(questionPayload);
+                    questionsArray.push(questionData);
                 });
             });
 
-            const { error: insertError } = await supabase.from('lesson_questions').insert(allQuestions);
+            // إنشاء عنوان للبنك من حقل العنوان الرئيسي
+            const finalBankTitle = {
+                ar: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'بنك أسئلة جديد',
+                en: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'New Question Bank'
+            };
+
+            // حساب مجموع النقاط
+            const totalPoints = questionsArray.reduce((sum, q) => sum + (q.points || 0), 0);
+
+            // إنشاء صف واحد في جدول question_banks
+            const questionBankPayload = {
+                lesson_id: selectedLesson,
+                stage_id: selectedStage || null,
+                subject_id: selectedSubject || null,
+                title: finalBankTitle,
+                description: { ar: '', en: '' },
+                content_type: contentType,
+                content_data: contentData,
+                questions: questionsArray, // كل الأسئلة في مصفوفة واحدة
+                total_questions: questionsArray.length,
+                total_points: totalPoints,
+                is_active: true,
+            };
+
+            // حفظ في جدول question_banks (صف واحد فقط)
+            const { error: insertError } = await supabase
+                .from('question_banks')
+                .insert([questionBankPayload]);
+
             if (insertError) throw insertError;
 
             setSuccessMessage(labels.successMessage);
             setTimeout(() => router.push('/admin/question-bank'), 2000);
         } catch (err: any) {
-            logger.error('Error saving questions', { context: 'CreateQuestions', data: err });
+            logger.error('Error saving question bank', { context: 'CreateQuestionBank', data: err });
             setError(err?.message || labels.errorSaving);
         } finally {
             setIsLoading(false);
@@ -749,6 +783,20 @@ export default function CreateQuestionsPage() {
                             </span>
                         </button>
                     ))}
+                </div>
+
+                {/* Bank Title */}
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {labels.bankTitle} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={bankTitle}
+                        onChange={(e) => setBankTitle(e.target.value)}
+                        placeholder={labels.bankTitlePlaceholder}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    />
                 </div>
             </div>
 

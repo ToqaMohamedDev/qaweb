@@ -37,6 +37,20 @@ export function useAuth(): UseAuthReturn {
             const { data: { user }, error } = await supabase.auth.getUser();
 
             if (error) {
+                // If session is corrupted, clear localStorage and reset
+                if (error.message.includes('Cannot create property') ||
+                    error.message.includes('JSON') ||
+                    error.name === 'TypeError') {
+                    console.warn('Corrupted session detected, clearing localStorage...');
+                    if (typeof window !== 'undefined') {
+                        // Clear all Supabase-related localStorage items
+                        Object.keys(localStorage).forEach(key => {
+                            if (key.includes('supabase') || key.includes('sb-')) {
+                                localStorage.removeItem(key);
+                            }
+                        });
+                    }
+                }
                 setState({
                     user: null,
                     profile: null,
@@ -83,6 +97,19 @@ export function useAuth(): UseAuthReturn {
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Authentication error';
+
+            // Clear corrupted session data
+            if (err instanceof TypeError || (err instanceof Error && err.message.includes('Cannot create property'))) {
+                console.warn('Auth error - clearing corrupted session data...');
+                if (typeof window !== 'undefined') {
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.includes('supabase') || key.includes('sb-')) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                }
+            }
+
             setState({
                 user: null,
                 profile: null,

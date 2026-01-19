@@ -256,6 +256,89 @@ export type Database = {
         }
         Relationships: []
       }
+      question_banks: {
+        Row: {
+          id: string
+          lesson_id: string
+          stage_id: string | null
+          subject_id: string | null
+          title: Json | null
+          description: Json | null
+          content_type: string | null
+          content_data: Json | null
+          questions: Json | null
+          total_questions: number | null
+          total_points: number | null
+          created_by: string | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          lesson_id: string
+          stage_id?: string | null
+          subject_id?: string | null
+          title?: Json | null
+          description?: Json | null
+          content_type?: string | null
+          content_data?: Json | null
+          questions?: Json | null
+          total_questions?: number | null
+          total_points?: number | null
+          created_by?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          lesson_id?: string
+          stage_id?: string | null
+          subject_id?: string | null
+          title?: Json | null
+          description?: Json | null
+          content_type?: string | null
+          content_data?: Json | null
+          questions?: Json | null
+          total_questions?: number | null
+          total_points?: number | null
+          created_by?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_banks_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_banks_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "educational_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_banks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_banks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_questions: {
         Row: {
           correct_answer: Json | null
