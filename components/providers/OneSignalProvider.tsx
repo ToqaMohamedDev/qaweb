@@ -4,16 +4,13 @@
  * ============================================================================
  * 
  * Provider لتهيئة OneSignal في التطبيق
- * يجب وضعه في layout.tsx
+ * Non-blocking - لن يمنع التطبيق من العمل إذا فشل OneSignal
  * ============================================================================
  */
 
 'use client';
 
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
-import { initOneSignal, loginUser, logoutUser, getNotificationStatus } from '@/lib/onesignal';
-import { getSupabaseClient } from '@/lib/supabase-client';
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 // ============================================================================
 // CONTEXT
@@ -48,66 +45,61 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
     const [isPermitted, setIsPermitted] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
 
-    // تهيئة OneSignal عند تحميل التطبيق
+    // تهيئة OneSignal عند تحميل التطبيق (في الخلفية - لن يمنع التطبيق)
     useEffect(() => {
-        const supabase = getSupabaseClient();
+        // تأخير التهيئة لضمان تحميل التطبيق أولاً
+        const timeoutId = setTimeout(() => {
+            initializeOneSignal();
+        }, 2000); // انتظر 2 ثانية بعد تحميل التطبيق
 
-        const initialize = async () => {
+        return () => clearTimeout(timeoutId);
+    }, []);
+
+    const initializeOneSignal = async () => {
+        // تشغيل في الخلفية بدون blocking
+        try {
+            // التحقق من أننا في المتصفح
+            if (typeof window === 'undefined') return;
+
+            // Dynamic import لتجنب أي مشاكل SSR
+            const { initOneSignal, getNotificationStatus, loginUser } = await import('@/lib/onesignal');
+            const { getSupabaseClient } = await import('@/lib/supabase-client');
+
             const success = await initOneSignal();
             setIsInitialized(success);
 
             if (success) {
-                // التحقق من حالة الإشعارات
-                const status = await getNotificationStatus();
-                setIsPermitted(status.isPermitted);
-                setIsSubscribed(status.isSubscribed);
+                try {
+                    const status = await getNotificationStatus();
+                    setIsPermitted(status.isPermitted);
+                    setIsSubscribed(status.isSubscribed);
 
-                // ربط المستخدم إذا كان مسجل دخوله
-                const { data: { user } } = await supabase.auth.getUser();
+                    // ربط المستخدم إذا كان مسجل دخوله
+                    const supabase = getSupabaseClient();
+                    const { data: { user } } = await supabase.auth.getUser();
 
-                if (user) {
-                    // جلب بيانات المستخدم
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('name, role')
-                        .eq('id', user.id)
-                        .single();
+                    if (user) {
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('name, role')
+                            .eq('id', user.id)
+                            .single();
 
-                    await loginUser(user.id, {
-                        email: user.email,
-                        name: profile?.name ?? undefined,
-                        role: profile?.role as 'student' | 'teacher' | 'admin',
-                    });
+                        await loginUser(user.id, {
+                            email: user.email,
+                            name: profile?.name ?? undefined,
+                            role: profile?.role as 'student' | 'teacher' | 'admin',
+                        });
+                    }
+                } catch (e) {
+                    console.warn('OneSignal user setup failed:', e);
                 }
             }
-        };
-
-        initialize();
-
-        // الاستماع لتغييرات حالة تسجيل الدخول
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-                // جلب بيانات المستخدم
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('name, role')
-                    .eq('id', session.user.id)
-                    .single();
-
-                await loginUser(session.user.id, {
-                    email: session.user.email,
-                    name: profile?.name ?? undefined,
-                    role: profile?.role as 'student' | 'teacher' | 'admin',
-                });
-            } else if (event === 'SIGNED_OUT') {
-                await logoutUser();
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
+        } catch (error) {
+            // تجاهل أي خطأ - لن يؤثر على التطبيق
+            console.warn('OneSignal initialization skipped:', error);
+        }
+    };
 
     // طلب إذن الإشعارات
     const requestPermission = async (): Promise<boolean> => {
@@ -124,6 +116,7 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
         }
     };
 
+    // عرض الأطفال مباشرة - لن ننتظر OneSignal
     return (
         <OneSignalContext.Provider
             value={{

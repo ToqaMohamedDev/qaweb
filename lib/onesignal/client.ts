@@ -4,17 +4,16 @@
  * ============================================================================
  * 
  * دوال التعامل مع OneSignal في المتصفح (Client-side)
+ * All functions use dynamic imports to avoid SSR issues
  * ============================================================================
  */
 
 'use client';
 
-import OneSignal from 'react-onesignal';
-import { ONESIGNAL_APP_ID, validateOneSignalConfig } from './config';
-
 // حالة التهيئة
 let isInitialized = false;
 let initializationAttempted = false;
+let OneSignalInstance: any = null;
 
 /**
  * تهيئة OneSignal
@@ -32,20 +31,27 @@ export async function initOneSignal(): Promise<boolean> {
     }
     initializationAttempted = true;
 
-    // التحقق من الإعدادات
-    if (!validateOneSignalConfig()) {
-        return false;
-    }
-
     // التحقق من أننا في المتصفح
     if (typeof window === 'undefined') {
         return false;
     }
 
     try {
-        await OneSignal.init({
+        // Dynamic import to avoid SSR issues
+        const OneSignalModule = await import('react-onesignal');
+        OneSignalInstance = OneSignalModule.default;
+
+        const { ONESIGNAL_APP_ID, validateOneSignalConfig } = await import('./config');
+
+        // التحقق من الإعدادات
+        if (!validateOneSignalConfig()) {
+            console.warn('OneSignal config is not valid');
+            return false;
+        }
+
+        await OneSignalInstance.init({
             appId: ONESIGNAL_APP_ID,
-            allowLocalhostAsSecureOrigin: process.env.NODE_ENV === 'development',
+            allowLocalhostAsSecureOrigin: true,
             serviceWorkerPath: '/OneSignalSDKWorker.js',
         });
 
@@ -62,11 +68,12 @@ export async function initOneSignal(): Promise<boolean> {
 
         // تسجيل خطأ domain restriction بدون كسر التطبيق
         if (error?.message?.includes('Can only be used on')) {
-            console.warn('⚠️ OneSignal: Domain not allowed. Add localhost in OneSignal dashboard for local testing.');
+            console.warn('⚠️ OneSignal: Domain not allowed.');
             return false;
         }
 
-        console.error('❌ Failed to initialize OneSignal:', error);
+        // أي خطأ آخر - نتجاهله ونستمر
+        console.warn('OneSignal init failed (non-blocking):', error?.message || error);
         return false;
     }
 }
@@ -75,64 +82,54 @@ export async function initOneSignal(): Promise<boolean> {
  * طلب إذن الإشعارات من المستخدم
  */
 export async function requestNotificationPermission(): Promise<boolean> {
-    if (!isInitialized) {
+    if (!isInitialized || !OneSignalInstance) {
         console.warn('OneSignal not initialized');
         return false;
     }
 
     try {
-        // التحقق من الإذن الحالي
-        const permission = await OneSignal.Notifications.permission;
+        const permission = await OneSignalInstance.Notifications.permission;
 
         if (permission) {
             console.log('Notifications already permitted');
             return true;
         }
 
-        // طلب الإذن
-        await OneSignal.Slidedown.promptPush();
-
-        // التحقق من النتيجة
-        const newPermission = await OneSignal.Notifications.permission;
+        await OneSignalInstance.Slidedown.promptPush();
+        const newPermission = await OneSignalInstance.Notifications.permission;
         return newPermission;
     } catch (error) {
-        console.error('Failed to request notification permission:', error);
+        console.warn('Failed to request notification permission:', error);
         return false;
     }
 }
 
 /**
  * تسجيل دخول المستخدم مع OneSignal
- * هذا يربط المستخدم بـ OneSignal Player ID
  */
 export async function loginUser(userId: string, userData?: {
     email?: string;
     name?: string;
     role?: 'student' | 'teacher' | 'admin';
 }): Promise<void> {
-    if (!isInitialized) {
-        console.warn('OneSignal not initialized');
+    if (!isInitialized || !OneSignalInstance) {
         return;
     }
 
     try {
-        // تسجيل الدخول باستخدام External User ID
-        await OneSignal.login(userId);
+        await OneSignalInstance.login(userId);
 
-        // إضافة Tags للمستخدم
         if (userData) {
             const tags: Record<string, string> = {};
-
             if (userData.email) tags.email = userData.email;
             if (userData.name) tags.name = userData.name;
             if (userData.role) tags.role = userData.role;
-
-            await OneSignal.User.addTags(tags);
+            await OneSignalInstance.User.addTags(tags);
         }
 
         console.log('✅ User logged in to OneSignal:', userId);
     } catch (error) {
-        console.error('Failed to login user to OneSignal:', error);
+        console.warn('Failed to login user to OneSignal:', error);
     }
 }
 
@@ -140,43 +137,38 @@ export async function loginUser(userId: string, userData?: {
  * تسجيل خروج المستخدم من OneSignal
  */
 export async function logoutUser(): Promise<void> {
-    if (!isInitialized) return;
+    if (!isInitialized || !OneSignalInstance) return;
 
     try {
-        await OneSignal.logout();
-        console.log('User logged out from OneSignal');
+        await OneSignalInstance.logout();
     } catch (error) {
-        console.error('Failed to logout from OneSignal:', error);
+        console.warn('Failed to logout from OneSignal:', error);
     }
 }
 
 /**
  * إضافة Tag للمستخدم
- * مثلاً: عند الاشتراك في مدرس
  */
 export async function addUserTag(key: string, value: string): Promise<void> {
-    if (!isInitialized) return;
+    if (!isInitialized || !OneSignalInstance) return;
 
     try {
-        await OneSignal.User.addTag(key, value);
-        console.log(`Tag added: ${key}=${value}`);
+        await OneSignalInstance.User.addTag(key, value);
     } catch (error) {
-        console.error('Failed to add tag:', error);
+        console.warn('Failed to add tag:', error);
     }
 }
 
 /**
  * إزالة Tag من المستخدم
- * مثلاً: عند إلغاء الاشتراك في مدرس
  */
 export async function removeUserTag(key: string): Promise<void> {
-    if (!isInitialized) return;
+    if (!isInitialized || !OneSignalInstance) return;
 
     try {
-        await OneSignal.User.removeTag(key);
-        console.log(`Tag removed: ${key}`);
+        await OneSignalInstance.User.removeTag(key);
     } catch (error) {
-        console.error('Failed to remove tag:', error);
+        console.warn('Failed to remove tag:', error);
     }
 }
 
@@ -206,14 +198,14 @@ export async function getNotificationStatus(): Promise<{
         return { isSupported: false, isPermitted: false, isSubscribed: false };
     }
 
-    if (!isInitialized) {
+    if (!isInitialized || !OneSignalInstance) {
         return { isSupported: true, isPermitted: false, isSubscribed: false };
     }
 
     try {
-        const isSupported = OneSignal.Notifications.isPushSupported();
-        const isPermitted = await OneSignal.Notifications.permission;
-        const subscription = await OneSignal.User.PushSubscription.optedIn;
+        const isSupported = OneSignalInstance.Notifications.isPushSupported();
+        const isPermitted = await OneSignalInstance.Notifications.permission;
+        const subscription = await OneSignalInstance.User.PushSubscription.optedIn;
 
         return {
             isSupported,
