@@ -66,8 +66,10 @@ export function useHomeLessons() {
                         .from('lessons')
                         .select('*')
                         .eq('subject_id', arabicSubjectRes.data.id)
-                        .eq('educational_stage_id', stage.id)
-                        .order('order', { ascending: true })
+                        // Replace educational_stage_id with stage_id
+                        .eq('stage_id', stage.id)
+                        // Sort by title since 'order' column is missing for now
+                        .order('title', { ascending: true })
                         .limit(6)
                         .then(res => ({ type: 'arabic', ...res }))
                 );
@@ -79,8 +81,10 @@ export function useHomeLessons() {
                         .from('lessons')
                         .select('*')
                         .eq('subject_id', englishSubjectRes.data.id)
-                        .eq('educational_stage_id', stage.id)
-                        .order('order', { ascending: true })
+                        // Replace educational_stage_id with stage_id
+                        .eq('stage_id', stage.id)
+                        // Sort by title since 'order' column is missing for now
+                        .order('title', { ascending: true })
                         .limit(6)
                         .then(res => ({ type: 'english', ...res }))
                 );
@@ -91,7 +95,10 @@ export function useHomeLessons() {
             results.forEach((res: any) => {
                 if (res.type === 'arabic' && res.data) setArabicLessons(res.data);
                 if (res.type === 'english' && res.data) setEnglishLessons(res.data);
-                if (res.error) console.error(`[useLessons] Error fetching ${res.type}:`, res.error);
+                if (res.error) {
+                    console.error(`[useLessons] Error fetching ${res.type}:`, JSON.stringify(res.error, null, 2));
+                    console.error('Full Error Object:', res.error);
+                }
             });
 
             setStatus('success');
