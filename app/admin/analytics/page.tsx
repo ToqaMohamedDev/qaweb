@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BarChart3, Users, GraduationCap, FileText, BookOpen, TrendingUp, TrendingDown, Calendar, Eye, Clock, Target, Award, Loader2, AlertCircle, RefreshCw, Layers } from "lucide-react";
-import { createClient } from "@/lib/supabase";
 
 interface Stats {
     totalUsers: number;
@@ -30,16 +29,14 @@ export default function AnalyticsPage() {
         setLoading(true);
         setError(null);
         try {
-            const supabase = createClient();
-
-            // Fetch stats in parallel with error handling
+            // Fetch stats in parallel using API routes
             const results = await Promise.allSettled([
-                supabase.from("profiles").select("id, role, is_verified"),
-                supabase.from("comprehensive_exams").select("id, is_published, exam_title, language, created_at").order("created_at", { ascending: false }).limit(5),
-                supabase.from("lessons").select("id, is_published"),
-                supabase.from("subjects").select("id, name, is_active"),
-                supabase.from("educational_stages").select("id"),
-                supabase.from("comprehensive_exam_attempts").select("id"),
+                fetch('/api/admin/query?table=profiles&select=id,role,is_verified&limit=2000').then(r => r.json()),
+                fetch('/api/admin/query?table=comprehensive_exams&select=id,is_published,exam_title,language,created_at&orderBy=created_at&ascending=false&limit=100').then(r => r.json()),
+                fetch('/api/admin/query?table=lessons&select=id,is_published&limit=2000').then(r => r.json()),
+                fetch('/api/admin/query?table=subjects&select=id,name,is_active&limit=500').then(r => r.json()),
+                fetch('/api/admin/query?table=educational_stages&select=id&limit=100').then(r => r.json()),
+                fetch('/api/admin/query?table=comprehensive_exam_attempts&select=id&limit=5000').then(r => r.json()),
             ]);
 
             const getDataOrEmpty = (result: PromiseSettledResult<any>) => {

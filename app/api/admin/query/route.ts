@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
             'profiles', 'educational_stages', 'subjects', 'lessons',
             'comprehensive_exams', 'lesson_questions', 'user_progress',
             'notifications', 'support_chats', 'chat_messages', 'devices',
-            'question_banks'
+            'question_banks', 'site_settings', 'messages', 'comprehensive_exam_attempts'
         ];
 
         if (!allowedTables.includes(table)) {

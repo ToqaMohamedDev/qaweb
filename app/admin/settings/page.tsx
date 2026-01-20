@@ -159,30 +159,36 @@ export default function SettingsPage() {
         setError(null);
 
         try {
-            const supabase = createClient();
-            const { data, error: fetchError } = await supabase.from("site_settings").select("*");
+            // Use API route for fetching settings
+            const res = await fetch('/api/admin/query?table=site_settings&select=*&limit=100');
+            const result = await res.json();
 
-            if (fetchError) {
-                if (fetchError.code === "42P01") {
+            if (!res.ok) {
+                if (result.error?.includes('42P01')) {
                     // Table doesn't exist, use localStorage
                     setUseLocalStorage(true);
                     const stored = localStorage.getItem("admin_settings");
                     if (stored) setSettings(JSON.parse(stored));
                 } else {
-                    throw fetchError;
+                    throw new Error(result.error);
                 }
-            } else if (data && data.length > 0) {
+            } else if (result.data && result.data.length > 0) {
                 const settingsObj = { ...DEFAULT_SETTINGS };
-                data.forEach((row) => {
+                result.data.forEach((row: any) => {
                     if (row.key in settingsObj) {
                         (settingsObj as any)[row.key] = row.value;
                     }
                 });
                 setSettings(settingsObj);
+            } else {
+                // No settings found, use localStorage
+                setUseLocalStorage(true);
+                const stored = localStorage.getItem("admin_settings");
+                if (stored) setSettings(JSON.parse(stored));
             }
 
             // Fetch DB stats
-            await fetchDbStats(supabase);
+            await fetchDbStats();
         } catch (err: any) {
             setError(err.message || "حدث خطأ في جلب الإعدادات");
         } finally {
@@ -190,14 +196,13 @@ export default function SettingsPage() {
         }
     }, []);
 
-    const fetchDbStats = async (supabase: any) => {
+    const fetchDbStats = async () => {
         let totalRows = 0;
         for (const table of DB_TABLES) {
             try {
-                const { count } = await supabase
-                    .from(table as any)
-                    .select("*", { count: "exact", head: true });
-                totalRows += count || 0;
+                const res = await fetch(`/api/admin/query?table=${table}&select=id&limit=1`);
+                const result = await res.json();
+                totalRows += result.count || 0;
             } catch {
                 /* ignore */
             }
@@ -357,8 +362,8 @@ function SettingsHeader({ useLocalStorage, saving, saved, onRefresh, onSave }: S
                     onClick={onSave}
                     disabled={saving}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all ${saved
-                            ? "bg-green-500 text-white"
-                            : "bg-primary-500 hover:bg-primary-600 text-white"
+                        ? "bg-green-500 text-white"
+                        : "bg-primary-500 hover:bg-primary-600 text-white"
                         } disabled:opacity-50`}
                 >
                     {saving ? (
@@ -393,8 +398,8 @@ function TabsSidebar({ activeTab, onTabChange }: TabsSidebarProps) {
                     key={tab.id}
                     onClick={() => onTabChange(tab.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === tab.id
-                            ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600"
-                            : "bg-white dark:bg-[#1c1c24] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                        ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600"
+                        : "bg-white dark:bg-[#1c1c24] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                         }`}
                 >
                     <tab.icon className="h-5 w-5" />
@@ -467,8 +472,8 @@ function AppearanceTab({ settings, onChange }: AppearanceTabProps) {
                             key={opt.value}
                             onClick={() => onChange("appearance", "theme", opt.value)}
                             className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-colors ${settings.theme === opt.value
-                                    ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                                ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                                 }`}
                         >
                             <opt.icon

@@ -84,29 +84,28 @@ export default function NotificationsPage() {
         setLoading(true);
         setError(null);
         try {
-            const supabase = createClient();
+            // Use API route for fetching profiles
+            const profilesRes = await fetch('/api/admin/query?table=profiles&select=role&limit=1000');
+            const profilesResult = await profilesRes.json();
+            const profiles = profilesResult.data || [];
 
-            // جلب عدد المستخدمين
-            const { data: profiles } = await supabase.from("profiles").select("role");
-            const students = profiles?.filter(p => p.role === "student").length || 0;
-            const teachers = profiles?.filter(p => p.role === "teacher").length || 0;
-            const admins = profiles?.filter(p => p.role === "admin").length || 0;
-            setUserCounts({ all: (profiles?.length || 0), students, teachers, admins });
+            const students = profiles.filter((p: any) => p.role === "student").length || 0;
+            const teachers = profiles.filter((p: any) => p.role === "teacher").length || 0;
+            const admins = profiles.filter((p: any) => p.role === "admin").length || 0;
+            setUserCounts({ all: (profiles.length || 0), students, teachers, admins });
 
-            // جلب الإشعارات
-            const { data, error } = await supabase
-                .from("notifications")
-                .select("*")
-                .order("created_at", { ascending: false });
+            // Use API route for fetching notifications
+            const notifRes = await fetch('/api/admin/query?table=notifications&orderBy=created_at&ascending=false&limit=500');
+            const notifResult = await notifRes.json();
 
-            if (error) {
-                if (error.code === "42P01") {
+            if (!notifRes.ok) {
+                if (notifResult.error?.includes('42P01')) {
                     setError("جدول الإشعارات غير موجود. يرجى تنفيذ الـ migration أولاً.");
                     return;
                 }
-                throw error;
+                throw new Error(notifResult.error);
             }
-            setNotifications(data || []);
+            setNotifications(notifResult.data || []);
         } catch (err: any) {
             setError(err.message || "حدث خطأ في جلب البيانات");
         } finally {

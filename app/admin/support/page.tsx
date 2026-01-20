@@ -66,20 +66,18 @@ export default function SupportChatsPage() {
         setLoading(true);
         setError(null);
         try {
-            const supabase = createClient();
-            const { data, error } = await supabase
-                .from("support_chats")
-                .select("*")
-                .order("updated_at", { ascending: false });
+            // Use API route instead of direct Supabase call
+            const res = await fetch('/api/admin/query?table=support_chats&orderBy=updated_at&ascending=false&limit=100');
+            const result = await res.json();
 
-            if (error) {
-                if (error.code === "42P01") {
+            if (!res.ok) {
+                if (result.error?.includes('42P01')) {
                     setError("جدول المحادثات غير موجود. يرجى تنفيذ الـ migration أولاً.");
                     return;
                 }
-                throw error;
+                throw new Error(result.error || 'Failed to fetch chats');
             }
-            setChats(data || []);
+            setChats(result.data || []);
         } catch (err: any) {
             setError(err.message || "حدث خطأ في جلب البيانات");
         } finally {
