@@ -50,10 +50,20 @@ export function Navbar() {
     // Handlers
     const handleSignOut = useCallback(async () => {
         try {
-            const { signOut } = await import('@/lib/supabase');
-            await signOut();
-            // Clear the store
+            // Clear the store first (instant feedback)
             useAuthStore.getState().reset();
+
+            // Then try to sign out from Supabase (may fail but that's OK)
+            try {
+                const { signOut } = await import('@/lib/supabase');
+                await signOut();
+            } catch {
+                // Ignore Supabase errors - we've already cleared local state
+            }
+
+            // Clear cookies via API
+            await fetch('/api/auth/logout', { method: 'POST' }).catch(() => { });
+
             router.push('/login');
             setIsMobileMenuOpen(false);
             setIsProfileMenuOpen(false);
@@ -101,9 +111,9 @@ export function Navbar() {
 
                             <ThemeToggle />
 
-                            {/* Desktop Auth */}
+                            {/* Desktop Auth - Always show something */}
                             <div className="hidden md:flex items-center gap-2.5">
-                                {!isLoading && user ? (
+                                {user ? (
                                     <UserProfileDropdown
                                         user={supabaseStyleUser as any}
                                         isUserAdmin={isUserAdmin}
@@ -113,9 +123,9 @@ export function Navbar() {
                                         onClose={() => setIsProfileMenuOpen(false)}
                                         onSignOut={handleSignOut}
                                     />
-                                ) : !isLoading ? (
+                                ) : (
                                     <AuthButtons />
-                                ) : null}
+                                )}
                             </div>
 
                             {/* Mobile Menu Button */}
