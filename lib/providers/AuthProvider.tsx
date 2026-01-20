@@ -28,15 +28,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 if (res.ok) {
                     const data = await res.json();
+                    console.log('[AuthProvider] API Response:', JSON.stringify(data, null, 2));
 
                     if (data.user && data.profile) {
-                        console.log('[AuthProvider] Session found via API');
+                        console.log('[AuthProvider] Session found via API - Setting user');
                         setUser(mapDbRowToProfile(data.profile as UserProfileDBRow));
 
                         // Device tracking
                         const deviceInfo = detectDeviceInfo();
                         trackDevice({ userId: data.user.id, ...deviceInfo }).catch(() => { });
 
+                        setLoading(false);
+                        return;
+                    } else if (data.user && !data.profile) {
+                        console.warn('[AuthProvider] User exists but NO PROFILE! User ID:', data.user.id);
+                        // Still set as logged in with minimal info
+                        setUser({
+                            id: data.user.id,
+                            email: data.user.email,
+                            name: data.user.email?.split('@')[0] || 'User',
+                            role: 'student',
+                        } as any);
                         setLoading(false);
                         return;
                     }
