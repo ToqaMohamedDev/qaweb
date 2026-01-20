@@ -139,6 +139,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
             try {
                 let stageId: string | null = null;
 
+                // Try to get user's stage from profile
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     const profile = await getProfile(user.id);
@@ -147,26 +148,24 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                     }
                 }
 
-                if (!stageId) {
-                    const { data: stages } = await supabase
-                        .from("educational_stages")
-                        .select("id, name")
-                        .or("name.ilike.%ثالث%ثانوي%,name.ilike.%الثالث الثانوي%")
-                        .limit(1);
+                // Fetch all stages via API
+                const stagesRes = await fetch('/api/public/data?entity=stages');
+                const stagesResult = await stagesRes.json();
+                const allStages = stagesResult.data || [];
 
-                    if (stages && stages.length > 0) {
-                        stageId = stages[0].id;
-                        setStageName(stages[0].name);
+                // If no user stage, find default stage
+                if (!stageId) {
+                    const defaultStage = allStages.find((s: any) =>
+                        s.name?.includes('ثالث') && s.name?.includes('ثانوي')
+                    );
+                    if (defaultStage) {
+                        stageId = defaultStage.id;
+                        setStageName(defaultStage.name);
                     }
                 } else {
-                    const { data: stage } = await supabase
-                        .from("educational_stages")
-                        .select("name")
-                        .eq("id", stageId)
-                        .single();
-
-                    if (stage) {
-                        setStageName(stage.name);
+                    const userStage = allStages.find((s: any) => s.id === stageId);
+                    if (userStage) {
+                        setStageName(userStage.name);
                     }
                 }
 
@@ -175,51 +174,44 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                     return;
                 }
 
-                // Fetch subject
-                const { data: subjectData } = await supabase
-                    .from("subjects")
-                    .select("id")
-                    .or(subjectSearchPatterns)
-                    .limit(1)
-                    .single();
+                // Fetch subjects via API
+                const subjectsRes = await fetch('/api/public/data?entity=subjects');
+                const subjectsResult = await subjectsRes.json();
+                const allSubjects = subjectsResult.data || [];
+
+                // Find subject by slug or name
+                const subjectData = allSubjects.find((s: any) =>
+                    s.slug === subject ||
+                    s.name?.toLowerCase().includes(subject) ||
+                    (subject === 'arabic' && s.name?.includes('عربي')) ||
+                    (subject === 'english' && (s.name?.toLowerCase().includes('english') || s.name?.includes('انجليزي')))
+                );
 
                 if (!subjectData) {
                     setIsLoading(false);
                     return;
                 }
 
-                // Fetch lessons
-                const { data: lessonsData } = await supabase
-                    .from("lessons")
-                    .select("id, title, description")
-                    .eq("subject_id", subjectData.id)
-                    .eq("stage_id", stageId)
-                    .eq("is_published", true)
-                    .order("order_index", { ascending: true });
+                // Fetch lessons via API
+                const lessonsRes = await fetch(`/api/public/data?entity=lessons&stageId=${stageId}&subjectId=${subjectData.id}`);
+                const lessonsResult = await lessonsRes.json();
+                setLessons(lessonsResult.data || []);
 
-                setLessons(lessonsData || []);
+                // Fetch exams via API
+                const examsRes = await fetch(`/api/public/data?entity=exams&stageId=${stageId}&language=${subject}`);
+                const examsResult = await examsRes.json();
 
-                // Fetch comprehensive_exams (امتحانات الأدمن فقط)
-                const { data: comprehensiveData } = await supabase
-                    .from("comprehensive_exams")
-                    .select("id, exam_title, exam_description, duration_minutes, total_marks")
-                    .eq("language", subject)
-                    .eq("is_published", true)
-                    .or(`stage_id.eq.${stageId},stage_id.is.null`)
-                    .order("created_at", { ascending: false });
-
-                // Format comprehensive exams
-                const formattedComprehensive: Exam[] = (comprehensiveData || []).map(e => ({
+                // Format exams
+                const formattedExams: Exam[] = (examsResult.data || []).map((e: any) => ({
                     id: e.id,
-                    title: e.exam_title || (isArabic ? 'امتحان شامل' : 'Comprehensive Exam'),
-                    description: e.exam_description || null,
+                    title: e.title || (isArabic ? 'امتحان شامل' : 'Comprehensive Exam'),
+                    description: e.description || null,
                     duration_minutes: e.duration_minutes,
                     total_marks: e.total_marks,
                     type: 'comprehensive' as const
                 }));
 
-                // Set exams (comprehensive only - امتحانات الأدمن فقط)
-                setExams(formattedComprehensive);
+                setExams(formattedExams);
 
             } catch (error) {
                 logger.error('Error fetching data', { context: `${subject}Page`, data: error });

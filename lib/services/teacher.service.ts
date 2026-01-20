@@ -2,11 +2,11 @@
  * Teacher Service
  * 
  * Handles teacher-specific operations
+ * Uses API routes for Vercel compatibility
  */
 
 import { getSupabaseClient } from '../supabase-client';
-import type { Profile, TeacherExam, TeacherRating, TablesInsert } from '../database.types';
-import { getSubscriberCount } from './subscription.service';
+import type { Profile, TeacherExam, TeacherRating } from '../database.types';
 
 // ==========================================
 // Types
@@ -29,134 +29,37 @@ export interface TeacherDetails extends Profile {
 // ==========================================
 
 /**
- * Get all approved teachers
+ * Get all approved teachers - Uses API route for Vercel compatibility
  */
 export async function getTeachers(): Promise<Profile[]> {
-    const supabase = getSupabaseClient();
+    try {
+        // Use public API route instead of direct Supabase call
+        const res = await fetch('/api/public/data?entity=teachers&limit=200');
+        const result = await res.json();
 
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'teacher')
-        .eq('is_teacher_approved', true)
-        .order('subscriber_count', { ascending: false });
-
-    if (error) {
-        if (error.code === '42501') {
-            console.warn('[TeacherService] Permission denied (RLS). Please run the fix_permissions.sql script.');
+        if (!res.ok || !result.success) {
+            console.error('Error fetching teachers via API:', result.error);
             return [];
         }
+
+        return result.data || [];
+    } catch (error) {
         console.error('Error fetching teachers:', error);
-        throw new Error(error.message || 'Failed to fetch teachers');
+        return [];
     }
-
-    if (!data || data.length === 0) return [];
-
-    // Get exam counts for each teacher from BOTH tables
-    const teacherIds = data.map(t => t.id);
-
-    // Count from teacher_exams
-    const { data: teacherExamCounts } = await supabase
-        .from('teacher_exams')
-        .select('created_by')
-        .in('created_by', teacherIds)
-        .eq('is_published', true);
-
-    // Count from comprehensive_exams
-    const { data: compExamCounts } = await supabase
-        .from('comprehensive_exams')
-        .select('created_by')
-        .in('created_by', teacherIds)
-        .eq('is_published', true);
-
-    // Build combined exam count map
-    const examCountMap: Record<string, number> = {};
-
-    (teacherExamCounts || []).forEach(exam => {
-        examCountMap[exam.created_by] = (examCountMap[exam.created_by] || 0) + 1;
-    });
-
-    (compExamCounts || []).forEach(exam => {
-        if (exam.created_by) {
-            examCountMap[exam.created_by] = (examCountMap[exam.created_by] || 0) + 1;
-        }
-    });
-
-    // Map snake_case to camelCase for UI components
-    // Note: New columns (cover_image_url, is_verified, etc.) are added via SQL migration
-    return data.map(teacher => {
-        const t = teacher as any; // Cast to any to access new columns
-        const actualExamCount = examCountMap[teacher.id] || 0;
-        return {
-            ...teacher,
-            // camelCase aliases for UI components
-            coverImageURL: t.cover_image_url || null,
-            photoURL: t.avatar_url,
-            displayName: t.name,
-            isVerified: t.is_verified || false,
-            specialty: t.specialization || t.bio,
-            subscriberCount: t.subscriber_count || 0,
-            // Use actual exam count from query, not the potentially stale exam_count column
-            examsCount: actualExamCount,
-            exams_count: actualExamCount,
-        };
-    }) as Profile[];
 }
 
 /**
  * Get teachers with stats (exams count, subscriber count)
  */
 export async function getTeachersWithStats(): Promise<TeacherWithStats[]> {
-    const supabase = getSupabaseClient();
-
-    const { data: teachers, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'teacher')
-        .eq('is_teacher_approved', true)
-        .order('subscriber_count', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching teachers with stats:', error);
-        throw new Error(error.message || 'Failed to fetch teachers with stats');
-    }
-    if (!teachers || teachers.length === 0) return [];
-
-    // Get exam counts for each teacher from BOTH tables
-    const teacherIds = teachers.map(t => t.id);
-
-    // Count from teacher_exams
-    const { data: teacherExamCounts } = await supabase
-        .from('teacher_exams')
-        .select('created_by')
-        .in('created_by', teacherIds)
-        .eq('is_published', true);
-
-    // Count from comprehensive_exams
-    const { data: compExamCounts } = await supabase
-        .from('comprehensive_exams')
-        .select('created_by')
-        .in('created_by', teacherIds)
-        .eq('is_published', true);
-
-    // Build combined exam count map
-    const examCountMap: Record<string, number> = {};
-
-    (teacherExamCounts || []).forEach(exam => {
-        examCountMap[exam.created_by] = (examCountMap[exam.created_by] || 0) + 1;
-    });
-
-    (compExamCounts || []).forEach(exam => {
-        if (exam.created_by) {
-            examCountMap[exam.created_by] = (examCountMap[exam.created_by] || 0) + 1;
-        }
-    });
-
+    // Uses same API route
+    const teachers = await getTeachers();
     return teachers.map(teacher => ({
         ...teacher,
-        exams_count: examCountMap[teacher.id] || 0,
+        exams_count: (teacher as any).exams_count || 0,
         subscriber_count: teacher.subscriber_count || 0,
-    }));
+    })) as TeacherWithStats[];
 }
 
 /**
