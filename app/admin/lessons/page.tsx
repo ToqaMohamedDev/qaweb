@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Pencil, Trash2, X, Save, FileText, ChevronDown, Eye, EyeOff, MessageSquare, Sparkles, GraduationCap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BookOpen, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { GridSkeleton, StatsCardSkeleton } from "@/components/ui/Skeleton";
-import { useLessons, useSubjects, useStages, useCreateLesson, useUpdateLesson, useDeleteLesson } from "@/lib/queries";
+import { useLessonsAPI, useSubjectsAPI, useStagesAPI, useCreateLessonAPI, useUpdateLessonAPI, useDeleteLessonAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
 import { ConfirmDialog } from "@/components/shared"; // Keeping for safety if used elsewhere, but we are removing usage here
 import { DeleteConfirmModal } from "@/components/admin";
@@ -38,18 +38,22 @@ export default function LessonsPage() {
     const [currentLesson, setCurrentLesson] = useState<Partial<Lesson> | null>(null);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; lessonId: string | null; lessonTitle: string }>({ isOpen: false, lessonId: null, lessonTitle: "" });
 
-    // Queries
-    const { data: stages = [] } = useStages();
-    const { data: subjects = [] } = useSubjects();
-    const { data: lessons = [], isLoading: isQueryLoading } = useLessons({
-        stage_id: selectedStage === "all" ? undefined : selectedStage,
-        subject_id: selectedSubject === "all" ? undefined : selectedSubject
+    // Queries (API-based for Vercel compatibility)
+    const { data: stages = [] } = useStagesAPI();
+    const { data: subjects = [] } = useSubjectsAPI();
+    const { data: allLessons = [], isLoading: isQueryLoading } = useLessonsAPI();
+
+    // Filter lessons client-side
+    const lessons = allLessons.filter((lesson: any) => {
+        const matchStage = selectedStage === "all" || lesson.stage_id === selectedStage;
+        const matchSubject = selectedSubject === "all" || lesson.subject_id === selectedSubject;
+        return matchStage && matchSubject;
     });
 
     // Mutations
-    const createMutation = useCreateLesson();
-    const updateMutation = useUpdateLesson();
-    const deleteMutation = useDeleteLesson();
+    const createMutation = useCreateLessonAPI();
+    const updateMutation = useUpdateLessonAPI();
+    const deleteMutation = useDeleteLessonAPI();
 
     const isLoading = isQueryLoading;
     const isSaving = createMutation.isPending || updateMutation.isPending;

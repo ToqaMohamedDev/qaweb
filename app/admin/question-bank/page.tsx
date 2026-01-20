@@ -22,7 +22,7 @@ import {
     MessageSquare,
     List,
 } from "lucide-react";
-import { useQuestionBanks, useDeleteQuestionBank, useStages, useSubjects, useLessons } from "@/lib/queries";
+import { useQuestionBanksAPI, useDeleteQuestionBankAPI, useStagesAPI, useSubjectsAPI, useLessonsAPI } from "@/lib/queries/adminQueries";
 import { LoadingSpinner, NoQuestionsFound } from "@/components/shared";
 import { DeleteConfirmModal } from "@/components/admin";
 import { useUIStore } from "@/lib/stores";
@@ -105,21 +105,33 @@ export default function QuestionBankPage() {
     const [selectedSubject, setSelectedSubject] = useState('');
     const [selectedLesson, setSelectedLesson] = useState('');
 
-    // ─── Queries ───
-    const { data: stages = [] } = useStages();
-    const { data: subjects = [] } = useSubjects();
-    const { data: lessons = [] } = useLessons({ stage_id: selectedStage, subject_id: selectedSubject });
+    // ─── Queries (API-based for Vercel compatibility) ───
+    const { data: stages = [] } = useStagesAPI();
+    const { data: subjects = [] } = useSubjectsAPI();
+    const { data: allLessons = [] } = useLessonsAPI();
 
-    const questionBanksResult = useQuestionBanks({
-        stage_id: selectedStage || undefined,
-        subject_id: selectedSubject || undefined,
-        lesson_id: selectedLesson || undefined,
+    // Filter lessons client-side
+    const lessons = allLessons.filter((l: any) => {
+        const matchStage = !selectedStage || l.stage_id === selectedStage;
+        const matchSubject = !selectedSubject || l.subject_id === selectedSubject;
+        return matchStage && matchSubject;
     });
-    const questionBanks: QuestionBankData[] = (questionBanksResult.data || []) as any;
+
+    const questionBanksResult = useQuestionBanksAPI();
+    const allQuestionBanks: QuestionBankData[] = (questionBanksResult.data || []) as any;
+
+    // Filter question banks client-side
+    const questionBanks = allQuestionBanks.filter((bank: any) => {
+        const matchStage = !selectedStage || bank.stage_id === selectedStage;
+        const matchSubject = !selectedSubject || bank.subject_id === selectedSubject;
+        const matchLesson = !selectedLesson || bank.lesson_id === selectedLesson;
+        return matchStage && matchSubject && matchLesson;
+    });
+
     const isLoading = questionBanksResult.isLoading;
     const refetch = questionBanksResult.refetch;
 
-    const deleteBankMutation = useDeleteQuestionBank();
+    const deleteBankMutation = useDeleteQuestionBankAPI();
     const isDeleting = deleteBankMutation.isPending;
 
     // ─── Stats ───

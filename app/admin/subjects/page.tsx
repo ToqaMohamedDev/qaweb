@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Pencil, Trash2, X, Save, BookOpen, Sparkles, Loader2, Image as ImageIcon } from "lucide-react";
 import { GridSkeleton, StatsCardSkeleton } from "@/components/ui/Skeleton";
-import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from "@/lib/queries";
+import { useSubjectsAPI, useCreateSubjectAPI, useUpdateSubjectAPI, useDeleteSubjectAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
 import { ConfirmDialog } from "@/components/shared"; // Keeping if needed else removed
 import { DeleteConfirmModal } from "@/components/admin";
@@ -35,11 +35,11 @@ const subjectColors = [
 export default function SubjectsPage() {
     const { addToast } = useUIStore();
 
-    // Queries & Mutations
-    const { data: subjects = [], isLoading: isQueryLoading } = useSubjects();
-    const createMutation = useCreateSubject();
-    const updateMutation = useUpdateSubject();
-    const deleteMutation = useDeleteSubject();
+    // Queries & Mutations (API-based for Vercel compatibility)
+    const { data: subjects = [], isLoading: isQueryLoading } = useSubjectsAPI();
+    const createMutation = useCreateSubjectAPI();
+    const updateMutation = useUpdateSubjectAPI();
+    const deleteMutation = useDeleteSubjectAPI();
 
     const isLoading = isQueryLoading;
     const isSaving = createMutation.isPending || updateMutation.isPending;

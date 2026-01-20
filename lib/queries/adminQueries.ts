@@ -520,3 +520,54 @@ export function useDeleteExamAPI(): UseMutationResult {
     return { mutateAsync, isPending, error };
 }
 
+// ==========================================
+// Question Banks Hooks (Admin API Version)
+// ==========================================
+
+export function useQuestionBanksAPI(): UseQueryResult<any> {
+    const [data, setData] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const refetch = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+
+        const result = await adminQuery<any>({
+            table: 'question_banks',
+            orderBy: 'created_at',
+            ascending: false,
+            limit: 500,
+        });
+
+        setData(result.data);
+        setError(result.error);
+        setIsLoading(false);
+    }, []);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { data, isLoading, error, refetch };
+}
+
+export function useDeleteQuestionBankAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete('question_banks', id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}

@@ -21,7 +21,7 @@ import {
     X,
     Eye,
 } from "lucide-react";
-import { useExams, useDeleteExam, useUpdateExam, useStages, useSubjects } from "@/lib/queries";
+import { useExamsAPI, useDeleteExamAPI, useUpdateExamAPI, useStagesAPI, useSubjectsAPI } from "@/lib/queries/adminQueries";
 import { LoadingSpinner, NoExamsFound } from "@/components/shared";
 import { DeleteConfirmModal } from "@/components/admin";
 import { AdminStatsGrid } from "@/components/admin/shared";
@@ -154,18 +154,22 @@ export default function ExamsManagement() {
     const [selectedStage, setSelectedStage] = useState<string>("");
     const [selectedSubject, setSelectedSubject] = useState<string>("");
 
-    // Auxiliary Data
-    const { data: stages = [] } = useStages();
-    const { data: subjects = [] } = useSubjects();
+    // Auxiliary Data (API-based for Vercel compatibility)
+    const { data: stages = [] } = useStagesAPI();
+    const { data: subjects = [] } = useSubjectsAPI();
 
     // Queries & Mutations
-    const { data: exams = [], isLoading } = useExams({
-        stage_id: selectedStage || undefined,
-        subject_id: selectedSubject || undefined,
+    const { data: allExams = [], isLoading } = useExamsAPI();
+
+    // Filter exams client-side
+    const exams = allExams.filter((exam: any) => {
+        const matchStage = !selectedStage || exam.stage_id === selectedStage;
+        const matchSubject = !selectedSubject || exam.subject_id === selectedSubject;
+        return matchStage && matchSubject;
     });
 
-    const deleteExamMutation = useDeleteExam();
-    const updateExamMutation = useUpdateExam();
+    const deleteExamMutation = useDeleteExamAPI();
+    const updateExamMutation = useUpdateExamAPI();
 
     // Delete Modal State
     const [deleteModalState, setDeleteModalState] = useState<DeleteModalState>({

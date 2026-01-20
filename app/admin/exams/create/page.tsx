@@ -12,8 +12,32 @@ import { logger } from "@/lib/utils/logger";
 import type { Json } from "@/lib/database.types";
 import { useUIStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
-import { useExam, useCreateExam, useUpdateExam, useStages, useSubjects } from "@/lib/queries";
+import { useStagesAPI, useSubjectsAPI, useCreateExamAPI, useUpdateExamAPI } from "@/lib/queries/adminQueries";
 import { LoadingSpinner } from "@/components/shared";
+import { useEffect as useEffectReact, useState as useStateReact, useCallback } from "react";
+
+// Custom hook to fetch single exam via API
+function useExamAPI(examId: string | null) {
+    const [data, setData] = useStateReact<any>(null);
+    const [isLoading, setIsLoading] = useStateReact(false);
+
+    useEffectReact(() => {
+        if (!examId) return;
+
+        setIsLoading(true);
+        fetch(`/api/admin/query?table=comprehensive_exams&filterColumn=id&filterValue=${examId}&limit=1`)
+            .then(res => res.json())
+            .then(result => {
+                if (result.data && result.data.length > 0) {
+                    setData(result.data[0]);
+                }
+            })
+            .catch(err => console.error('Error fetching exam:', err))
+            .finally(() => setIsLoading(false));
+    }, [examId]);
+
+    return { data, isLoading };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -279,14 +303,14 @@ export default function CreateExamPage() {
     const { addToast } = useUIStore();
     const { user, profile, isLoading: isAuthLoading } = useAuth();
 
-    // Queries
-    const { data: fetchedExam, isLoading: isExamLoading } = useExam(examId ?? '');
-    const { data: stages = [] } = useStages();
-    const { data: subjects = [] } = useSubjects();
+    // Queries (API-based for Vercel compatibility)
+    const { data: fetchedExam, isLoading: isExamLoading } = useExamAPI(examId);
+    const { data: stages = [] } = useStagesAPI();
+    const { data: subjects = [] } = useSubjectsAPI();
 
     // Mutations
-    const createExamMutation = useCreateExam();
-    const updateExamMutation = useUpdateExam();
+    const createExamMutation = useCreateExamAPI();
+    const updateExamMutation = useUpdateExamAPI();
     const isSaving = createExamMutation.isPending || updateExamMutation.isPending;
 
     // Language
@@ -692,8 +716,8 @@ export default function CreateExamPage() {
                                             : [...prev, tag]
                                     )}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${branchTags.includes(tag)
-                                            ? 'bg-indigo-500 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
+                                        ? 'bg-indigo-500 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
                                         }`}
                                 >
                                     {tag}
