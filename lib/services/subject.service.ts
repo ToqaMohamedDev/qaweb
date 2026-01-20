@@ -30,26 +30,23 @@ export async function getSubjects(): Promise<Subject[]> {
 }
 
 /**
- * Get active subjects only
+ * Get active subjects only - Uses API route for Vercel compatibility
  */
 export async function getActiveSubjects(): Promise<Subject[]> {
-    const supabase = getSupabaseClient();
+    try {
+        const res = await fetch('/api/public/data?entity=subjects&limit=100');
+        const result = await res.json();
 
-    const { data, error } = await supabase
-        .from('subjects')
-        .select('*')
-        .eq('is_active', true)
-        .order('order_index');
-
-    if (error) {
-        if (error.code === '42501') {
-            console.warn('[SubjectService] Permission denied (RLS). Please run the fix_permissions.sql script.');
+        if (!res.ok || !result.success) {
+            console.error('Error fetching subjects via API:', result.error);
             return [];
         }
+
+        return result.data || [];
+    } catch (error) {
         console.error('Error fetching active subjects:', error);
-        throw new Error(error.message || 'Failed to fetch active subjects');
+        return [];
     }
-    return data || [];
 }
 
 /**
