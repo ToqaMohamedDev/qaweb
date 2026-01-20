@@ -20,6 +20,7 @@ import {
     Shield,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { logger } from "@/lib/utils/logger";
 import { Database } from "@/lib/database.types";
 import { useUIStore } from "@/lib/stores";
@@ -176,13 +177,13 @@ export default function SupportChatsPage() {
         setSending(true);
         try {
             const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
+            const authUser = useAuthStore.getState().user;
 
             // إرسال الرد
             const { error: msgError } = await supabase.from("chat_messages").insert({
                 chat_id: selectedChat.id,
                 sender_type: "admin",
-                sender_id: user?.id || null,
+                sender_id: authUser?.id || null,
                 message: replyText.trim(),
             });
 

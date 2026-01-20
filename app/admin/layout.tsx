@@ -95,7 +95,7 @@ function Sidebar({
 }) {
     const pathname = usePathname();
     const [notificationCount, setNotificationCount] = useState(0);
-    const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+    const { user: authUser } = useAuthStore();
 
     useEffect(() => {
         const fetchNotificationCount = async () => {
@@ -107,20 +107,11 @@ function Sidebar({
         fetchNotificationCount();
     }, []);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                // Try to get profile name
-                const { data: profile } = await supabase.from('profiles').select('name').eq('id', authUser.id).single();
-                setUser({
-                    email: authUser.email || '',
-                    name: profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'مستخدم'
-                });
-            }
-        };
-        fetchUser();
-    }, []);
+    // User info from auth store
+    const user = authUser ? {
+        email: authUser.email || '',
+        name: authUser.name || authUser.email?.split('@')[0] || 'مستخدم'
+    } : null;
 
     const isActive = (href: string) => {
         if (href === "/admin") return pathname === href;
@@ -239,26 +230,17 @@ function Header({
 }) {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+    const { user: authUser } = useAuthStore();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
     const router = useRouter();
 
-    // Fetch user
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                const { data: profile } = await supabase.from('profiles').select('name').eq('id', authUser.id).single();
-                setUser({
-                    email: authUser.email || '',
-                    name: profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'مستخدم'
-                });
-            }
-        };
-        fetchUser();
-    }, []);
+    // User info from auth store
+    const user = authUser ? {
+        email: authUser.email || '',
+        name: authUser.name || authUser.email?.split('@')[0] || 'مستخدم'
+    } : null;
 
     // Fetch notifications
     useEffect(() => {
