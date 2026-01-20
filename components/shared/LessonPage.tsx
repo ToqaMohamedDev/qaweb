@@ -9,7 +9,6 @@ import {
     FileText, ArrowRight, ArrowLeft, CheckCircle2, XCircle, RotateCcw,
     Trophy, Target, ChevronLeft, ChevronDown, ChevronUp, Loader2, BookOpen
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { logger } from "@/lib/utils/logger";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -179,16 +178,15 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
         const fetchLessonData = async () => {
             setIsLoading(true);
             try {
-                // 1. Fetch Lesson Details
-                const { data: lessonData, error: lessonError } = await supabase
-                    .from('lessons')
-                    .select('id, title, description')
-                    .eq('id', lessonId)
-                    .single();
+                // 1. Fetch Lesson Details via API
+                const lessonRes = await fetch(`/api/public/data?entity=lesson&id=${lessonId}`);
+                const lessonResult = await lessonRes.json();
 
-                if (lessonError) throw lessonError;
-                if (!lessonData) throw new Error(t.lessonNotFound);
+                if (!lessonResult.success || !lessonResult.data?.[0]) {
+                    throw new Error(t.lessonNotFound);
+                }
 
+                const lessonData = lessonResult.data[0];
                 setLesson({
                     id: lessonData.id,
                     title: typeof lessonData.title === 'object' && lessonData.title !== null
@@ -199,17 +197,12 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                         : (lessonData.description as string) || '',
                 });
 
-                // 2. Fetch Question Banks
-                const { data: banksData, error: banksError } = await supabase
-                    .from('question_banks')
-                    .select('*')
-                    .eq('lesson_id', lessonId)
-                    .eq('is_active', true)
-                    .order('created_at', { ascending: true });
+                // 2. Fetch Question Banks via API
+                const banksRes = await fetch(`/api/public/data?entity=question_banks&lessonId=${lessonId}`);
+                const banksResult = await banksRes.json();
+                const banksData = banksResult.data || [];
 
-                if (banksError) throw banksError;
-
-                if (!banksData || banksData.length === 0) {
+                if (banksData.length === 0) {
                     setBanks([]);
                     return;
                 }
@@ -689,10 +682,10 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                                                             key={section.type}
                                                                             onClick={() => switchSection(bank.bankId, idx)}
                                                                             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${isActive
-                                                                                    ? 'bg-indigo-500 text-white shadow-lg'
-                                                                                    : isDone
-                                                                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                                                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                                                                ? 'bg-indigo-500 text-white shadow-lg'
+                                                                                : isDone
+                                                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                                                                                 }`}
                                                                         >
                                                                             {isDone && <CheckCircle2 className="h-4 w-4" />}

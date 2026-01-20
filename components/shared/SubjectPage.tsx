@@ -16,10 +16,8 @@ import {
     GraduationCap,
 } from "lucide-react";
 import { StructuredData, createCourseStructuredData } from "@/components/StructuredData";
-import { supabase, getProfile } from "@/lib/supabase";
 import { logger } from "@/lib/utils/logger";
 import { HomePageLessonsGridSkeleton } from "@/components/ui/Skeleton";
-import type { SupportedLanguage } from "@/lib/i18n";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -137,52 +135,26 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                let stageId: string | null = null;
-
-                // Try to get user's stage from profile
-                try {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (user) {
-                        const profile = await getProfile(user.id);
-                        if ((profile as any)?.educational_stage_id) {
-                            stageId = (profile as any).educational_stage_id;
-                        }
-                    }
-                } catch (authError) {
-                    console.log('User not authenticated, using default stage');
-                }
-
-                // Fetch all stages via API
+                // Fetch all stages via API (no auth needed)
                 const stagesRes = await fetch('/api/public/data?entity=stages');
-                if (!stagesRes.ok) {
-                    console.error('Failed to fetch stages:', stagesRes.status);
-                }
                 const stagesResult = await stagesRes.json();
                 const allStages = stagesResult.data || [];
-                console.log('Fetched stages:', allStages.length);
 
-                // If no user stage, find default stage
-                if (!stageId) {
-                    const defaultStage = allStages.find((s: any) =>
-                        s.name?.includes('ثالث') && s.name?.includes('ثانوي')
-                    );
-                    if (defaultStage) {
-                        stageId = defaultStage.id;
-                        setStageName(defaultStage.name);
-                    } else if (allStages.length > 0) {
-                        // Fallback to first stage if no default found
-                        stageId = allStages[0].id;
-                        setStageName(allStages[0].name);
-                    }
-                } else {
-                    const userStage = allStages.find((s: any) => s.id === stageId);
-                    if (userStage) {
-                        setStageName(userStage.name);
-                    }
+                // Find default stage (الصف الثالث الثانوي)
+                let stageId: string | null = null;
+                const defaultStage = allStages.find((s: any) =>
+                    s.name?.includes('ثالث') && s.name?.includes('ثانوي')
+                );
+
+                if (defaultStage) {
+                    stageId = defaultStage.id;
+                    setStageName(defaultStage.name);
+                } else if (allStages.length > 0) {
+                    stageId = allStages[0].id;
+                    setStageName(allStages[0].name);
                 }
 
                 if (!stageId) {
-                    console.error('No stage found, cannot load content');
                     setIsLoading(false);
                     return;
                 }
@@ -234,7 +206,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
         };
 
         fetchData();
-    }, [subject, subjectSearchPatterns, isArabic]);
+    }, [subject, isArabic]);
 
     const courseStructuredData = createCourseStructuredData(
         t.subjectName,

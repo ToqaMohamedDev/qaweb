@@ -18,6 +18,8 @@ const ALLOWED_ENTITIES = new Set([
     'stages',
     'subjects',
     'lessons',
+    'lesson',         // Single lesson by ID
+    'question_banks', // For lesson page
     'exams'
 ]);
 
@@ -201,6 +203,43 @@ export async function GET(request: NextRequest) {
                     language: e.language,
                     type: 'comprehensive'
                 }));
+                error = result.error;
+                break;
+            }
+
+            case 'lesson': {
+                const lessonId = searchParams.get('id');
+                if (!lessonId) {
+                    return NextResponse.json({ error: 'Missing lesson ID' }, { status: 400 });
+                }
+
+                const result = await supabase
+                    .from('lessons')
+                    .select('id, title, description')
+                    .eq('id', lessonId)
+                    .single();
+
+                if (result.data) {
+                    data = [result.data];
+                }
+                error = result.error;
+                break;
+            }
+
+            case 'question_banks': {
+                const lessonId = searchParams.get('lessonId');
+                if (!lessonId) {
+                    return NextResponse.json({ error: 'Missing lesson ID' }, { status: 400 });
+                }
+
+                const result = await supabase
+                    .from('question_banks')
+                    .select('*')
+                    .eq('lesson_id', lessonId)
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: true });
+
+                data = result.data || [];
                 error = result.error;
                 break;
             }
