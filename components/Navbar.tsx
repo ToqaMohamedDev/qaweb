@@ -2,6 +2,7 @@
 
 // =============================================
 // Navbar - شريط التنقل (Refactored)
+// Uses useAuthStore for auth state (fixed for Vercel/OAuth)
 // =============================================
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -16,99 +17,23 @@ import { UserProfileDropdown } from './navbar/UserProfileDropdown';
 import { MobileMenu } from './navbar/MobileMenu';
 import { AuthButtons } from './navbar/AuthButtons';
 import { navItems, isPathActive } from './navbar/constants';
-import { supabase, signOut, isAdmin } from '@/lib/supabase';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { logger } from '@/lib/utils/logger';
-import type { User } from '@supabase/supabase-js';
 
 export function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
 
+    // Get auth state from the store (fed by AuthProvider via API Mediator)
+    const { user, isLoading } = useAuthStore();
+
     // State
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
-    const [isUserAdmin, setIsUserAdmin] = useState(false);
-    const [isApprovedTeacher, setIsApprovedTeacher] = useState(false);
 
-    // Check auth state
-    useEffect(() => {
-        const checkUser = async () => {
-            // First check if there's a session to avoid AuthSessionMissingError
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (!session) {
-                // No session, user is not logged in - this is normal
-                return;
-            }
-
-            const { data: { user }, error } = await supabase.auth.getUser();
-
-            if (error) {
-                console.error('[Navbar] Auth error:', error);
-                return;
-            }
-
-            logger.auth('User authenticated', { data: { email: user?.email, id: user?.id } });
-            setUser(user);
-
-            if (user) {
-                console.log('[Navbar] Checking admin status for:', user.email);
-                const adminStatus = await isAdmin(user.id);
-                console.log('[Navbar] Admin status result:', adminStatus);
-                logger.auth('Admin status checked', { data: { email: user.email, isAdmin: adminStatus } });
-                setIsUserAdmin(adminStatus);
-
-                // Check teacher approval status (only if not admin)
-                if (!adminStatus) {
-                    const { data: profile, error: profileError } = await supabase
-                        .from('profiles')
-                        .select('role, is_teacher_approved')
-                        .eq('id', user.id)
-                        .single();
-
-                    if (profileError) {
-                        console.error('[Navbar] Profile fetch error:', profileError);
-                    }
-
-                    if (profile?.role === 'teacher' && profile?.is_teacher_approved) {
-                        setIsApprovedTeacher(true);
-                    }
-                }
-            }
-        };
-
-        checkUser();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                isAdmin(session.user.id).then(adminStatus => {
-                    logger.auth('Auth state changed', { data: { isAdmin: adminStatus } });
-                    setIsUserAdmin(adminStatus);
-
-                    // Re-check teacher status on auth change (only if not admin)
-                    if (!adminStatus) {
-                        supabase
-                            .from('profiles')
-                            .select('role, is_teacher_approved')
-                            .eq('id', session.user.id)
-                            .single()
-                            .then(({ data: profile }) => {
-                                setIsApprovedTeacher(profile?.role === 'teacher' && profile?.is_teacher_approved === true);
-                            });
-                    } else {
-                        setIsApprovedTeacher(false);
-                    }
-                });
-            } else {
-                setIsUserAdmin(false);
-                setIsApprovedTeacher(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    // Derive admin/teacher status from user profile
+    const isUserAdmin = user?.role === 'admin';
+    const isApprovedTeacher = user?.role === 'teacher' && user?.isTeacherApproved === true;
 
     // Memoize active path calculation
     const activePaths = useMemo(
@@ -125,7 +50,10 @@ export function Navbar() {
     // Handlers
     const handleSignOut = useCallback(async () => {
         try {
+            const { signOut } = await import('@/lib/supabase');
             await signOut();
+            // Clear the store
+            useAuthStore.getState().reset();
             router.push('/login');
             setIsMobileMenuOpen(false);
             setIsProfileMenuOpen(false);
@@ -141,6 +69,16 @@ export function Navbar() {
     const handleCloseMobileMenu = useCallback(() => {
         setIsMobileMenuOpen(false);
     }, []);
+
+    // Create a pseudo-user object for components that expect Supabase User type
+    const supabaseStyleUser = user ? {
+        id: user.id,
+        email: user.email,
+        user_metadata: {
+            name: user.name,
+            avatar_url: user.avatarUrl,
+        }
+    } : null;
 
     return (
         <>
@@ -165,9 +103,9 @@ export function Navbar() {
 
                             {/* Desktop Auth */}
                             <div className="hidden md:flex items-center gap-2.5">
-                                {user ? (
+                                {!isLoading && user ? (
                                     <UserProfileDropdown
-                                        user={user}
+                                        user={supabaseStyleUser as any}
                                         isUserAdmin={isUserAdmin}
                                         isApprovedTeacher={isApprovedTeacher}
                                         isOpen={isProfileMenuOpen}
@@ -175,9 +113,9 @@ export function Navbar() {
                                         onClose={() => setIsProfileMenuOpen(false)}
                                         onSignOut={handleSignOut}
                                     />
-                                ) : (
+                                ) : !isLoading ? (
                                     <AuthButtons />
-                                )}
+                                ) : null}
                             </div>
 
                             {/* Mobile Menu Button */}
@@ -201,7 +139,7 @@ export function Navbar() {
             {/* Mobile Menu */}
             <MobileMenu
                 isOpen={isMobileMenuOpen}
-                user={user}
+                user={supabaseStyleUser as any}
                 isUserAdmin={isUserAdmin}
                 activePaths={activePaths}
                 onClose={handleCloseMobileMenu}
