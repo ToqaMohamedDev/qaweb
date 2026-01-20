@@ -12,18 +12,22 @@ import type { Message, TablesInsert, TablesUpdate } from '../database.types';
 // ==========================================
 
 /**
- * Get all messages (admin)
+ * Get all messages (admin) - Uses API route for Vercel compatibility
  */
 export async function getMessages(): Promise<Message[]> {
-    const supabase = getSupabaseClient();
+    try {
+        const res = await fetch('/api/admin/query?table=messages&orderBy=created_at&ascending=false&limit=500');
+        const result = await res.json();
 
-    const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false });
+        if (!res.ok) {
+            throw new Error(result.error || 'Failed to fetch messages');
+        }
 
-    if (error) throw error;
-    return data || [];
+        return result.data || [];
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+    }
 }
 
 /**
