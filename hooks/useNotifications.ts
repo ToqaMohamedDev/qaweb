@@ -15,6 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { logger } from "@/lib/utils/logger";
 import NotificationClient, {
     type Notification as NotificationRecord,
@@ -88,11 +89,9 @@ export function useNotifications(
     // Fetch notifications
     const fetchNotifications = useCallback(async () => {
         const supabase = createClient();
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const authUser = useAuthStore.getState().user;
 
-        if (!user) {
+        if (!authUser) {
             setIsAuthenticated(false);
             setNotifications([]);
             setUnreadCount(0);
@@ -156,11 +155,9 @@ export function useNotifications(
         const supabase = createClient();
 
         const init = async () => {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const authUser = useAuthStore.getState().user;
 
-            if (!user || !mounted) return;
+            if (!authUser || !mounted) return;
 
             clientRef.current = new NotificationClient(supabase);
 
