@@ -29,7 +29,8 @@ import {
     Mail,
 } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
-import { supabase, isAdmin } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { logger } from "@/lib/utils/logger";
 
 // Sidebar navigation items
@@ -617,89 +618,32 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 function AdminProtection({ children }: { children: ReactNode }) {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [debugInfo, setDebugInfo] = useState<string>('');
     const router = useRouter();
+    const { user, isLoading } = useAuthStore();
+    const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                console.log('[AdminProtection] Starting auth check...');
+        // Wait for auth store to finish loading
+        if (isLoading) return;
 
-                // First check if there's a session to avoid AuthSessionMissingError
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        setIsChecking(false);
 
-                if (sessionError || !session) {
-                    console.log('[AdminProtection] No session found, redirecting to login');
-                    router.push("/login?redirect=/admin");
-                    return;
-                }
+        if (!user) {
+            console.log('[AdminProtection] No user in store, redirecting to login');
+            router.push("/login?redirect=/admin");
+            return;
+        }
 
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (user.role !== 'admin') {
+            console.log('[AdminProtection] User is not admin, role:', user.role);
+            router.push("/");
+            return;
+        }
 
-                if (authError) {
-                    console.error('[AdminProtection] Auth error:', authError);
-                    setDebugInfo(`Auth error: ${authError.message}`);
-                    router.push("/login?redirect=/admin");
-                    return;
-                }
+        console.log('[AdminProtection] ✅ Admin verified:', user.email);
+    }, [user, isLoading, router]);
 
-                if (!user) {
-                    console.log('[AdminProtection] No user found, redirecting to login');
-                    router.push("/login?redirect=/admin");
-                    return;
-                }
-
-                console.log('[AdminProtection] User found:', user.email, 'ID:', user.id);
-
-                // Try to get profile directly first for better debugging
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('id, email, role')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profileError) {
-                    console.error('[AdminProtection] Profile fetch error:', profileError);
-                    setDebugInfo(`Profile error: ${profileError.message} (${profileError.code})`);
-
-                    // If RLS error, show helpful message
-                    if (profileError.code === '42501') {
-                        console.error('[AdminProtection] RLS Policy Error! Run the fix SQL in Supabase Dashboard');
-                        logger.error('RLS Policy Error - profiles table', { context: 'AdminLayout' });
-                    }
-                } else {
-                    console.log('[AdminProtection] Profile found:', profile);
-                    setDebugInfo(`Profile: ${profile?.email}, Role: ${profile?.role}`);
-                }
-
-                const adminStatus = await isAdmin(user.id);
-                console.log('[AdminProtection] isAdmin result:', adminStatus);
-
-                if (!adminStatus) {
-                    console.log('[AdminProtection] User is not admin, redirecting to home');
-                    setDebugInfo(`Not admin. Role: ${profile?.role || 'unknown'}`);
-                    router.push("/");
-                    return;
-                }
-
-                console.log('[AdminProtection] ✅ Admin verified, granting access');
-                setIsAuthorized(true);
-            } catch (error) {
-                console.error('[AdminProtection] Exception:', error);
-                logger.error('Auth check failed', { context: 'AdminLayout', data: error });
-                setDebugInfo(`Exception: ${error instanceof Error ? error.message : 'Unknown'}`);
-                router.push("/");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, [router]);
-
-    if (isLoading) {
+    if (isLoading || isChecking) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -713,7 +657,7 @@ function AdminProtection({ children }: { children: ReactNode }) {
         );
     }
 
-    if (!isAuthorized) {
+    if (!user || user.role !== 'admin') {
         return null;
     }
 
