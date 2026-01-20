@@ -15,11 +15,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_ENTITIES = new Set([
     'teachers',
+    'teacher_profile',  // Single teacher by ID
+    'teacher_exams',    // Exams by teacher ID
     'stages',
     'subjects',
     'lessons',
-    'lesson',         // Single lesson by ID
-    'question_banks', // For lesson page
+    'lesson',           // Single lesson by ID
+    'question_banks',   // For lesson page
     'exams'
 ]);
 
@@ -124,6 +126,124 @@ export async function GET(request: NextRequest) {
                         }));
                     }
                 }
+                break;
+            }
+
+            case 'teacher_profile': {
+                const id = searchParams.get('id');
+                if (!id) {
+                    return NextResponse.json({ error: 'Missing teacher ID' }, { status: 400 });
+                }
+
+                const result = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (result.error) {
+                    error = result.error;
+                } else if (result.data) {
+                    const t = result.data;
+                    // Get exam count
+                    const { count: compCount } = await supabase
+                        .from('comprehensive_exams')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('created_by', id)
+                        .eq('is_published', true);
+
+                    const { count: teacherCount } = await supabase
+                        .from('teacher_exams')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('created_by', id)
+                        .eq('is_published', true);
+
+                    data = [{
+                        ...t,
+                        coverImageURL: t.cover_image_url || null,
+                        photoURL: t.avatar_url,
+                        displayName: t.name,
+                        isVerified: t.is_verified || false,
+                        specialty: t.specialization || t.bio,
+                        subscriberCount: t.subscriber_count || 0,
+                        examsCount: (compCount || 0) + (teacherCount || 0),
+                    }];
+                }
+                break;
+            }
+
+            case 'teacher_exams': {
+                const teacherId = searchParams.get('teacherId');
+                if (!teacherId) {
+                    return NextResponse.json({ error: 'Missing teacher ID' }, { status: 400 });
+                }
+
+                // Get comprehensive exams
+                const { data: compExams } = await supabase
+                    .from('comprehensive_exams')
+                    .select('id, exam_title, exam_description, duration_minutes, created_at, type, is_published, language, blocks')
+                    .eq('created_by', teacherId)
+                    .eq('is_published', true)
+                    .order('created_at', { ascending: false })
+                    .limit(limit);
+
+                // Get teacher exams
+                const { data: teacherExams } = await supabase
+                    .from('teacher_exams')
+                    .select('id, exam_title, exam_description, duration_minutes, created_at, type, is_published')
+                    .eq('created_by', teacherId)
+                    .eq('is_published', true)
+                    .order('created_at', { ascending: false })
+                    .limit(limit);
+
+                const allExams: any[] = [];
+
+                // Process comprehensive exams
+                (compExams || []).forEach((e: any) => {
+                    let questionsCount = 0;
+                    if (e.blocks) {
+                        try {
+                            const blocks = typeof e.blocks === 'string' ? JSON.parse(e.blocks) : e.blocks;
+                            blocks.forEach((block: any) => {
+                                if (block.questions) questionsCount += block.questions.length;
+                                if (block.subsections) {
+                                    block.subsections.forEach((sub: any) => {
+                                        if (sub.questions) questionsCount += sub.questions.length;
+                                    });
+                                }
+                            });
+                        } catch { /* ignore */ }
+                    }
+
+                    allExams.push({
+                        id: e.id,
+                        title: e.exam_title || 'امتحان بلا عنوان',
+                        description: e.exam_description || '',
+                        duration: e.duration_minutes || 0,
+                        created_at: e.created_at,
+                        type: e.type || 'comprehensive_exam',
+                        isPublished: e.is_published,
+                        questionsCount,
+                        language: e.language || 'arabic',
+                    });
+                });
+
+                // Process teacher exams
+                (teacherExams || []).forEach((e: any) => {
+                    if (!allExams.find(ex => ex.id === e.id)) {
+                        allExams.push({
+                            id: e.id,
+                            title: e.exam_title || 'امتحان بلا عنوان',
+                            description: e.exam_description || '',
+                            duration: e.duration_minutes || 0,
+                            created_at: e.created_at,
+                            type: e.type || 'teacher_exam',
+                            isPublished: e.is_published,
+                        });
+                    }
+                });
+
+                data = allExams;
                 break;
             }
 

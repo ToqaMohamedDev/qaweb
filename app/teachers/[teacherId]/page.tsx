@@ -43,9 +43,6 @@ import TeacherRating from "@/components/teachers/TeacherRating";
 // Hooks
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 
-// Supabase
-import { createClient } from "@/lib/supabase";
-
 // Utils
 import { formatCount, formatRelativeDate, formatExamDate } from "@/lib/utils/formatters";
 
@@ -303,172 +300,56 @@ export default function TeacherPage() {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const supabase = createClient();
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            setCurrentUserId(user?.id || null);
+            // Fetch teacher profile via API
+            const profileRes = await fetch(`/api/public/data?entity=teacher_profile&id=${teacherId}`);
+            const profileResult = await profileRes.json();
 
-            // Fetch teacher profile
-            const { data: teacherData, error: teacherError } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", teacherId)
-                .single();
-
-            if (teacherError || !teacherData) {
+            if (!profileResult.success || !profileResult.data?.[0]) {
                 setError("الملف الشخصي غير موجود");
                 return;
             }
 
-            // subscriber_count is kept in sync by database trigger
+            const teacherData = profileResult.data[0];
 
-            // Try to get exams from comprehensive_exams first (primary table)
-            const isOwner = user?.id === teacherId;
+            // Fetch teacher exams via API
+            const examsRes = await fetch(`/api/public/data?entity=teacher_exams&teacherId=${teacherId}`);
+            const examsResult = await examsRes.json();
+            const examsData = examsResult.data || [];
 
-            let examsQuery = supabase
-                .from("comprehensive_exams")
-                .select("id, exam_title, exam_description, duration_minutes, created_at, type, is_published, language, blocks, created_by")
-                .eq("created_by", teacherId)
-                .order("created_at", { ascending: false });
-
-            if (!isOwner) {
-                examsQuery = examsQuery.eq("is_published", true);
-            }
-
-            const { data: comprehensiveExams, error: compError } = await examsQuery;
-
-            // Also try teacher_exams table as fallback
-            let teacherExamsQuery = supabase
-                .from("teacher_exams" as any)
-                .select("id, exam_title, exam_description, duration_minutes, created_at, type, is_published, created_by")
-                .eq("created_by", teacherId)
-                .order("created_at", { ascending: false });
-
-            if (!isOwner) {
-                teacherExamsQuery = teacherExamsQuery.eq("is_published", true);
-            }
-
-            const { data: teacherExamsData, error: teacherExamsError } = await teacherExamsQuery;
-
-            // Debug logging
-            console.log('=== Teacher Exams Debug ===');
-            console.log('teacherId:', teacherId);
-            console.log('isOwner:', isOwner);
-            console.log('comprehensiveExams:', comprehensiveExams);
-            console.log('compError:', compError);
-            console.log('teacherExamsData:', teacherExamsData);
-            console.log('teacherExamsError:', teacherExamsError);
-
-            // Combine and deduplicate exams
-            const allExamsMap = new Map<string, TeacherExam>();
-
-            // Add comprehensive exams first (priority)
-            if (comprehensiveExams) {
-                comprehensiveExams.forEach((e: any) => {
-                    // Count questions from blocks
-                    let questionsCount = 0;
-                    if (e.blocks) {
-                        try {
-                            const blocks = typeof e.blocks === 'string' ? JSON.parse(e.blocks) : e.blocks;
-                            blocks.forEach((block: any) => {
-                                if (block.questions) questionsCount += block.questions.length;
-                                if (block.subsections) {
-                                    block.subsections.forEach((sub: any) => {
-                                        if (sub.questions) questionsCount += sub.questions.length;
-                                    });
-                                }
-                            });
-                        } catch { /* ignore */ }
-                    }
-
-                    allExamsMap.set(e.id, {
-                        id: e.id,
-                        title: e.exam_title || "امتحان بلا عنوان",
-                        description: e.exam_description || "",
-                        duration: e.duration_minutes || 0,
-                        created_at: e.created_at,
-                        type: e.type || (e.language === 'english' ? 'english_comprehensive_exam' : 'comprehensive_exam'),
-                        isPublished: e.is_published,
-                        questionsCount,
-                        language: e.language || 'arabic',
-                    });
-                });
-            }
-
-            // Add teacher_exams if not already present
-            if (teacherExamsData) {
-                teacherExamsData.forEach((e: any) => {
-                    if (!allExamsMap.has(e.id)) {
-                        allExamsMap.set(e.id, {
-                            id: e.id,
-                            title: e.exam_title || "امتحان بلا عنوان",
-                            description: e.exam_description || "",
-                            duration: e.duration_minutes || 0,
-                            created_at: e.created_at,
-                            type: e.type,
-                            isPublished: e.is_published,
-                        });
-                    }
-                });
-            }
-
-            const allExams = Array.from(allExamsMap.values());
-            console.log('allExams:', allExams);
-
-            // Map teacher data
+            // Format teacher profile
             setTeacher({
                 id: teacherData.id,
                 name: teacherData.name || "معلم",
-                specialty: (teacherData as any).specialization || "عام",
+                specialty: teacherData.specialization || teacherData.bio || "",
                 bio: teacherData.bio || "",
                 photoURL: teacherData.avatar_url,
-                coverImageURL: (teacherData as any).cover_image_url,
-                verified: (teacherData as any).is_verified || false,
-                subscriberCount: (teacherData as any).subscriber_count || 0,
-                teacherTitle: (teacherData as any).teacher_title,
+                coverImageURL: teacherData.cover_image_url,
+                verified: teacherData.is_verified || false,
+                subscriberCount: teacherData.subscriber_count || 0,
+                teacherTitle: teacherData.teacher_title,
                 stats: {
-                    // Always use actual exam count from fetched data - more reliable than exam_count trigger
-                    // For owner: show all exams, for others: show only published
-                    exams: allExams.length,
+                    exams: teacherData.examsCount || examsData.length,
                     lessons: 0,
-                    rating: (teacherData as any).rating_average || 0,
-                    views: (teacherData as any).total_views || 0,
+                    rating: teacherData.rating_average || 0,
+                    views: 0,
                 },
-                yearsOfExperience: (teacherData as any).years_of_experience || 0,
-                education: (teacherData as any).education || null,
-                teachingStyle: (teacherData as any).teaching_style || null,
-                subjects: (teacherData as any).subjects || [],
-                stages: (teacherData as any).stages || [],
+                yearsOfExperience: teacherData.years_of_experience || 0,
+                education: teacherData.education || null,
+                teachingStyle: teacherData.teaching_style || null,
+                subjects: teacherData.subjects || [],
+                stages: teacherData.stages || [],
                 phone: teacherData.phone || null,
-                // Read whatsapp from social_links (stored there until we add a column)
-                whatsapp: (teacherData as any).social_links?.whatsapp || (teacherData as any).whatsapp || null,
-                website: (teacherData as any).website || null,
-                socialLinks: ((teacherData as any).social_links as TeacherProfile["socialLinks"]) || {},
-                ratingCount: (teacherData as any).rating_count || 0,
+                whatsapp: teacherData.whatsapp || null,
+                website: teacherData.website || null,
+                socialLinks: teacherData.social_links || {},
+                ratingCount: teacherData.rating_count || 0,
             });
 
-            setExams(allExams);
+            setExams(examsData);
 
-            // Check notification status (subscription is handled by useSubscriptions hook)
-            // Note: notifications_enabled column will be added later
-            // For now, default to true if user is subscribed
-            if (user) {
-                const { data: subData } = await supabase
-                    .from("teacher_subscriptions")
-                    .select("id")
-                    .eq("user_id", user.id)
-                    .eq("teacher_id", teacherId)
-                    .single();
-
-                if (subData) {
-                    // Default to true for now, until notifications_enabled column is added
-                    setNotificationsEnabled(true);
-                }
-            }
         } catch (err) {
             console.error("Error fetching teacher data:", err);
-            setError("حدث خطأ");
+            setError("حدث خطأ أثناء تحميل البيانات");
         } finally {
             setIsLoading(false);
         }
