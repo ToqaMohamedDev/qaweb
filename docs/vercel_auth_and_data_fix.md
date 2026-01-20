@@ -173,3 +173,24 @@ return response;
 **المشكلة:** `cookieStore.set()` في الـ Callback قد لا يعمل بشكل صحيح على Vercel، بينما Email Login يعمل لأنه يستخدم Client-side Supabase.
 **الحل:** جمع الكوكيز في Array ثم كتابتها مباشرة على `NextResponse.cookies.set()` قبل الـ Redirect.
 **الحالة:** هذا هو الحل المعتمد للفرق بين Email و Google Login.
+
+## 12. Refactor All Components to Use useAuthStore
+**المشكلة:** الـ Navbar والـ AdminProtection كانوا بيستخدموا `supabase.auth.getSession()` مباشرة، وده مش بيشتغل مع HttpOnly Cookies على Vercel.
+**الحل:** تعديل كل الكومبوننتس دي عشان تستخدم `useAuthStore` اللي بيتملى من `/api/auth/session`.
+**الملفات المعدلة:**
+- `components/Navbar.tsx`
+- `app/admin/layout.tsx`
+
+## 13. Server-Side Logout API
+**المشكلة:** تسجيل الخروج مش بيشتغل لأن المتصفح مش قادر يمسح الكوكيز.
+**الحل:** إنشاء `/api/auth/logout` لمسح الكوكيز من السيرفر.
+
+---
+
+# ✅ الحلول المفعلة حالياً:
+1. **API Mediator Pattern** (`/api/auth/session`)
+2. **Server Actions for Data** (`lib/actions/lessons.ts`)
+3. **Centralized Auth Store** (`useAuthStore`)
+4. **Server-Side Logout** (`/api/auth/logout`)
+5. **Correct Origin Detection** (`x-forwarded-host`)
+6. **Cookies on NextResponse** (Direct cookie setting)
