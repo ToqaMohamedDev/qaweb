@@ -1,12 +1,12 @@
 // =============================================
 // useTeacherExamPlayer - Hook لتشغيل امتحانات المدرسين
+// Uses API routes for Vercel compatibility
 // =============================================
 
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
 import { logger } from '@/lib/utils/logger';
 
 interface UseTeacherExamPlayerOptions {
@@ -20,7 +20,7 @@ interface UseTeacherExamPlayerOptions {
     requireAuth?: boolean;
     /** Require login only to submit answers (default: true) */
     requireAuthToSubmit?: boolean;
-    /** Source table for exams: 'comprehensive' or 'teacher' (default: 'comprehensive') */
+    /** Source table for exams: 'comprehensive' | 'teacher' (default: 'comprehensive') */
     examSource?: 'comprehensive' | 'teacher';
 }
 
@@ -126,12 +126,8 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         fallbackPath,
         requireAuth = false,
         requireAuthToSubmit = true,
-        examSource = 'comprehensive'
     } = options;
     const router = useRouter();
-    const supabase = createClient();
-
-    // State (سنحدد الجدول الفعلي ديناميكياً عند جلب البيانات)
 
     // State
     const [exam, setExam] = useState<TransformedExam | null>(null);
@@ -145,7 +141,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     const [isPracticeMode, setIsPracticeMode] = useState(false);
     const [previousResult, setPreviousResult] = useState<{ score: number; maxScore: number } | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [usedAttemptsTable, setUsedAttemptsTable] = useState<'comprehensive_exam_attempts' | 'teacher_exam_attempts'>('comprehensive_exam_attempts');
+    const [attemptsTable, setAttemptsTable] = useState<string>('comprehensive_exam_attempts');
 
     // Time Limited Exam State
     const [availabilityTimeLeft, setAvailabilityTimeLeft] = useState<number | null>(null);
@@ -156,70 +152,41 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     // Refs
     const attemptStartedRef = useRef(false);
 
-    // Fetch exam data from comprehensive_exams
+    // Fetch exam data via API
     useEffect(() => {
         const fetchExam = async () => {
             if (!examId) return;
 
-            // Check auth first if required
-            const { data: { user } } = await supabase.auth.getUser();
-            setCurrentUser(user);
-
-            if (requireAuth && !user) {
-                // Redirect to login if auth is required
-                router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-                return;
-            }
-
             try {
-                // Debug logging
-                console.log('=== useTeacherExamPlayer Debug ===');
+                console.log('=== useTeacherExamPlayer Fetching via API ===');
                 console.log('examId:', examId);
-                console.log('requireAuth:', requireAuth);
 
-                // 1. Try to fetch from comprehensive_exams first
-                let examData: any = null;
-                let examTableUsed = 'comprehensive_exams';
+                // Fetch exam data via API
+                const res = await fetch(`/api/exam?examId=${examId}`);
+                const result = await res.json();
 
-                const { data: comprehensiveExam, error: comprehensiveError } = await supabase
-                    .from('comprehensive_exams')
-                    .select('*')
-                    .eq('id', examId)
-                    .maybeSingle();
-
-                if (comprehensiveExam) {
-                    examData = comprehensiveExam;
-                    examTableUsed = 'comprehensive_exams';
-                    console.log('Found exam in comprehensive_exams');
-                } else {
-                    // 2. If not found, try teacher_exams
-                    const { data: teacherExam, error: teacherError } = await supabase
-                        .from('teacher_exams')
-                        .select('*')
-                        .eq('id', examId)
-                        .maybeSingle();
-
-                    if (teacherExam) {
-                        examData = teacherExam;
-                        examTableUsed = 'teacher_exams';
-                        console.log('Found exam in teacher_exams');
-                    } else {
-                        // Not found in either table
-                        throw new Error('الامتحان غير موجود');
+                if (!result.success) {
+                    if (requireAuth && !result.data?.user) {
+                        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                        return;
                     }
+                    throw new Error(result.error || 'الامتحان غير موجود');
                 }
 
-                console.log('examData:', examData);
-                console.log('examTableUsed:', examTableUsed);
+                const { exam: rawExam, attemptsTable: actualAttemptsTable, user, existingAttempt, inProgressAttempt } = result.data;
 
-                const rawExam = examData as Record<string, any>;
-                // Store which table we're using for attempts
-                const actualAttemptsTable = examTableUsed === 'teacher_exams'
-                    ? 'teacher_exam_attempts'
-                    : 'comprehensive_exam_attempts';
-                setUsedAttemptsTable(actualAttemptsTable);
+                setCurrentUser(user);
+                setAttemptsTable(actualAttemptsTable);
 
-                // Transform sections to blocks - الحفاظ على subsections
+                // Check auth requirement
+                if (requireAuth && !user) {
+                    router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                    return;
+                }
+
+                console.log('rawExam:', rawExam);
+
+                // Transform sections to blocks
                 let blocksData: ExamBlock[] = [];
                 const sectionsData = rawExam.sections || rawExam.blocks || [];
 
@@ -229,9 +196,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     );
 
                     if (hasSubsections) {
-                        // الهيكل الجديد - الحفاظ على subsections
                         blocksData = sectionsData.map((section: any, sIndex: number) => {
-                            // تحويل الـ subsections مع تحويل الأسئلة
                             const transformedSubsections: ExamSubsection[] = [];
                             let allQuestions: any[] = [];
 
@@ -274,8 +239,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                                 titleAr: section.titleAr || section.title || `القسم ${sIndex + 1}`,
                                 titleEn: section.titleEn || '',
                                 subsections: transformedSubsections,
-                                questions: allQuestions, // للحسابات العامة
-                                // للمحتوى (قراءة/شعر)
+                                questions: allQuestions,
                                 readingTitle: section.readingTitle,
                                 readingText: section.readingText,
                                 poetryTitle: section.poetryTitle,
@@ -294,20 +258,18 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     durationMinutes: rawExam.duration_minutes,
                     totalMarks: rawExam.total_marks,
                     blocks: blocksData,
-                    // Time Limited Exam
                     isTimeLimited: rawExam.is_time_limited || false,
                     availableFrom: rawExam.available_from,
                     availableUntil: rawExam.available_until,
                 };
 
-                // Check time availability for time-limited exams
+                // Check time availability
                 if (rawExam.is_time_limited && rawExam.available_from && rawExam.available_until) {
                     const now = new Date();
                     const availableFrom = new Date(rawExam.available_from);
                     const availableUntil = new Date(rawExam.available_until);
 
                     if (now < availableFrom) {
-                        // Exam not started yet
                         setExamNotAvailable(true);
                         setExamNotAvailableReason('not_started');
                         setExamAvailabilityMessage(`الامتحان سيكون متاحاً في ${availableFrom.toLocaleString('ar-EG')}`);
@@ -315,7 +277,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                         setIsLoading(false);
                         return;
                     } else if (now > availableUntil) {
-                        // Exam ended
                         setExamNotAvailable(true);
                         setExamNotAvailableReason('ended');
                         setExamAvailabilityMessage(`انتهى وقت الامتحان في ${availableUntil.toLocaleString('ar-EG')}`);
@@ -323,7 +284,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                         setIsLoading(false);
                         return;
                     } else {
-                        // Exam is available - calculate remaining availability time
                         const remainingMs = availableUntil.getTime() - now.getTime();
                         setAvailabilityTimeLeft(Math.floor(remainingMs / 1000));
                     }
@@ -331,57 +291,32 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
 
                 setExam(transformedExam);
 
-                // 2. Check for existing attempt (completed OR in_progress)
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    // First check if there's a completed attempt
-                    const { data: completedAttempt } = await supabase
-                        .from(actualAttemptsTable)
-                        .select('id, total_score, max_score, status')
-                        .eq('exam_id', rawExam.id)
-                        .eq('student_id', user.id)
-                        .in('status', ['completed', 'graded'])
-                        .maybeSingle();
+                // Handle existing attempts
+                if (existingAttempt) {
+                    router.push(`${resultsPath}?attemptId=${existingAttempt.id}`);
+                    return;
+                }
 
-                    if (completedAttempt) {
-                        // Exam already completed - redirect to results
-                        router.push(`${resultsPath}?attemptId=${completedAttempt.id}`);
-                        return;
+                if (inProgressAttempt) {
+                    setAttemptId(inProgressAttempt.id);
+                    if (inProgressAttempt.answers && typeof inProgressAttempt.answers === 'object') {
+                        setAnswers(inProgressAttempt.answers as Record<string, any>);
                     }
-
-                    // Check for in_progress attempt
-                    const { data: inProgressAttempt } = await supabase
-                        .from(actualAttemptsTable)
-                        .select('id, answers')
-                        .eq('exam_id', rawExam.id)
-                        .eq('student_id', user.id)
-                        .eq('status', 'in_progress')
-                        .maybeSingle();
-
-                    if (inProgressAttempt) {
-                        // Resume existing attempt
-                        setAttemptId(inProgressAttempt.id);
-                        // Load previous answers
-                        if (inProgressAttempt.answers && typeof inProgressAttempt.answers === 'object') {
-                            setAnswers(inProgressAttempt.answers as Record<string, any>);
-                        }
-                    } else if (!attemptStartedRef.current) {
-                        attemptStartedRef.current = true;
-                        // Create new attempt (first time)
-                        const { data: newAttempt } = await supabase
-                            .from(actualAttemptsTable)
-                            .insert({
-                                exam_id: rawExam.id,
-                                student_id: user.id,
-                                status: 'in_progress',
-                                started_at: new Date().toISOString(),
-                            })
-                            .select('id')
-                            .single();
-
-                        if (newAttempt) {
-                            setAttemptId(newAttempt.id);
-                        }
+                } else if (user && !attemptStartedRef.current) {
+                    attemptStartedRef.current = true;
+                    // Create new attempt via API
+                    const createRes = await fetch('/api/exam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'create',
+                            examId: rawExam.id,
+                            attemptsTable: actualAttemptsTable,
+                        }),
+                    });
+                    const createResult = await createRes.json();
+                    if (createResult.success && createResult.attemptId) {
+                        setAttemptId(createResult.attemptId);
                     }
                 }
 
@@ -399,7 +334,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         };
 
         fetchExam();
-    }, [examId, supabase]);
+    }, [examId, requireAuth, router, resultsPath]);
 
     // Get blocks
     const blocks = exam?.blocks || [];
@@ -420,11 +355,10 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     const timeFormatted = timeLeft !== null ? formatTime(timeLeft) : '';
     const isTimeWarning = timeLeft !== null && timeLeft < 300;
 
-    // Availability time formatting (for time-limited exams)
     const availabilityTimeFormatted = availabilityTimeLeft !== null ? formatTime(availabilityTimeLeft) : '';
-    const isAvailabilityWarning = availabilityTimeLeft !== null && availabilityTimeLeft < 600; // 10 minutes warning
+    const isAvailabilityWarning = availabilityTimeLeft !== null && availabilityTimeLeft < 600;
 
-    // Timer tick for exam duration
+    // Timer tick
     useEffect(() => {
         if (timeLeft === null || timeLeft <= 0 || isPracticeMode) return;
 
@@ -441,7 +375,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         return () => clearInterval(timer);
     }, [timeLeft, isPracticeMode]);
 
-    // Timer tick for availability time (time-limited exams)
+    // Availability timer
     useEffect(() => {
         if (availabilityTimeLeft === null || availabilityTimeLeft <= 0 || examNotAvailable) return;
 
@@ -467,26 +401,29 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         setCurrentBlockIndex(prev => Math.max(0, prev - 1));
     }, []);
 
-    // Answer handling with auto-save
+    // Answer handling with auto-save via API
     const handleAnswerChange = useCallback(async (questionId: string, value: any) => {
         const newAnswers = { ...answers, [questionId]: value };
         setAnswers(newAnswers);
 
-        // Auto-save to database if we have an attemptId
         if (attemptId) {
             try {
-                await supabase
-                    .from(usedAttemptsTable)
-                    .update({
+                await fetch('/api/exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save',
+                        examId: exam?.id,
+                        attemptsTable,
+                        attemptId,
                         answers: newAnswers,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', attemptId);
+                    }),
+                });
             } catch (err) {
                 console.error('Error auto-saving answers:', err);
             }
         }
-    }, [answers, attemptId, supabase, usedAttemptsTable]);
+    }, [answers, attemptId, exam?.id, attemptsTable]);
 
     // Get block progress
     const getBlockProgress = useCallback((blockIndex: number) => {
@@ -504,11 +441,10 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         };
     }, [blocks, answers]);
 
-    // Submit
+    // Submit via API
     const handleSubmit = useCallback(async () => {
         if (isSubmitting) return;
 
-        // Check if auth is required to submit
         if (requireAuthToSubmit && !currentUser) {
             const confirmLogin = confirm('يجب تسجيل الدخول لحفظ إجاباتك. هل تريد التسجيل الآن؟');
             if (confirmLogin) {
@@ -520,7 +456,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         setIsSubmitting(true);
 
         try {
-
             if (attemptId && exam) {
                 // Calculate score
                 let totalScore = 0;
@@ -536,18 +471,24 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     });
                 });
 
-                const { error: updateError } = await supabase
-                    .from(usedAttemptsTable)
-                    .update({
+                const submitRes = await fetch('/api/exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'submit',
+                        examId: exam.id,
+                        attemptsTable,
+                        attemptId,
                         answers,
-                        completed_at: new Date().toISOString(),
-                        status: 'completed',
-                        total_score: totalScore,
-                        max_score: maxScore,
-                    })
-                    .eq('id', attemptId);
+                        score: totalScore,
+                        maxScore,
+                    }),
+                });
 
-                if (updateError) throw updateError;
+                const submitResult = await submitRes.json();
+                if (!submitResult.success) {
+                    throw new Error(submitResult.error);
+                }
 
                 router.push(`${resultsPath}?attemptId=${attemptId}`);
                 return;
@@ -558,7 +499,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
             logger.error('Error submitting exam', { context: 'useTeacherExamPlayer', data: err });
             setIsSubmitting(false);
         }
-    }, [isSubmitting, isPracticeMode, attemptId, exam, blocks, answers, router, resultsPath, fallbackPath, supabase]);
+    }, [isSubmitting, requireAuthToSubmit, currentUser, attemptId, exam, blocks, answers, router, resultsPath, fallbackPath, attemptsTable]);
 
     // Auto-submit on timer end
     useEffect(() => {
@@ -567,10 +508,9 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         }
     }, [timeLeft, isPracticeMode, handleSubmit]);
 
-    // Auto-submit when availability time ends (time-limited exams)
+    // Auto-submit when availability ends
     useEffect(() => {
         if (availabilityTimeLeft === 0 && exam?.isTimeLimited && !examNotAvailable && attemptId) {
-            // Show alert and submit
             alert('انتهى وقت توفر الامتحان. سيتم تسليم إجاباتك تلقائياً.');
             handleSubmit();
         }
@@ -589,7 +529,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         timeLeft,
         timeFormatted,
         isTimeWarning,
-        // Time Limited Exam
         isTimeLimited: exam?.isTimeLimited || false,
         availabilityTimeLeft,
         availabilityTimeFormatted,
@@ -597,7 +536,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         examNotAvailable,
         examNotAvailableReason,
         examAvailabilityMessage,
-        // Submission
         isSubmitting,
         attemptId,
         isPracticeMode,
