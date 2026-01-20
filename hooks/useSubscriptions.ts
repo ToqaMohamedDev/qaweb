@@ -1,11 +1,11 @@
 /**
  * useSubscriptions Hook - Fetches and manages teacher subscriptions
+ * Uses API routes for Vercel compatibility
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase';
 
 interface SubscriptionState {
     subscriptions: Set<string>;
@@ -28,38 +28,28 @@ export function useSubscriptions(userId: string | null) {
         loading: false,
     });
 
-    // Fetch subscriptions on mount or user change
+    // Fetch subscriptions via API
     const fetchSubscriptions = useCallback(async () => {
         if (!userId) {
             setState(prev => ({ ...prev, subscriptions: new Set(), loading: false }));
             return;
         }
 
-        const supabase = createClient();
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
-            const { data, error } = await supabase
-                .from('teacher_subscriptions')
-                .select('teacher_id')
-                .eq('user_id', userId);
+            const res = await fetch('/api/subscriptions');
+            const result = await res.json();
 
-            if (error) {
-                // Handle RLS permission error gracefully
-                if (error.code === '42501' || error.message?.includes('permission')) {
-                    console.warn('Subscriptions: RLS policy issue. Run fix-rls-all-tables.sql');
-                    setState(prev => ({ ...prev, subscriptions: new Set(), loading: false }));
-                    return;
-                }
-                throw error;
+            if (result.success) {
+                const subscriptionSet = new Set<string>(result.data || []);
+                setState(prev => ({ ...prev, subscriptions: subscriptionSet, loading: false }));
+            } else {
+                console.warn('Subscriptions fetch warning:', result.error);
+                setState(prev => ({ ...prev, subscriptions: new Set(), loading: false }));
             }
-
-            const subscriptionSet = new Set(data?.map(s => s.teacher_id) || []);
-            setState(prev => ({ ...prev, subscriptions: subscriptionSet, loading: false }));
         } catch (err) {
-            const errorMsg = err instanceof Error ? err.message : String(err);
-            console.warn('Subscriptions fetch error:', errorMsg);
-            // Don't block UI - just show empty subscriptions
+            console.warn('Subscriptions fetch error:', err);
             setState(prev => ({
                 ...prev,
                 subscriptions: new Set(),
@@ -79,7 +69,6 @@ export function useSubscriptions(userId: string | null) {
         }
 
         const isCurrentlySubscribed = state.subscriptions.has(teacherId);
-        const supabase = createClient();
 
         // Add to subscribingTo for loading state
         setState(prev => ({
@@ -89,89 +78,58 @@ export function useSubscriptions(userId: string | null) {
         }));
 
         try {
+            let res: Response;
+
             if (isCurrentlySubscribed) {
-                // Unsubscribe
-                const { error } = await supabase
-                    .from('teacher_subscriptions')
-                    .delete()
-                    .eq('user_id', userId)
-                    .eq('teacher_id', teacherId);
-
-                if (error) throw error;
-
-                // Update local state
-                setState(prev => {
-                    const newSubs = new Set(prev.subscriptions);
-                    newSubs.delete(teacherId);
-                    const newSubscribing = new Set(prev.subscribingTo);
-                    newSubscribing.delete(teacherId);
-                    return { ...prev, subscriptions: newSubs, subscribingTo: newSubscribing };
+                // Unsubscribe via DELETE
+                res = await fetch(`/api/subscriptions?teacherId=${teacherId}`, {
+                    method: 'DELETE',
                 });
+            } else {
+                // Subscribe via POST
+                res = await fetch('/api/subscriptions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teacherId }),
+                });
+            }
 
-                // إزالة Tag من OneSignal
-                try {
+            const result = await res.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'حدث خطأ');
+            }
+
+            // Update local state
+            setState(prev => {
+                const newSubs = new Set(prev.subscriptions);
+                if (isCurrentlySubscribed) {
+                    newSubs.delete(teacherId);
+                } else {
+                    newSubs.add(teacherId);
+                }
+                const newSubscribing = new Set(prev.subscribingTo);
+                newSubscribing.delete(teacherId);
+                return { ...prev, subscriptions: newSubs, subscribingTo: newSubscribing };
+            });
+
+            // OneSignal tag management (non-blocking)
+            try {
+                if (isCurrentlySubscribed) {
                     const { unsubscribeFromTeacher } = await import('@/lib/onesignal');
                     await unsubscribeFromTeacher(teacherId);
-                } catch (e) {
-                    console.warn('Failed to remove OneSignal tag:', e);
-                }
-
-                // Get new count
-                const { count } = await supabase
-                    .from('teacher_subscriptions')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('teacher_id', teacherId);
-
-                return { success: true, newCount: count || 0 };
-            } else {
-                // Subscribe
-                const { error } = await supabase
-                    .from('teacher_subscriptions')
-                    .insert({
-                        user_id: userId,
-                        teacher_id: teacherId,
-                    });
-
-                if (error) throw error;
-
-                // Update local state
-                setState(prev => {
-                    const newSubs = new Set(prev.subscriptions);
-                    newSubs.add(teacherId);
-                    const newSubscribing = new Set(prev.subscribingTo);
-                    newSubscribing.delete(teacherId);
-                    return { ...prev, subscriptions: newSubs, subscribingTo: newSubscribing };
-                });
-
-                // إضافة Tag لـ OneSignal للإشعارات
-                try {
+                } else {
                     const { subscribeToTeacher } = await import('@/lib/onesignal');
                     await subscribeToTeacher(teacherId);
-                } catch (e) {
-                    console.warn('Failed to add OneSignal tag:', e);
                 }
-
-                // Get new count
-                const { count } = await supabase
-                    .from('teacher_subscriptions')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('teacher_id', teacherId);
-
-                return { success: true, newCount: count || 0 };
+            } catch (e) {
+                console.warn('OneSignal tag error:', e);
             }
+
+            return { success: true, newCount: result.newCount };
+
         } catch (err: any) {
-            // Better error extraction
-            let errorMsg = 'حدث خطأ';
-            if (err instanceof Error) {
-                errorMsg = err.message;
-            } else if (err?.message) {
-                errorMsg = err.message;
-            } else if (err?.code === '42501' || String(err).includes('permission')) {
-                errorMsg = 'لا توجد صلاحيات - يرجى تسجيل الدخول';
-                console.warn('Subscription RLS error. Run fix-rls scripts.');
-            } else {
-                console.warn('Unknown subscription error:', JSON.stringify(err));
-            }
+            const errorMsg = err?.message || 'حدث خطأ';
 
             setState(prev => {
                 const newSubscribing = new Set(prev.subscribingTo);
