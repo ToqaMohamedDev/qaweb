@@ -72,11 +72,11 @@ const nextConfig: NextConfig = {
           key: 'Permissions-Policy',
           value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
         },
-        // HSTS (Strict Transport Security) - uncomment in production with HTTPS
-        // {
-        //   key: 'Strict-Transport-Security',
-        //   value: 'max-age=31536000; includeSubDomains',
-        // },
+        // HSTS (Strict Transport Security)
+        {
+          key: 'Strict-Transport-Security',
+          value: 'max-age=31536000; includeSubDomains; preload',
+        },
       ],
     },
     // Cache static assets
@@ -154,4 +154,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
