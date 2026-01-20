@@ -39,13 +39,23 @@ export function useTeachers() {
             const query = searchQuery.toLowerCase();
             result = result.filter(t =>
                 t.name?.toLowerCase().includes(query) ||
-                t.bio?.toLowerCase().includes(query)
+                t.bio?.toLowerCase().includes(query) ||
+                (t as any).specialization?.toLowerCase().includes(query)
             );
         }
 
         if (selectedCategory && selectedCategory !== 'all') {
-            // Note: This assumes current filtering logic. Adjust if categories are strictly defined.
-            result = result.filter(t => t.bio?.includes(selectedCategory));
+            // Filter by specialization, subjects array, or bio containing the category name
+            result = result.filter(t => {
+                const specialization = (t as any).specialization?.toLowerCase() || '';
+                const subjects = (t as any).subjects || [];
+                const bio = t.bio?.toLowerCase() || '';
+                const categoryLower = selectedCategory.toLowerCase();
+
+                return specialization.includes(categoryLower) ||
+                    subjects.some((s: string) => s.toLowerCase().includes(categoryLower)) ||
+                    bio.includes(categoryLower);
+            });
         }
 
         setFilteredTeachers(result);
