@@ -339,7 +339,7 @@
     "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 6, \"live\": 8, \"estimated\": 8}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 6, \"updates\": 674, \"hot_updates\": 403}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-20T14:25:46.882251+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 42.86}"
+    "details": "{\"rows\": {\"dead\": 12, \"live\": 8, \"estimated\": 8}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 6, \"updates\": 680, \"hot_updates\": 407}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-20T14:25:46.882251+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 60.00}"
   },
   {
     "section": "02_TABLE_META",
@@ -2379,7 +2379,7 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 577, \"is_unused\": false, \"tuples_read\": 577, \"tuples_fetched\": 577}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 581, \"is_unused\": false, \"tuples_read\": 581, \"tuples_fetched\": 581}}"
   },
   {
     "section": "11_INDEX",
@@ -2421,13 +2421,13 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 924, \"is_unused\": false, \"tuples_read\": 19404, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 932, \"is_unused\": false, \"tuples_read\": 19572, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_subject_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 438, \"is_unused\": false, \"tuples_read\": 36792, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 442, \"is_unused\": false, \"tuples_read\": 37128, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2577,7 +2577,7 @@
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1152, \"is_unused\": false, \"tuples_read\": 1152, \"tuples_fetched\": 1152}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1160, \"is_unused\": false, \"tuples_read\": 1160, \"tuples_fetched\": 1160}}"
   },
   {
     "section": "11_INDEX",
@@ -3052,6 +3052,30 @@
     "table_name": "question_banks",
     "name": "Enable update for authenticated users",
     "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"true\", \"with_check_expression\": \"true\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "site_settings",
+    "name": "Allow admins to delete site_settings",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"DELETE\", \"applies_to\": [\"DELETE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "site_settings",
+    "name": "Allow admins to insert site_settings",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"INSERT\", \"applies_to\": [\"INSERT\"], \"permissive\": true, \"using_expression\": null, \"with_check_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "site_settings",
+    "name": "Allow admins to update site_settings",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "site_settings",
+    "name": "Allow public to read site_settings",
+    "details": "{\"roles\": [\"public\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"true\", \"with_check_expression\": null}"
   },
   {
     "section": "12_RLS_POLICY",
@@ -3782,6 +3806,18 @@
   {
     "section": "16_TABLE_PRIVILEGE",
     "table_name": "site_settings",
+    "name": "anon",
+    "details": "{\"grantee\": \"anon\", \"grantor\": \"postgres\", \"privileges\": [\"SELECT\"], \"with_grant_option\": false}"
+  },
+  {
+    "section": "16_TABLE_PRIVILEGE",
+    "table_name": "site_settings",
+    "name": "authenticated",
+    "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"INSERT\", \"SELECT\", \"UPDATE\"], \"with_grant_option\": false}"
+  },
+  {
+    "section": "16_TABLE_PRIVILEGE",
+    "table_name": "site_settings",
     "name": "postgres",
     "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"INSERT\", \"REFERENCES\", \"SELECT\", \"TRIGGER\", \"TRUNCATE\", \"UPDATE\"], \"with_grant_option\": true}"
   },
@@ -4251,13 +4287,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 182, \"read\": 2, \"hit_ratio\": 98.91}, \"index_blocks\": {\"hit\": 580, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 186, \"read\": 2, \"hit_ratio\": 98.94}, \"index_blocks\": {\"hit\": 584, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 676, \"read\": 1, \"hit_ratio\": 99.85}, \"index_blocks\": {\"hit\": 1325, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 682, \"read\": 1, \"hit_ratio\": 99.85}, \"index_blocks\": {\"hit\": 1335, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4269,7 +4305,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1889, \"read\": 9, \"hit_ratio\": 99.53}, \"index_blocks\": {\"hit\": 2929, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1919, \"read\": 9, \"hit_ratio\": 99.53}, \"index_blocks\": {\"hit\": 2953, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4293,7 +4329,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 6520, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 5085, \"read\": 14}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 6648, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 5106, \"read\": 14}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4305,13 +4341,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "site_settings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 6, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1, \"read\": 1, \"hit_ratio\": 50.00}, \"index_blocks\": {\"hit\": 8, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1331, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2784, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1341, \"read\": 1, \"hit_ratio\": 99.93}, \"index_blocks\": {\"hit\": 2801, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4347,7 +4383,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 3489, \"read\": 1, \"hit_ratio\": 99.97}, \"index_blocks\": {\"hit\": 1721, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 3517, \"read\": 1, \"hit_ratio\": 99.97}, \"index_blocks\": {\"hit\": 1733, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4461,7 +4497,7 @@
     "section": "20_SECURITY_AUDIT",
     "table_name": "site_settings",
     "name": "security_status",
-    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 2}, \"grants\": {\"role_count\": 1, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
+    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 6}, \"grants\": {\"role_count\": 3, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
   },
   {
     "section": "20_SECURITY_AUDIT",
@@ -4701,7 +4737,7 @@
     "section": "27_DATABASE_CONFIG",
     "table_name": "postgres",
     "name": "settings",
-    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 16, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15404179}"
+    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 8, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15404179}"
   },
   {
     "section": "05_COLUMN",
@@ -4756,17 +4792,5 @@
     "table_name": "pgrst_drop_watch",
     "name": "configuration",
     "details": "{\"tags\": null, \"event\": \"sql_drop\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"pgrst_drop_watch\"}"
-  },
-  {
-    "section": "29_REPLICATION_SLOT",
-    "table_name": "supabase_realtime_messages_replication_slot_v2_69_1",
-    "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 95960, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/F000048\", \"catalog_xmin\": \"8443\", \"safe_wal_size\": 4294967296, \"confirmed_flush_lsn\": \"1/10000001\"}"
-  },
-  {
-    "section": "29_REPLICATION_SLOT",
-    "table_name": "supabase_realtime_replication_slot_v2_69_1",
-    "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 96332, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/F0000F8\", \"catalog_xmin\": \"8443\", \"safe_wal_size\": 4294967296, \"confirmed_flush_lsn\": \"1/10000000\"}"
   }
 ]

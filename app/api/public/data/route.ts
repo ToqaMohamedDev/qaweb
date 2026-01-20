@@ -141,7 +141,6 @@ export async function GET(request: NextRequest) {
                 let query = supabase
                     .from('subjects')
                     .select('*')
-                    .eq('is_active', true)
                     .order('order_index', { ascending: true })
                     .limit(limit);
 
