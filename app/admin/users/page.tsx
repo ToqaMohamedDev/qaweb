@@ -32,7 +32,7 @@ import {
     FormField,
     FormSection,
 } from "@/components/admin/shared";
-import { useUsers, useUpdateUser, useDeleteUser } from "@/lib/queries";
+import { useUsersAPI, useUpdateUserAPI, useDeleteUserAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
 import type { StatItem } from "@/components/admin/shared";
 
@@ -176,10 +176,10 @@ function buildStatsItems(users: Profile[]): StatItem[] {
 export default function UsersPage() {
     const { addToast } = useUIStore();
 
-    // Queries & Mutations
-    const { data: users = [], isLoading, error: queryError, refetch } = useUsers();
-    const updateMutation = useUpdateUser();
-    const deleteMutation = useDeleteUser();
+    // Queries & Mutations (API-based for Vercel compatibility)
+    const { data: users = [], isLoading, error: queryError, refetch } = useUsersAPI();
+    const updateMutation = useUpdateUserAPI();
+    const deleteMutation = useDeleteUserAPI();
 
     // Local State
     const [search, setSearch] = useState("");
