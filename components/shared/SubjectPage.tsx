@@ -140,18 +140,26 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                 let stageId: string | null = null;
 
                 // Try to get user's stage from profile
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const profile = await getProfile(user.id);
-                    if ((profile as any)?.educational_stage_id) {
-                        stageId = (profile as any).educational_stage_id;
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const profile = await getProfile(user.id);
+                        if ((profile as any)?.educational_stage_id) {
+                            stageId = (profile as any).educational_stage_id;
+                        }
                     }
+                } catch (authError) {
+                    console.log('User not authenticated, using default stage');
                 }
 
                 // Fetch all stages via API
                 const stagesRes = await fetch('/api/public/data?entity=stages');
+                if (!stagesRes.ok) {
+                    console.error('Failed to fetch stages:', stagesRes.status);
+                }
                 const stagesResult = await stagesRes.json();
                 const allStages = stagesResult.data || [];
+                console.log('Fetched stages:', allStages.length);
 
                 // If no user stage, find default stage
                 if (!stageId) {
@@ -161,6 +169,10 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                     if (defaultStage) {
                         stageId = defaultStage.id;
                         setStageName(defaultStage.name);
+                    } else if (allStages.length > 0) {
+                        // Fallback to first stage if no default found
+                        stageId = allStages[0].id;
+                        setStageName(allStages[0].name);
                     }
                 } else {
                     const userStage = allStages.find((s: any) => s.id === stageId);
@@ -170,6 +182,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                 }
 
                 if (!stageId) {
+                    console.error('No stage found, cannot load content');
                     setIsLoading(false);
                     return;
                 }
