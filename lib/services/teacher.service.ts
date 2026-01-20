@@ -25,6 +25,21 @@ export interface TeacherDetails extends Profile {
 }
 
 // ==========================================
+// Helper
+// ==========================================
+
+function getBaseUrl(): string {
+    if (typeof window !== 'undefined') {
+        // Client-side: use relative URL
+        return '';
+    }
+    // Server-side: use environment variable or fallback
+    return process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000';
+}
+
+// ==========================================
 // Read Operations
 // ==========================================
 
@@ -33,8 +48,8 @@ export interface TeacherDetails extends Profile {
  */
 export async function getTeachers(): Promise<Profile[]> {
     try {
-        // Use public API route instead of direct Supabase call
-        const res = await fetch('/api/public/data?entity=teachers&limit=200');
+        const baseUrl = getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/public/data?entity=teachers&limit=200`);
         const result = await res.json();
 
         if (!res.ok || !result.success) {
