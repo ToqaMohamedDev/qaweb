@@ -33,7 +33,7 @@ import {
     CheckboxField,
     FormSection,
 } from "@/components/admin/shared";
-import { useTeachers, useUpdateTeacher, useDeleteTeacher } from "@/lib/queries";
+import { useTeachersAPI, useUpdateUserAPI, useDeleteUserAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
 import type { StatItem } from "@/components/admin/shared";
 
@@ -154,9 +154,9 @@ export default function TeachersPage() {
     const { addToast } = useUIStore();
 
     // Queries & Mutations
-    const { data: teachers = [], isLoading, error: queryError, refetch } = useTeachers();
-    const updateMutation = useUpdateTeacher();
-    const deleteMutation = useDeleteTeacher();
+    const { data: teachers = [], isLoading, error: queryError, refetch } = useTeachersAPI();
+    const updateMutation = useUpdateUserAPI();
+    const deleteMutation = useDeleteUserAPI();
 
     // Local State
     const [search, setSearch] = useState("");

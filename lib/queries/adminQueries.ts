@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminQuery, adminUpdate, adminDelete } from '@/lib/api/adminClient';
+import { adminQuery, adminInsert, adminUpdate, adminDelete } from '@/lib/api/adminClient';
 import type { Database } from '@/lib/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -167,6 +167,69 @@ export function useStagesAPI(): UseQueryResult<Stage> {
     return { data, isLoading, error, refetch };
 }
 
+export function useCreateStageAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Stage>) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminInsert<Stage>('educational_stages', input);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useUpdateStageAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Stage> & { id: string }) => {
+        setIsPending(true);
+        setError(null);
+
+        const { id, ...updates } = input;
+        const result = await adminUpdate<Stage>('educational_stages', id, updates);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useDeleteStageAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete('educational_stages', id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
 // ==========================================
 // Subjects Hooks (Admin API Version)
 // ==========================================
@@ -197,6 +260,69 @@ export function useSubjectsAPI(): UseQueryResult<Subject> {
     }, [refetch]);
 
     return { data, isLoading, error, refetch };
+}
+
+export function useCreateSubjectAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Subject>) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminInsert<Subject>('subjects', input);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useUpdateSubjectAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Subject> & { id: string }) => {
+        setIsPending(true);
+        setError(null);
+
+        const { id, ...updates } = input;
+        const result = await adminUpdate<Subject>('subjects', id, updates);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useDeleteSubjectAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete('subjects', id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
 }
 
 // ==========================================
@@ -231,6 +357,69 @@ export function useLessonsAPI(): UseQueryResult<Lesson> {
     return { data, isLoading, error, refetch };
 }
 
+export function useCreateLessonAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Lesson>) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminInsert<Lesson>('lessons', input);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useUpdateLessonAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Lesson> & { id: string }) => {
+        setIsPending(true);
+        setError(null);
+
+        const { id, ...updates } = input;
+        const result = await adminUpdate<Lesson>('lessons', id, updates);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useDeleteLessonAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete('lessons', id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
 // ==========================================
 // Exams Hooks (Admin API Version)
 // ==========================================
@@ -262,3 +451,72 @@ export function useExamsAPI(): UseQueryResult<Exam> {
 
     return { data, isLoading, error, refetch };
 }
+
+export function useCreateExamAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<Exam>) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminInsert<Exam>('comprehensive_exams', input);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useUpdateExamAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: any) => {
+        setIsPending(true);
+        setError(null);
+
+        const examId = input.examId || input.id;
+        const updates = input.updates || (() => {
+            const { examId: _, id: __, ...rest } = input;
+            return rest;
+        })();
+
+        const result = await adminUpdate<Exam>('comprehensive_exams', examId, updates);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    return { mutateAsync, isPending, error };
+}
+
+export function useDeleteExamAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string) => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete('comprehensive_exams', id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}
+

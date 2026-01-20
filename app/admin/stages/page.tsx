@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Pencil, Trash2, X, Save, Layers, GraduationCap, BookOpen, Sparkles, ChevronLeft, Loader2 } from "lucide-react";
 import { GridSkeleton, StatsCardSkeleton } from "@/components/ui/Skeleton";
-import { useStages, useCreateStage, useUpdateStage, useDeleteStage } from "@/lib/queries";
+import { useStagesAPI, useCreateStageAPI, useUpdateStageAPI, useDeleteStageAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
 import { ConfirmDialog } from "@/components/shared"; // Keeping provided import just in case, though unused here
 import { DeleteConfirmModal } from "@/components/admin";
@@ -35,11 +35,11 @@ const gradientColors = [
 export default function StagesPage() {
     const { addToast } = useUIStore();
 
-    // Query Hooks
-    const { data: stages = [], isLoading: isQueryLoading } = useStages();
-    const createMutation = useCreateStage();
-    const updateMutation = useUpdateStage();
-    const deleteMutation = useDeleteStage();
+    // Query Hooks (API-based for Vercel compatibility)
+    const { data: stages = [], isLoading: isQueryLoading } = useStagesAPI();
+    const createMutation = useCreateStageAPI();
+    const updateMutation = useUpdateStageAPI();
+    const deleteMutation = useDeleteStageAPI();
 
     const isLoading = isQueryLoading;
     const isSaving = createMutation.isPending || updateMutation.isPending;
