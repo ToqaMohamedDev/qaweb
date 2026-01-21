@@ -14,7 +14,7 @@ import {
     ExamHeader,
     ExamFooter,
 } from "@/components/exam";
-import { useTeacherExamPlayer } from "@/hooks/useTeacherExamPlayer";
+import { useTeacherExamPlayer } from "@/hooks/useExamSession";
 
 export default function EnglishExamPage() {
     const params = useParams();
@@ -153,7 +153,7 @@ export default function EnglishExamPage() {
                                             key={q.id}
                                             question={q}
                                             index={`Q${idx + 1}`}
-                                            answers={answers[q.id] || []}
+                                            answers={(answers[q.id] as number[]) || []}
                                             onAnswer={handleAnswerChange}
                                         />
                                     ))}

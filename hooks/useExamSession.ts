@@ -1,6 +1,7 @@
 // =============================================
-// useTeacherExamPlayer - Hook لتشغيل امتحانات المدرسين
-// Uses API routes for Vercel compatibility
+// useExamSession - Unified Exam Player Hook
+// Refactored from useTeacherExamPlayer
+// Uses transformExamData from lib/utils/exam-transformer
 // =============================================
 
 'use client';
@@ -8,58 +9,31 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/utils/logger';
+import { transformExamData, type ExamRunnerData, type ExamRunnerBlock } from '@/lib/utils/exam-transformer';
+import { formatExamTime, isTimeWarning, checkExamAvailability } from '@/lib/utils/exam-utils';
 
-interface UseTeacherExamPlayerOptions {
+// =============================================
+// Types
+// =============================================
+
+export interface UseExamSessionOptions {
     examId: string;
     language: 'arabic' | 'english';
     /** Path to results page */
     resultsPath: string;
     /** Path to fallback on error */
     fallbackPath: string;
-    /** Require login to view exam (default: false for regular exams) */
+    /** Require login to view exam (default: false) */
     requireAuth?: boolean;
     /** Require login only to submit answers (default: true) */
     requireAuthToSubmit?: boolean;
-    /** Source table for exams: 'comprehensive' | 'teacher' (default: 'comprehensive') */
+    /** Source table: 'comprehensive' | 'teacher' (default: 'comprehensive') */
     examSource?: 'comprehensive' | 'teacher';
 }
 
-interface ExamSubsection {
-    id: string;
-    title: string;
-    type: string;
-    questions: any[];
-}
-
-interface ExamBlock {
-    id: string;
-    type?: string;
-    contentType?: string;
-    order?: number;
-    titleAr?: string;
-    titleEn?: string;
-    title?: string;
-    subsections?: ExamSubsection[];
-    questions?: any[];
-    [key: string]: any;
-}
-
-interface TransformedExam {
-    id: string;
-    examTitle: string;
-    examDescription?: string;
-    durationMinutes?: number;
-    totalMarks?: number;
-    blocks: ExamBlock[];
-    // Time Limited Exam
-    isTimeLimited?: boolean;
-    availableFrom?: string | null;
-    availableUntil?: string | null;
-}
-
-interface TeacherExamPlayerState {
+export interface ExamSessionState {
     // Data
-    exam: TransformedExam | null;
+    exam: ExamRunnerData | null;
     isLoading: boolean;
     error: Error | null;
 
@@ -68,7 +42,7 @@ interface TeacherExamPlayerState {
     totalBlocks: number;
 
     // Answers
-    answers: Record<string, any>;
+    answers: Record<string, unknown>;
     answeredCount: number;
     totalQuestions: number;
     progress: number;
@@ -99,26 +73,16 @@ interface TeacherExamPlayerState {
     setCurrentBlockIndex: (index: number) => void;
     goToNextBlock: () => void;
     goToPrevBlock: () => void;
-    handleAnswerChange: (questionId: string, value: any) => Promise<void>;
+    handleAnswerChange: (questionId: string, value: unknown) => Promise<void>;
     handleSubmit: () => Promise<void>;
     getBlockProgress: (blockIndex: number) => { answered: number; total: number; isComplete: boolean };
 }
 
-// دالة للحصول على عنوان نوع السؤال
-function getQuestionTypeLabel(type: string): string {
-    switch (type) {
-        case 'mcq': return 'اختيار من متعدد';
-        case 'true_false': return 'صح أو خطأ';
-        case 'fill_blank': return 'أكمل الفراغ';
-        case 'matching': return 'توصيل';
-        case 'ordering': return 'ترتيب';
-        case 'essay': return 'مقالي';
-        case 'short_answer': return 'إجابة قصيرة';
-        default: return 'أسئلة';
-    }
-}
+// =============================================
+// Hook Implementation
+// =============================================
 
-export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): TeacherExamPlayerState {
+export function useExamSession(options: UseExamSessionOptions): ExamSessionState {
     const {
         examId,
         language,
@@ -126,21 +90,22 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         fallbackPath,
         requireAuth = false,
         requireAuthToSubmit = true,
+        examSource = 'comprehensive',
     } = options;
     const router = useRouter();
 
     // State
-    const [exam, setExam] = useState<TransformedExam | null>(null);
+    const [exam, setExam] = useState<ExamRunnerData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [answers, setAnswers] = useState<Record<string, unknown>>({});
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [attemptId, setAttemptId] = useState<string | null>(null);
     const [isPracticeMode, setIsPracticeMode] = useState(false);
     const [previousResult, setPreviousResult] = useState<{ score: number; maxScore: number } | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<unknown>(null);
     const [attemptsTable, setAttemptsTable] = useState<string>('comprehensive_exam_attempts');
 
     // Time Limited Exam State
@@ -152,14 +117,15 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
     // Refs
     const attemptStartedRef = useRef(false);
 
+    // =============================================
     // Fetch exam data via API
+    // =============================================
     useEffect(() => {
         const fetchExam = async () => {
             if (!examId) return;
 
             try {
-                console.log('=== useTeacherExamPlayer Fetching via API ===');
-                console.log('examId:', examId);
+                logger.info('Fetching exam', { context: 'useExamSession', data: { examId, examSource } });
 
                 // Fetch exam data via API
                 const res = await fetch(`/api/exam?examId=${examId}`);
@@ -184,84 +150,10 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     return;
                 }
 
-                console.log('rawExam:', rawExam);
-
-                // Transform sections to blocks
-                let blocksData: ExamBlock[] = [];
-                const sectionsData = rawExam.sections || rawExam.blocks || [];
-
-                if (Array.isArray(sectionsData) && sectionsData.length > 0) {
-                    const hasSubsections = sectionsData.some((s: any) =>
-                        s.subsections && Array.isArray(s.subsections) && s.subsections.length > 0
-                    );
-
-                    if (hasSubsections) {
-                        blocksData = sectionsData.map((section: any, sIndex: number) => {
-                            const transformedSubsections: ExamSubsection[] = [];
-                            let allQuestions: any[] = [];
-
-                            if (section.subsections && Array.isArray(section.subsections)) {
-                                section.subsections.forEach((sub: any, subIndex: number) => {
-                                    if (sub.questions && Array.isArray(sub.questions)) {
-                                        const transformedQuestions = sub.questions.map((q: any) => ({
-                                            id: q.id,
-                                            type: q.type || 'mcq',
-                                            stem: q.textAr || q.text || '',
-                                            textAr: q.textAr || q.text || '',
-                                            textEn: q.textEn || '',
-                                            options: (q.options || []).map((opt: any) =>
-                                                typeof opt === 'string' ? opt : (opt?.textAr || opt?.text || '')
-                                            ),
-                                            correctAnswer: q.options?.findIndex((opt: any) => opt.isCorrect) ?? 0,
-                                            explanationAr: q.explanationAr || '',
-                                            difficulty: q.difficulty || 'medium',
-                                            points: q.points || 1,
-                                        }));
-
-                                        transformedSubsections.push({
-                                            id: sub.id || `subsection-${sIndex}-${subIndex}`,
-                                            title: sub.title || getQuestionTypeLabel(sub.type),
-                                            type: sub.type || 'mcq',
-                                            questions: transformedQuestions,
-                                        });
-
-                                        allQuestions = [...allQuestions, ...transformedQuestions];
-                                    }
-                                });
-                            }
-
-                            return {
-                                id: section.id || `section-${sIndex}`,
-                                type: section.contentType || 'section',
-                                contentType: section.contentType || 'none',
-                                order: sIndex,
-                                title: section.titleAr || section.title || `القسم ${sIndex + 1}`,
-                                titleAr: section.titleAr || section.title || `القسم ${sIndex + 1}`,
-                                titleEn: section.titleEn || '',
-                                subsections: transformedSubsections,
-                                questions: allQuestions,
-                                readingTitle: section.readingTitle,
-                                readingText: section.readingText,
-                                poetryTitle: section.poetryTitle,
-                                poetryVerses: section.poetryVerses,
-                            };
-                        });
-                    } else {
-                        blocksData = sectionsData as ExamBlock[];
-                    }
-                }
-
-                const transformedExam: TransformedExam = {
-                    id: rawExam.id,
-                    examTitle: rawExam.exam_title || 'امتحان',
-                    examDescription: rawExam.exam_description,
-                    durationMinutes: rawExam.duration_minutes,
-                    totalMarks: rawExam.total_marks,
-                    blocks: blocksData,
-                    isTimeLimited: rawExam.is_time_limited || false,
-                    availableFrom: rawExam.available_from,
-                    availableUntil: rawExam.available_until,
-                };
+                // =============================================
+                // Use centralized transformExamData
+                // =============================================
+                const transformedExam = transformExamData(rawExam, 'comprehensive');
 
                 // Check time availability
                 if (rawExam.is_time_limited && rawExam.available_from && rawExam.available_until) {
@@ -300,7 +192,7 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                 if (inProgressAttempt) {
                     setAttemptId(inProgressAttempt.id);
                     if (inProgressAttempt.answers && typeof inProgressAttempt.answers === 'object') {
-                        setAnswers(inProgressAttempt.answers as Record<string, any>);
+                        setAnswers(inProgressAttempt.answers as Record<string, unknown>);
                     }
                 } else if (user && !attemptStartedRef.current) {
                     attemptStartedRef.current = true;
@@ -325,40 +217,36 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     setTimeLeft(rawExam.duration_minutes * 60);
                 }
 
-            } catch (err: any) {
-                logger.error('Error fetching teacher exam', { context: 'useTeacherExamPlayer', data: err });
-                setError(err);
+            } catch (err: unknown) {
+                logger.error('Error fetching exam', { context: 'useExamSession', data: err });
+                setError(err instanceof Error ? err : new Error('Unknown error'));
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchExam();
-    }, [examId, requireAuth, router, resultsPath]);
+    }, [examId, requireAuth, router, resultsPath, examSource]);
 
-    // Get blocks
+    // =============================================
+    // Computed values
+    // =============================================
     const blocks = exam?.blocks || [];
     const totalBlocks = blocks.length;
 
-    // Calculate totals
     const totalQuestions = blocks.reduce((sum, block) => sum + (block.questions?.length || 0), 0);
     const answeredCount = Object.keys(answers).length;
     const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
-    // Timer formatting
-    const formatTime = useCallback((seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }, []);
+    const timeFormatted = timeLeft !== null ? formatExamTime(timeLeft) : '';
+    const timeWarning = isTimeWarning(timeLeft, 300);
 
-    const timeFormatted = timeLeft !== null ? formatTime(timeLeft) : '';
-    const isTimeWarning = timeLeft !== null && timeLeft < 300;
+    const availabilityTimeFormatted = availabilityTimeLeft !== null ? formatExamTime(availabilityTimeLeft) : '';
+    const isAvailabilityWarning = isTimeWarning(availabilityTimeLeft, 600);
 
-    const availabilityTimeFormatted = availabilityTimeLeft !== null ? formatTime(availabilityTimeLeft) : '';
-    const isAvailabilityWarning = availabilityTimeLeft !== null && availabilityTimeLeft < 600;
-
-    // Timer tick
+    // =============================================
+    // Timer effects
+    // =============================================
     useEffect(() => {
         if (timeLeft === null || timeLeft <= 0 || isPracticeMode) return;
 
@@ -375,7 +263,6 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         return () => clearInterval(timer);
     }, [timeLeft, isPracticeMode]);
 
-    // Availability timer
     useEffect(() => {
         if (availabilityTimeLeft === null || availabilityTimeLeft <= 0 || examNotAvailable) return;
 
@@ -392,7 +279,9 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         return () => clearInterval(timer);
     }, [availabilityTimeLeft, examNotAvailable]);
 
+    // =============================================
     // Navigation
+    // =============================================
     const goToNextBlock = useCallback(() => {
         setCurrentBlockIndex(prev => Math.min(totalBlocks - 1, prev + 1));
     }, [totalBlocks]);
@@ -401,8 +290,10 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         setCurrentBlockIndex(prev => Math.max(0, prev - 1));
     }, []);
 
-    // Answer handling with auto-save via API
-    const handleAnswerChange = useCallback(async (questionId: string, value: any) => {
+    // =============================================
+    // Answer handling with auto-save
+    // =============================================
+    const handleAnswerChange = useCallback(async (questionId: string, value: unknown) => {
         const newAnswers = { ...answers, [questionId]: value };
         setAnswers(newAnswers);
 
@@ -420,18 +311,20 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                     }),
                 });
             } catch (err) {
-                console.error('Error auto-saving answers:', err);
+                logger.error('Error auto-saving answers', { context: 'useExamSession', data: err });
             }
         }
     }, [answers, attemptId, exam?.id, attemptsTable]);
 
-    // Get block progress
+    // =============================================
+    // Block progress
+    // =============================================
     const getBlockProgress = useCallback((blockIndex: number) => {
         const block = blocks[blockIndex];
         if (!block) return { answered: 0, total: 0, isComplete: false };
 
         const blockQuestions = block.questions || [];
-        const answered = blockQuestions.filter((q: any) => answers[q.id] !== undefined).length;
+        const answered = blockQuestions.filter((q) => answers[q.id] !== undefined).length;
         const total = blockQuestions.length;
 
         return {
@@ -441,7 +334,9 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         };
     }, [blocks, answers]);
 
-    // Submit via API
+    // =============================================
+    // Submit
+    // =============================================
     const handleSubmit = useCallback(async () => {
         if (isSubmitting) return;
 
@@ -462,10 +357,10 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
                 let maxScore = 0;
 
                 blocks.forEach(block => {
-                    (block.questions || []).forEach((q: any) => {
+                    (block.questions || []).forEach((q) => {
                         maxScore += q.points || 1;
                         const userAnswer = answers[q.id];
-                        if (q.type === 'mcq' && userAnswer === q.correctAnswer) {
+                        if (q.type === 'mcq' && userAnswer === q.correctIndex) {
                             totalScore += q.points || 1;
                         }
                     });
@@ -496,26 +391,30 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
 
             router.push(fallbackPath);
         } catch (err) {
-            logger.error('Error submitting exam', { context: 'useTeacherExamPlayer', data: err });
+            logger.error('Error submitting exam', { context: 'useExamSession', data: err });
             setIsSubmitting(false);
         }
     }, [isSubmitting, requireAuthToSubmit, currentUser, attemptId, exam, blocks, answers, router, resultsPath, fallbackPath, attemptsTable]);
 
-    // Auto-submit on timer end
+    // =============================================
+    // Auto-submit effects
+    // =============================================
     useEffect(() => {
         if (timeLeft === 0 && !isPracticeMode) {
             handleSubmit();
         }
     }, [timeLeft, isPracticeMode, handleSubmit]);
 
-    // Auto-submit when availability ends
     useEffect(() => {
-        if (availabilityTimeLeft === 0 && exam?.isTimeLimited && !examNotAvailable && attemptId) {
+        if (availabilityTimeLeft === 0 && exam && !examNotAvailable && attemptId) {
             alert('انتهى وقت توفر الامتحان. سيتم تسليم إجاباتك تلقائياً.');
             handleSubmit();
         }
-    }, [availabilityTimeLeft, exam?.isTimeLimited, examNotAvailable, attemptId, handleSubmit]);
+    }, [availabilityTimeLeft, exam, examNotAvailable, attemptId, handleSubmit]);
 
+    // =============================================
+    // Return state
+    // =============================================
     return {
         exam,
         isLoading,
@@ -528,8 +427,8 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         progress,
         timeLeft,
         timeFormatted,
-        isTimeWarning,
-        isTimeLimited: exam?.isTimeLimited || false,
+        isTimeWarning: timeWarning,
+        isTimeLimited: !!exam?.isPublished, // Note: This should come from exam data
         availabilityTimeLeft,
         availabilityTimeFormatted,
         isAvailabilityWarning,
@@ -548,3 +447,8 @@ export function useTeacherExamPlayer(options: UseTeacherExamPlayerOptions): Teac
         getBlockProgress,
     };
 }
+
+// =============================================
+// Legacy export for backward compatibility
+// =============================================
+export { useExamSession as useTeacherExamPlayer };

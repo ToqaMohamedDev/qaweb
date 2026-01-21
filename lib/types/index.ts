@@ -117,19 +117,33 @@ export {
     subjectsToCategoryOptions,
 } from './subject.types';
 
+// Re-export exam types from consolidated exam.ts
+export type {
+    Question,
+    QuestionOption,
+    ExamSubsection,
+    TransformedExam,
+    ExamPlayerState,
+    ExamAvailability,
+    Exam,
+} from './exam';
+
+// Re-export exam utilities from exam-utils.ts
 export {
-    // Exam types (using different names to avoid conflict)
-    type Question,
-    type QuestionOption,
-    type ExamSubsection,
-    type TransformedExam,
-    type ExamPlayerState,
-    type ExamAvailability,
     getQuestionTypeLabel,
     getOptionText,
     getCorrectAnswerIndex,
     checkExamAvailability,
-} from './exam.types';
+    questionTypeLabels,
+    questionTypeOrder,
+    formatExamTime,
+    isTimeWarning,
+    calculateScorePercentage,
+    isPassingScore,
+    getScoreGrade,
+    isQuestion,
+    isExam,
+} from '../utils/exam-utils';
 
 // Teacher type (extended Profile with camelCase aliases)
 export type Teacher = Tables<'profiles'> & {

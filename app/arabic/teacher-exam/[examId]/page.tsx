@@ -18,7 +18,7 @@ import {
     TextAnswer,
     ExamFooter,
 } from "@/components/exam";
-import { useTeacherExamPlayer } from "@/hooks/useTeacherExamPlayer";
+import { useTeacherExamPlayer } from "@/hooks/useExamSession";
 
 export default function ArabicTeacherExamPage() {
     const params = useParams();

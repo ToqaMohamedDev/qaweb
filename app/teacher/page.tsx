@@ -30,7 +30,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuthStore, selectIsApprovedTeacher } from "@/lib/stores/useAuthStore";
 import { createClient } from "@/lib/supabase";
-import { TeacherAnalytics } from "@/components/teacher";
+import { TeacherAnalytics } from "@/components/teachers";
 
 interface TeacherStats {
     totalExams: number;

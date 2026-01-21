@@ -20,8 +20,9 @@ export {
     useProfileRoute,
 } from './useProtectedRoute';
 
-// Exam Player Hook
-export { useExamPlayer } from './useExamPlayer';
+// Exam Session Hooks (unified)
+export { useExamSession, useTeacherExamPlayer } from './useExamSession';
+export type { UseExamSessionOptions, ExamSessionState } from './useExamSession';
 
 // Question Bank Hook
 export {

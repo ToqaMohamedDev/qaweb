@@ -41,3 +41,10 @@ export type {
     AboutTabProps,
     ExamsTabProps,
 } from './TeacherProfileComponents';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Teacher Analytics Components
+// ═══════════════════════════════════════════════════════════════════════════
+
+export { TeacherAnalytics } from './TeacherAnalytics';
+

@@ -40,12 +40,15 @@ export type TextDirection = 'rtl' | 'ltr' | 'auto';
 /** أنواع الأسئلة الأساسية */
 export type QuestionType =
     | 'mcq'           // اختيار متعدد
-    | 'truefalse'     // صح/خطأ
+    | 'true_false'    // صح/خطأ (الصيغة الموحدة)
     | 'essay'         // مقالي
     | 'fill_blank'    // أكمل الفراغ
     | 'matching'      // مطابقة
+    | 'ordering'      // ترتيب
     | 'parsing'       // إعراب
-    | 'extraction';   // استخراج
+    | 'extraction'    // استخراج
+    | 'short_answer'; // إجابة قصيرة
+
 
 /** مستوى الصعوبة */
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
@@ -74,6 +77,15 @@ export interface QuestionMedia {
 export interface AnswerOption {
     id: string;
     text: LangText;
+    isCorrect?: boolean;
+}
+
+/** خيار السؤال المبسط (للتوافق مع exam.types.ts) */
+export interface QuestionOption {
+    id?: string;
+    text?: string;
+    textAr?: string;
+    textEn?: string;
     isCorrect?: boolean;
 }
 
@@ -189,6 +201,97 @@ export interface ComprehensiveExam {
     created_at: string;
     updated_at: string;
     usage_scope?: string;
+    // Time-limited exam fields
+    is_time_limited?: boolean;
+    available_from?: string | null;
+    available_until?: string | null;
+}
+
+/** الامتحان المُحوَّل للواجهة (Frontend) */
+export interface TransformedExam {
+    id: string;
+    examTitle: string;
+    examDescription?: string;
+    durationMinutes?: number;
+    totalMarks?: number;
+    blocks: ExamBlock[];
+    isTimeLimited?: boolean;
+    availableFrom?: string | null;
+    availableUntil?: string | null;
+}
+
+/** حالة الامتحان في المُشغِّل */
+export interface ExamPlayerState {
+    exam: TransformedExam | null;
+    isLoading: boolean;
+    error: Error | null;
+    currentBlockIndex: number;
+    totalBlocks: number;
+    answers: Record<string, unknown>;
+    answeredCount: number;
+    totalQuestions: number;
+    progress: number;
+    timeLeft: number | null;
+    timeFormatted: string;
+    isTimeWarning: boolean;
+    isSubmitting: boolean;
+    attemptId: string | null;
+}
+
+/** حالة توفر الامتحان */
+export interface ExamAvailability {
+    isAvailable: boolean;
+    reason: 'available' | 'not_started' | 'ended' | null;
+    message: string | null;
+    timeLeft: number | null;
+}
+
+/** الواجهة الموحدة للسؤال (للتوافق مع exam.types.ts) */
+export interface Question {
+    id: string;
+    type: QuestionType;
+    stem: string;
+    textAr?: string;
+    textEn?: string;
+    options?: (QuestionOption | string)[];
+    correctAnswer?: number | string;
+    explanationAr?: string;
+    explanationEn?: string;
+    difficulty?: DifficultyLevel;
+    points?: number;
+    order?: number;
+}
+
+/** قسم فرعي للامتحان */
+export interface ExamSubsection {
+    id: string;
+    title: string;
+    type: QuestionType;
+    questions: Question[];
+}
+
+/** الامتحان الموحد (يجمع بين Exam و ComprehensiveExam) */
+export interface Exam {
+    id: string;
+    exam_title: string;
+    exam_description?: string;
+    duration_minutes?: number;
+    total_marks?: number;
+    stage_id?: string | null;
+    subject_id?: string | null;
+    language?: 'arabic' | 'english';
+    type?: string;
+    is_published: boolean;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    // Time-limited exam fields
+    is_time_limited?: boolean;
+    available_from?: string | null;
+    available_until?: string | null;
+    // Content
+    blocks?: ExamBlock[];
+    sections?: ExamBlock[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
