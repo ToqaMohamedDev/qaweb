@@ -4,7 +4,7 @@
  * TeacherRating Component
  * 
  * Displays and allows rating of teachers
- * Uses the teacher_ratings table from the database
+ * Uses API routes for Vercel compatibility
  */
 
 import { useState, useEffect } from "react";
@@ -18,7 +18,6 @@ import {
     ChevronUp,
     User,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase";
 import { Avatar } from "@/components/common";
 import { formatRelativeDate } from "@/lib/utils/formatters";
 
@@ -229,21 +228,18 @@ export default function TeacherRating({
     const fetchRatings = async () => {
         setIsLoading(true);
         try {
-            const supabase = createClient();
+            // Use API instead of direct Supabase for Vercel compatibility
+            const res = await fetch(`/api/ratings?teacherId=${teacherId}`);
+            const result = await res.json();
 
-            // Fetch ratings first
-            const { data: ratingsData, error: ratingsError } = await supabase
-                .from("teacher_ratings")
-                .select("*")
-                .eq("teacher_id", teacherId)
-                .order("created_at", { ascending: false });
-
-            if (ratingsError) {
-                console.error("Error fetching ratings:", ratingsError.message);
+            if (!result.success) {
+                console.error("Error fetching ratings:", result.error);
                 return;
             }
 
-            if (!ratingsData || ratingsData.length === 0) {
+            const { ratings: fetchedRatings, stats } = result.data;
+
+            if (!fetchedRatings || fetchedRatings.length === 0) {
                 setRatings([]);
                 setDistribution({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
                 setTotalRatings(0);
@@ -251,44 +247,14 @@ export default function TeacherRating({
                 return;
             }
 
-            // Get unique user IDs
-            const userIds = [...new Set(ratingsData.map(r => r.user_id))];
-
-            // Fetch user profiles
-            const { data: usersData } = await supabase
-                .from("profiles")
-                .select("id, name, avatar_url")
-                .in("id", userIds);
-
-            // Create a map of user data
-            const usersMap = new Map(
-                (usersData || []).map(u => [u.id, u])
-            );
-
-            // Combine ratings with user data
-            const fetchedRatings: Rating[] = ratingsData.map(r => ({
-                ...r,
-                user: usersMap.get(r.user_id) || undefined,
-            }));
-
             setRatings(fetchedRatings);
-
-            // Calculate stats
-            const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-            let sum = 0;
-            fetchedRatings.forEach((r) => {
-                if (r.rating >= 1 && r.rating <= 5) {
-                    dist[r.rating]++;
-                    sum += r.rating;
-                }
-            });
-            setDistribution(dist);
-            setTotalRatings(fetchedRatings.length);
-            setAverageRating(fetchedRatings.length > 0 ? sum / fetchedRatings.length : 0);
+            setDistribution(stats.distribution);
+            setTotalRatings(stats.total);
+            setAverageRating(stats.average);
 
             // Find current user's rating
             if (currentUserId) {
-                const userRatingData = fetchedRatings.find((r) => r.user_id === currentUserId);
+                const userRatingData = fetchedRatings.find((r: Rating) => r.user_id === currentUserId);
                 if (userRatingData) {
                     setUserRating(userRatingData);
                     setSelectedRating(userRatingData.rating);
@@ -311,85 +277,36 @@ export default function TeacherRating({
 
         setIsSubmitting(true);
         try {
-            const supabase = createClient();
+            // Use API instead of direct Supabase for Vercel compatibility
+            const res = await fetch('/api/ratings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teacherId,
+                    rating: selectedRating,
+                    review: reviewText.trim() || null,
+                    existingRatingId: userRating?.id || null,
+                }),
+            });
 
-            if (userRating) {
-                // Update existing rating
-                console.log("Updating rating:", { id: userRating.id, rating: selectedRating });
-                const { error } = await supabase
-                    .from("teacher_ratings")
-                    .update({
-                        rating: selectedRating,
-                        review: reviewText.trim() || null,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", userRating.id);
+            const result = await res.json();
 
-                if (error) {
-                    console.error("Update error details:", error.message, error.code, error.details);
-                    throw error;
-                }
-            } else {
-                // Create new rating
-                console.log("Creating new rating:", { user_id: currentUserId, teacher_id: teacherId, rating: selectedRating });
-                const { error } = await supabase
-                    .from("teacher_ratings")
-                    .insert({
-                        user_id: currentUserId,
-                        teacher_id: teacherId,
-                        rating: selectedRating,
-                        review: reviewText.trim() || null,
-                    });
-
-                if (error) {
-                    console.error("Insert error details:", error.message, error.code, error.details);
-                    throw error;
-                }
+            if (!result.success) {
+                console.error("Error submitting rating:", result.error);
+                throw new Error(result.error);
             }
 
-            // Refresh ratings
+            // Refresh ratings (this also updates stats via the API)
             await fetchRatings();
 
-            // Update teacher's average
-            await updateTeacherAverage();
+            // Notify parent of the change
+            onRatingChange?.(averageRating, totalRatings);
 
             setShowReviewInput(false);
         } catch (err: any) {
             console.error("Error submitting rating:", err?.message || err);
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const updateTeacherAverage = async () => {
-        try {
-            const supabase = createClient();
-
-            // Calculate new average
-            const { data: ratingsData } = await supabase
-                .from("teacher_ratings")
-                .select("rating")
-                .eq("teacher_id", teacherId);
-
-            if (ratingsData && ratingsData.length > 0) {
-                const sum = ratingsData.reduce((acc, r) => acc + r.rating, 0);
-                const avg = sum / ratingsData.length;
-
-                // Update teacher profile
-                await supabase
-                    .from("profiles")
-                    .update({
-                        rating_average: avg,
-                        rating_count: ratingsData.length,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", teacherId);
-
-                // Notify parent
-                onRatingChange?.(avg, ratingsData.length);
-            }
-        } catch (err) {
-            console.error("Error updating teacher average:", err);
         }
     };
 

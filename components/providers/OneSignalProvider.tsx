@@ -63,7 +63,6 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
 
             // Dynamic import لتجنب أي مشاكل SSR
             const { initOneSignal, getNotificationStatus, loginUser } = await import('@/lib/onesignal');
-            const { getSupabaseClient } = await import('@/lib/supabase-client');
 
             const success = await initOneSignal();
             setIsInitialized(success);
@@ -74,16 +73,13 @@ export function OneSignalProvider({ children }: OneSignalProviderProps) {
                     setIsPermitted(status.isPermitted);
                     setIsSubscribed(status.isSubscribed);
 
-                    // ربط المستخدم إذا كان مسجل دخوله
-                    const supabase = getSupabaseClient();
-                    const { data: { user } } = await supabase.auth.getUser();
+                    // ربط المستخدم إذا كان مسجل دخوله - Using API for Vercel compatibility
+                    const authRes = await fetch('/api/auth/user?includeProfile=true');
+                    const authResult = await authRes.json();
 
-                    if (user) {
-                        const { data: profile } = await supabase
-                            .from('profiles')
-                            .select('name, role')
-                            .eq('id', user.id)
-                            .single();
+                    if (authResult.success && authResult.data?.user) {
+                        const user = authResult.data.user;
+                        const profile = authResult.data.profile;
 
                         await loginUser(user.id, {
                             email: user.email,

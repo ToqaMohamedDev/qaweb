@@ -84,12 +84,28 @@ export function useGameRoom(roomCode: string): [GameState, GameActions] {
     const maxRetries = 5;
 
     // ========================================
-    // AUTH
+    // AUTH - Using API for Vercel compatibility
     // ========================================
     useEffect(() => {
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setState(prev => ({ ...prev, currentUser: extractGameUser(user) }));
+            try {
+                const res = await fetch('/api/auth/user');
+                const result = await res.json();
+                if (result.success && result.data?.user) {
+                    const user = result.data.user;
+                    setState(prev => ({
+                        ...prev,
+                        currentUser: {
+                            id: user.id,
+                            email: user.email || undefined,
+                            displayName: user.email?.split('@')[0] || 'لاعب',
+                            avatar: undefined,
+                        }
+                    }));
+                }
+            } catch (err) {
+                logger.error('Error getting user', { context: 'useGameRoom', data: err });
+            }
         };
         getUser();
     }, []);
