@@ -3,7 +3,6 @@
 // =============================================
 
 // UI Components
-export { Button } from './Button';
 export { Input } from './Input';
 export { ThemeToggle } from './ThemeToggle';
 export { ThemeProvider } from './ThemeProvider';
@@ -25,6 +24,12 @@ export * from './admin';
 
 // Export from shared with specific names to avoid conflicts with common
 export {
+    // Button components (main button export)
+    Button,
+    IconButton,
+    ButtonGroup,
+    LinkButton,
+    // Page components
     SubjectPage,
     LessonPageComponent,
     LoadingSpinner,

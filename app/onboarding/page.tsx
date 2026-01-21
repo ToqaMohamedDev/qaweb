@@ -18,9 +18,7 @@ import {
     Trophy,
     Clock
 } from "lucide-react";
-import { Button } from "@/components/Button";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { Button, Navbar, Footer } from "@/components";
 import { createClient } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import type { UserRole } from "@/lib/types";
