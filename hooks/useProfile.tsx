@@ -316,22 +316,30 @@ export function useProfile(): UseProfileReturn {
         }
     }, []);
 
-    // Fetch user data
+    // Fetch user data via API for Vercel compatibility
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const {
-                    data: { user },
-                } = await supabase.auth.getUser();
+                // Use API instead of direct supabase.auth.getUser()
+                const authRes = await fetch('/api/auth/user?includeProfile=true');
+                const authResult = await authRes.json();
 
-                if (!user) {
+                if (!authResult.success || !authResult.data?.user) {
                     router.push('/login');
                     return;
                 }
 
-                setUser(user);
+                const authUser = authResult.data.user;
+                const userProfile = authResult.data.profile;
 
-                const userProfile = await getProfile(user.id) as any;
+                // Create a user-like object for compatibility
+                setUser({
+                    id: authUser.id,
+                    email: authUser.email,
+                    phone: authUser.phone,
+                    created_at: authUser.created_at,
+                } as User);
+
                 if (userProfile) {
                     setProfile(userProfile as UserProfile);
                     setFormData({
@@ -348,8 +356,8 @@ export function useProfile(): UseProfileReturn {
                     .order('order_index', { ascending: true });
                 setStages(stagesData || []);
 
-                await fetchUserStats(user.id);
-                await fetchRecentActivity(user.id);
+                await fetchUserStats(authUser.id);
+                await fetchRecentActivity(authUser.id);
             } catch (error) {
                 logger.error('Error fetching user', { context: 'useProfile', data: error });
             } finally {

@@ -135,12 +135,16 @@ export function useTeacherSetup() {
     const fetchProfile = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            // Use API instead of direct supabase.auth.getUser() for Vercel compatibility
+            const authRes = await fetch('/api/auth/user');
+            const authResult = await authRes.json();
 
-            if (!user) {
+            if (!authResult.success || !authResult.data?.user) {
                 router.push('/login');
                 return;
             }
+
+            const userId = authResult.data.user.id;
 
             // Fetch subjects
             const { data: subjectsData, error: subjectsError } = await supabase
@@ -171,7 +175,7 @@ export function useTeacherSetup() {
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', user.id)
+                .eq('id', userId)
                 .single();
 
             if (profileError) throw profileError;
