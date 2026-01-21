@@ -10,6 +10,8 @@ export { useHomeLessons } from './useLessons';
 export { useAdminDashboard } from './useAdminDashboard';
 export { useProfile } from './useProfile';
 export { useGameSocket } from './useGameSocket';
+export { useNotificationPreferences } from './useNotificationPreferences';
+export type { NotificationPreferences, TeacherSubscription, UseNotificationPreferencesReturn } from './useNotificationPreferences';
 
 // Protected Route Hooks
 export {

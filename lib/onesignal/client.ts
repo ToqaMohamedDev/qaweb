@@ -53,7 +53,13 @@ export async function initOneSignal(): Promise<boolean> {
             appId: ONESIGNAL_APP_ID,
             allowLocalhostAsSecureOrigin: true,
             serviceWorkerPath: '/OneSignalSDKWorker.js',
+            notifyButton: {
+                enable: false, // نستخدم UI مخصص
+            },
         });
+
+        // إضافة Event Listeners
+        setupEventListeners();
 
         isInitialized = true;
         console.log('✅ OneSignal initialized successfully');
@@ -75,6 +81,38 @@ export async function initOneSignal(): Promise<boolean> {
         // أي خطأ آخر - نتجاهله ونستمر
         console.warn('OneSignal init failed (non-blocking):', error?.message || error);
         return false;
+    }
+}
+
+/**
+ * إعداد Event Listeners
+ */
+function setupEventListeners(): void {
+    if (!OneSignalInstance) return;
+
+    try {
+        // استماع لتغيير حالة الاشتراك
+        OneSignalInstance.User.PushSubscription.addEventListener('change', (event: any) => {
+            console.log('📱 Push subscription changed:', event);
+        });
+
+        // استماع للإشعارات الواردة (عندما يكون التطبيق مفتوح)
+        OneSignalInstance.Notifications.addEventListener('foregroundWillDisplay', (event: any) => {
+            console.log('📩 Notification received in foreground:', event.notification);
+            // يمكن إضافة toast أو UI notification هنا
+        });
+
+        // استماع للنقر على الإشعار
+        OneSignalInstance.Notifications.addEventListener('click', (event: any) => {
+            console.log('👆 Notification clicked:', event.notification);
+            // التوجيه للصفحة المناسبة
+            const url = event.notification?.launchURL;
+            if (url && typeof window !== 'undefined') {
+                window.location.href = url;
+            }
+        });
+    } catch (error) {
+        console.warn('Failed to setup OneSignal event listeners:', error);
     }
 }
 

@@ -1,16 +1,17 @@
 "use client";
 
 /**
- * Notification Settings Page
+ * Notification Settings Page - Improved Version
  * 
- * Allows users to manage their notification preferences
- * Uses the notification_preferences table from the database
+ * Uses useNotificationPreferences hook for managing notifications
+ * Integrates with OneSignal for push notifications
  */
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
     Bell,
+    BellOff,
     Mail,
     Smartphone,
     BookOpen,
@@ -19,22 +20,19 @@ import {
     Save,
     CheckCircle,
     ArrowRight,
+    UserCheck,
+    AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import { useOneSignal } from "@/components/providers/OneSignalProvider";
+import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { createClient } from "@/lib/supabase";
 
 // ==========================================
 // Types
 // ==========================================
-
-interface NotificationPreferences {
-    email_notifications: boolean;
-    push_notifications: boolean;
-    exam_reminders: boolean;
-    new_content_alerts: boolean;
-}
 
 interface SettingToggleProps {
     icon: React.ReactNode;
@@ -78,8 +76,8 @@ function SettingToggle({
                 onClick={() => !disabled && onChange(!value)}
                 disabled={disabled}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${value
-                        ? "bg-violet-600"
-                        : "bg-gray-300 dark:bg-gray-600"
+                    ? "bg-violet-600"
+                    : "bg-gray-300 dark:bg-gray-600"
                     } ${disabled ? "cursor-not-allowed" : ""}`}
             >
                 <span
@@ -98,13 +96,16 @@ function SettingToggle({
 export default function NotificationSettingsPage() {
     const router = useRouter();
 
-    // State
+    // OneSignal integration
+    const { isInitialized: oneSignalReady, status: pushStatus } = useOneSignal();
+    const notifPrefs = useNotificationPreferences();
+
+    // Database preferences state
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
-
-    const [preferences, setPreferences] = useState<NotificationPreferences>({
+    const [dbPreferences, setDbPreferences] = useState({
         email_notifications: true,
         push_notifications: true,
         exam_reminders: true,
@@ -112,7 +113,7 @@ export default function NotificationSettingsPage() {
     });
 
     // ==========================================
-    // Fetch Preferences
+    // Fetch Preferences from DB
     // ==========================================
 
     useEffect(() => {
@@ -144,7 +145,7 @@ export default function NotificationSettingsPage() {
             }
 
             if (data) {
-                setPreferences({
+                setDbPreferences({
                     email_notifications: data.email_notifications ?? true,
                     push_notifications: data.push_notifications ?? true,
                     exam_reminders: data.exam_reminders ?? true,
@@ -159,7 +160,18 @@ export default function NotificationSettingsPage() {
     };
 
     // ==========================================
-    // Save Preferences
+    // Enable Push Notifications
+    // ==========================================
+
+    const handleEnablePush = async () => {
+        const granted = await notifPrefs.enableNotifications();
+        if (granted) {
+            setDbPreferences(prev => ({ ...prev, push_notifications: true }));
+        }
+    };
+
+    // ==========================================
+    // Save Preferences to DB
     // ==========================================
 
     const handleSave = async () => {
@@ -173,7 +185,7 @@ export default function NotificationSettingsPage() {
                 .from("notification_preferences")
                 .upsert({
                     user_id: userId,
-                    ...preferences,
+                    ...dbPreferences,
                     updated_at: new Date().toISOString(),
                 }, {
                     onConflict: "user_id",
@@ -235,14 +247,63 @@ export default function NotificationSettingsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-4"
                     >
+                        {/* Push Notifications Status Card */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className={`p-4 rounded-xl border ${pushStatus.isSubscribed
+                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                                }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                {pushStatus.isSubscribed ? (
+                                    <>
+                                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                        <div>
+                                            <p className="font-medium text-green-800 dark:text-green-300">
+                                                الإشعارات الفورية مفعّلة
+                                            </p>
+                                            <p className="text-sm text-green-600 dark:text-green-400">
+                                                ستتلقى إشعارات عند نشر امتحانات جديدة
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <BellOff className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                        <div className="flex-1">
+                                            <p className="font-medium text-amber-800 dark:text-amber-300">
+                                                الإشعارات الفورية غير مفعّلة
+                                            </p>
+                                            <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                فعّلها لتلقي إشعارات فورية
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleEnablePush}
+                                            disabled={notifPrefs.isLoading}
+                                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                        >
+                                            {notifPrefs.isLoading ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                'تفعيل'
+                                            )}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
+
                         {/* Email Notifications */}
                         <SettingToggle
                             icon={<Mail className="h-5 w-5" />}
                             title="إشعارات البريد الإلكتروني"
                             description="استلام الإشعارات عبر البريد الإلكتروني"
-                            value={preferences.email_notifications}
+                            value={dbPreferences.email_notifications}
                             onChange={(value) =>
-                                setPreferences((prev) => ({ ...prev, email_notifications: value }))
+                                setDbPreferences((prev) => ({ ...prev, email_notifications: value }))
                             }
                         />
 
@@ -251,9 +312,9 @@ export default function NotificationSettingsPage() {
                             icon={<Smartphone className="h-5 w-5" />}
                             title="الإشعارات الفورية"
                             description="استلام الإشعارات الفورية في المتصفح"
-                            value={preferences.push_notifications}
+                            value={dbPreferences.push_notifications}
                             onChange={(value) =>
-                                setPreferences((prev) => ({ ...prev, push_notifications: value }))
+                                setDbPreferences((prev) => ({ ...prev, push_notifications: value }))
                             }
                         />
 
@@ -262,9 +323,9 @@ export default function NotificationSettingsPage() {
                             icon={<FileText className="h-5 w-5" />}
                             title="تذكيرات الامتحانات"
                             description="تلقي تنبيهات قبل مواعيد الامتحانات"
-                            value={preferences.exam_reminders}
+                            value={dbPreferences.exam_reminders}
                             onChange={(value) =>
-                                setPreferences((prev) => ({ ...prev, exam_reminders: value }))
+                                setDbPreferences((prev) => ({ ...prev, exam_reminders: value }))
                             }
                         />
 
@@ -273,11 +334,41 @@ export default function NotificationSettingsPage() {
                             icon={<BookOpen className="h-5 w-5" />}
                             title="تنبيهات المحتوى الجديد"
                             description="إعلامك بالدروس والامتحانات الجديدة"
-                            value={preferences.new_content_alerts}
+                            value={dbPreferences.new_content_alerts}
                             onChange={(value) =>
-                                setPreferences((prev) => ({ ...prev, new_content_alerts: value }))
+                                setDbPreferences((prev) => ({ ...prev, new_content_alerts: value }))
                             }
                         />
+
+                        {/* Teacher Subscriptions Section */}
+                        {notifPrefs.teacherSubscriptions.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="mt-6"
+                            >
+                                <h3 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                    <UserCheck className="h-5 w-5 text-violet-600" />
+                                    المعلمون المتابَعون ({notifPrefs.teacherSubscriptions.length})
+                                </h3>
+                                <div className="space-y-2">
+                                    {notifPrefs.teacherSubscriptions.map((sub) => (
+                                        <div
+                                            key={sub.teacherId}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700"
+                                        >
+                                            <span className="text-gray-900 dark:text-white">{sub.teacherName}</span>
+                                            <button
+                                                onClick={() => notifPrefs.unsubscribeFromTeacher(sub.teacherId)}
+                                                className="text-red-500 hover:text-red-600 text-sm"
+                                            >
+                                                إلغاء المتابعة
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Save Button */}
                         <motion.div
