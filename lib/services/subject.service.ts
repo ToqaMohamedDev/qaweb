@@ -2,8 +2,10 @@
  * Subject Service
  * 
  * Handles subjects (المواد الدراسية)
+ * Uses unified API client for consistency
  */
 
+import { apiClient, endpoints } from '../api-client';
 import { getSupabaseClient } from '../supabase-client';
 import type { Subject, TablesInsert, TablesUpdate } from '../database.types';
 
@@ -30,19 +32,11 @@ export async function getSubjects(): Promise<Subject[]> {
 }
 
 /**
- * Get active subjects only - Uses API route for Vercel compatibility
+ * Get active subjects only - Uses unified API client
  */
 export async function getActiveSubjects(): Promise<Subject[]> {
     try {
-        const res = await fetch('/api/public/data?entity=subjects&limit=100');
-        const result = await res.json();
-
-        if (!res.ok || !result.success) {
-            console.error('Error fetching subjects via API:', result.error);
-            return [];
-        }
-
-        return result.data || [];
+        return await apiClient.fetchArray<Subject>(endpoints.subjects(undefined, 100));
     } catch (error) {
         console.error('Error fetching active subjects:', error);
         return [];

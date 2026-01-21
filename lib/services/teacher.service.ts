@@ -2,9 +2,10 @@
  * Teacher Service
  * 
  * Handles teacher-specific operations
- * Uses API routes for Vercel compatibility
+ * Uses unified API client for consistency
  */
 
+import { apiClient, endpoints } from '../api-client';
 import { getSupabaseClient } from '../supabase-client';
 import type { Profile, TeacherExam, TeacherRating } from '../database.types';
 
@@ -25,39 +26,15 @@ export interface TeacherDetails extends Profile {
 }
 
 // ==========================================
-// Helper
-// ==========================================
-
-function getBaseUrl(): string {
-    if (typeof window !== 'undefined') {
-        // Client-side: use relative URL
-        return '';
-    }
-    // Server-side: use environment variable or fallback
-    return process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000';
-}
-
-// ==========================================
 // Read Operations
 // ==========================================
 
 /**
- * Get all approved teachers - Uses API route for Vercel compatibility
+ * Get all approved teachers - Uses unified API client
  */
 export async function getTeachers(): Promise<Profile[]> {
     try {
-        const baseUrl = getBaseUrl();
-        const res = await fetch(`${baseUrl}/api/public/data?entity=teachers&limit=200`);
-        const result = await res.json();
-
-        if (!res.ok || !result.success) {
-            console.error('Error fetching teachers via API:', result.error);
-            return [];
-        }
-
-        return result.data || [];
+        return await apiClient.fetchArray<Profile>(endpoints.teachers(200));
     } catch (error) {
         console.error('Error fetching teachers:', error);
         return [];

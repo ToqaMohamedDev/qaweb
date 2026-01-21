@@ -93,6 +93,44 @@ export type {
 } from './exam';
 export { defaultExamSettings } from './exam';
 
+// Re-export new centralized types (named exports to avoid conflicts)
+export {
+    // Teacher types (using different names to avoid conflict)
+    type TeacherProfile as TeacherProfileExtended,
+    type TeacherExam as TeacherExamType,
+    type TeacherCardProps,
+    type TeacherFilters as TeacherFiltersExtended,
+    isTeacherType,
+    isTeacherProfileType,
+    transformTeacher,
+    transformTeacherProfile,
+} from './teacher.types';
+
+export {
+    // Subject types
+    type CategoryOption,
+    type QuestionBank,
+    isSubject,
+    isLesson,
+    getLessonTitle,
+    getLessonDescription,
+    subjectsToCategoryOptions,
+} from './subject.types';
+
+export {
+    // Exam types (using different names to avoid conflict)
+    type Question,
+    type QuestionOption,
+    type ExamSubsection,
+    type TransformedExam,
+    type ExamPlayerState,
+    type ExamAvailability,
+    getQuestionTypeLabel,
+    getOptionText,
+    getCorrectAnswerIndex,
+    checkExamAvailability,
+} from './exam.types';
+
 // Teacher type (extended Profile with camelCase aliases)
 export type Teacher = Tables<'profiles'> & {
     // Database fields (snake_case) - can be null or undefined
