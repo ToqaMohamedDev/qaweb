@@ -104,12 +104,15 @@ export default function ChatWidget() {
     useEffect(() => {
         const initializeChat = async () => {
             try {
-                const supabase = createClient();
-                const { data: { user } } = await supabase.auth.getUser();
+                // Use API for auth instead of direct supabase.auth.getUser() for Vercel compatibility
+                const authRes = await fetch('/api/auth/user?includeProfile=true');
+                const authResult = await authRes.json();
 
-                if (user) {
+                if (authResult.success && authResult.data?.user) {
+                    const user = authResult.data.user;
+                    const profile = authResult.data.profile;
+
                     setUserId(user.id);
-                    const { data: profile } = await supabase.from("profiles").select("name, email").eq("id", user.id).single();
                     if (profile) {
                         setUserName(profile.name || user.email?.split('@')[0] || "مستخدم");
                         setUserEmail(profile.email || user.email || "");
@@ -124,6 +127,7 @@ export default function ChatWidget() {
                 const savedChatId = localStorage.getItem(CHAT_STORAGE_KEY);
                 if (savedChatId) {
                     // التحقق من أن الشات لا يزال موجوداً
+                    const supabase = createClient();
                     const { data: chatData, error } = await supabase
                         .from("support_chats")
                         .select("*")
