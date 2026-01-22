@@ -145,6 +145,13 @@ export async function requestNotificationPermission(): Promise<boolean> {
 /**
  * تسجيل دخول المستخدم مع OneSignal
  */
+/**
+ * Helper function to delay execution
+ */
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function loginUser(userId: string, userData?: {
     email?: string;
     name?: string;
@@ -157,16 +164,22 @@ export async function loginUser(userId: string, userData?: {
     try {
         // التحقق من ما إذا كان المستخدم مسجلاً بالفعل بنفس المعرف لتجنب التكرار
         const currentExternalId = OneSignalInstance.User.externalId;
+        let didLogin = false;
+
         if (currentExternalId !== userId) {
             await OneSignalInstance.login(userId);
+            didLogin = true;
             console.log('✅ User logged in to OneSignal:', userId);
+
+            // إضافة تأخير للسماح لـ OneSignal بإكمال عملية تبديل المستخدم
+            await delay(500);
         } else {
             console.log('ℹ️ User already logged in to OneSignal:', userId);
         }
 
-        // تحديث البيانات وال Tags
+        // تحديث البيانات وال Tags مع retry logic
         const tags: Record<string, string> = {
-            user_id: userId // إضافة user_id دائماً
+            user_id: userId
         };
 
         if (userData) {
@@ -175,8 +188,30 @@ export async function loginUser(userId: string, userData?: {
             if (userData.role) tags.role = userData.role;
         }
 
-        await OneSignalInstance.User.addTags(tags);
-        console.log('✅ User tags updated');
+        // محاولة تحديث الـ Tags مع إعادة المحاولة في حال الفشل
+        const maxRetries = 2;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                await OneSignalInstance.User.addTags(tags);
+                console.log('✅ User tags updated');
+                break; // نجاح - الخروج من الحلقة
+            } catch (tagError: any) {
+                // تجاهل خطأ 409 Conflict - يحدث أحياناً عند تبديل المستخدمين
+                if (tagError?.message?.includes('409') ||
+                    tagError?.toString()?.includes('Conflict')) {
+                    if (attempt < maxRetries) {
+                        console.log(`ℹ️ Tag update conflict, retrying... (${attempt + 1}/${maxRetries})`);
+                        await delay(300 * (attempt + 1)); // تأخير تصاعدي
+                    } else {
+                        console.warn('⚠️ Tag update failed after retries (non-blocking)');
+                    }
+                } else {
+                    // أي خطأ آخر - نسجله ونستمر
+                    console.warn('⚠️ Failed to update tags:', tagError);
+                    break;
+                }
+            }
+        }
 
     } catch (error) {
         console.warn('Failed to login/sync user to OneSignal:', error);
