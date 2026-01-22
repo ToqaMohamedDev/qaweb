@@ -140,9 +140,9 @@ function calculateExamStats(attempts: any[]) {
 
     const taken = attempts.length;
     const passed = attempts.filter(
-        (e) => (e.status === 'completed' || e.status === 'graded') && 
-               e.total_score && e.max_score && 
-               (e.total_score / e.max_score) >= 0.6
+        (e) => (e.status === 'completed' || e.status === 'graded') &&
+            e.total_score && e.max_score &&
+            (e.total_score / e.max_score) >= 0.6
     ).length;
 
     let totalScore = 0;
@@ -168,11 +168,11 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             .from('lessons')
             .select('id')
             .eq('is_published', true);
-        
+
         if (stageId) {
             lessonsQuery = lessonsQuery.eq('stage_id', stageId);
         }
-        
+
         const { data: stageLessons } = await lessonsQuery;
         const stageLessonIds = (stageLessons || []).map((l: any) => l.id);
 
@@ -181,69 +181,85 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             .from('user_lesson_progress')
             .select('*')
             .eq('user_id', userId);
-        
+
         if (stageLessonIds.length > 0) {
             lessonProgressQuery = lessonProgressQuery.in('lesson_id', stageLessonIds);
         }
-        
+
         const { data: lessonProgress } = await lessonProgressQuery;
 
         // Total lessons للمرحلة
         const totalLessons = stageLessonIds.length;
 
         // Comprehensive exam attempts (امتحانات الموقع) - فلترة حسب المرحلة
-        let compExamsQuery = supabase
-            .from('comprehensive_exams')
-            .select('id')
-            .eq('is_published', true);
-        
-        if (stageId) {
-            compExamsQuery = compExamsQuery.eq('stage_id', stageId);
-        }
-        
-        const { data: stageCompExams } = await compExamsQuery;
-        const stageCompExamIds = (stageCompExams || []).map((e: any) => e.id);
+        let comprehensiveAttempts: any[] = [];
 
-        let comprehensiveAttemptsQuery = supabase
-            .from('comprehensive_exam_attempts')
-            .select('*')
-            .eq('student_id', userId);
-        
-        if (stageCompExamIds.length > 0) {
-            comprehensiveAttemptsQuery = comprehensiveAttemptsQuery.in('exam_id', stageCompExamIds);
+        if (stageId) {
+            // Get exams for this stage
+            const { data: stageCompExams } = await supabase
+                .from('comprehensive_exams')
+                .select('id')
+                .eq('is_published', true)
+                .eq('stage_id', stageId);
+
+            const stageCompExamIds = (stageCompExams || []).map((e: any) => e.id);
+
+            if (stageCompExamIds.length > 0) {
+                // Fetch attempts only for exams in this stage
+                const { data: attempts } = await supabase
+                    .from('comprehensive_exam_attempts')
+                    .select('*')
+                    .eq('student_id', userId)
+                    .in('exam_id', stageCompExamIds);
+                comprehensiveAttempts = attempts || [];
+            }
+            // If no exams for this stage, comprehensiveAttempts stays empty []
+        } else {
+            // No stage filter - get all attempts
+            const { data: attempts } = await supabase
+                .from('comprehensive_exam_attempts')
+                .select('*')
+                .eq('student_id', userId);
+            comprehensiveAttempts = attempts || [];
         }
-        
-        const { data: comprehensiveAttempts } = await comprehensiveAttemptsQuery;
 
         // Teacher exam attempts (امتحانات المدرسين) - فلترة حسب المرحلة
-        let teacherExamsQuery = supabase
-            .from('teacher_exams')
-            .select('id')
-            .eq('is_published', true);
-        
-        if (stageId) {
-            teacherExamsQuery = teacherExamsQuery.eq('stage_id', stageId);
-        }
-        
-        const { data: stageTeacherExams } = await teacherExamsQuery;
-        const stageTeacherExamIds = (stageTeacherExams || []).map((e: any) => e.id);
+        let teacherAttempts: any[] = [];
 
-        let teacherAttemptsQuery = supabase
-            .from('teacher_exam_attempts')
-            .select('*')
-            .eq('student_id', userId);
-        
-        if (stageTeacherExamIds.length > 0) {
-            teacherAttemptsQuery = teacherAttemptsQuery.in('exam_id', stageTeacherExamIds);
+        if (stageId) {
+            // Get exams for this stage
+            const { data: stageTeacherExams } = await supabase
+                .from('teacher_exams')
+                .select('id')
+                .eq('is_published', true)
+                .eq('stage_id', stageId);
+
+            const stageTeacherExamIds = (stageTeacherExams || []).map((e: any) => e.id);
+
+            if (stageTeacherExamIds.length > 0) {
+                // Fetch attempts only for exams in this stage
+                const { data: attempts } = await supabase
+                    .from('teacher_exam_attempts')
+                    .select('*')
+                    .eq('student_id', userId)
+                    .in('exam_id', stageTeacherExamIds);
+                teacherAttempts = attempts || [];
+            }
+            // If no exams for this stage, teacherAttempts stays empty []
+        } else {
+            // No stage filter - get all attempts
+            const { data: attempts } = await supabase
+                .from('teacher_exam_attempts')
+                .select('*')
+                .eq('student_id', userId);
+            teacherAttempts = attempts || [];
         }
-        
-        const { data: teacherAttempts } = await teacherAttemptsQuery;
 
         // حساب إحصائيات امتحانات الموقع (Comprehensive)
-        const siteExamStats = calculateExamStats(comprehensiveAttempts || []);
+        const siteExamStats = calculateExamStats(comprehensiveAttempts);
 
         // حساب إحصائيات امتحانات المدرسين (Teacher)
-        const teacherExamStats = calculateExamStats(teacherAttempts || []);
+        const teacherExamStats = calculateExamStats(teacherAttempts);
 
         const completedLessons = lessonProgress?.filter((p: any) => p.is_completed)?.length || 0;
 
@@ -282,7 +298,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
         return {
             completedLessons,
             totalLessons: totalLessons || 0,
-            
+
             // إحصائيات امتحانات الموقع (Comprehensive)
             siteExams: {
                 taken: siteExamStats.taken,
@@ -290,7 +306,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 averageScore: siteExamStats.averageScore,
                 totalScore: siteExamStats.totalScore,
             },
-            
+
             // إحصائيات امتحانات المدرسين (Teacher)
             teacherExams: {
                 taken: teacherExamStats.taken,
@@ -298,13 +314,13 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 averageScore: teacherExamStats.averageScore,
                 totalScore: teacherExamStats.totalScore,
             },
-            
+
             // الإحصائيات المجمعة (للتوافق مع الكود القديم)
             examsTaken: siteExamStats.taken + teacherExamStats.taken,
             passedExams: siteExamStats.passed + teacherExamStats.passed,
             averageScore: siteExamStats.averageScore, // متوسط الموقع فقط
             totalScore: siteExamStats.totalScore + teacherExamStats.totalScore,
-            
+
             activeDays: Math.max(activityDates.size, 1),
             currentStreak,
         };
