@@ -10,6 +10,13 @@ export interface Stage {
     name: string;
 }
 
+export interface ExamStats {
+    taken: number;
+    passed: number;
+    averageScore: number;
+    totalScore: number;
+}
+
 export interface UserStats {
     completedLessons: number;
     totalLessons: number;
@@ -19,6 +26,9 @@ export interface UserStats {
     activeDays: number;
     currentStreak: number;
     averageScore: number;
+    // إحصائيات منفصلة
+    siteExams?: ExamStats;
+    teacherExams?: ExamStats;
 }
 
 export interface ActivityItem {
@@ -75,6 +85,8 @@ export const initialStats: UserStats = {
     activeDays: 1,
     currentStreak: 0,
     averageScore: 0,
+    siteExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+    teacherExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
 };
 
 export const initialFormData: ProfileFormData = {

@@ -5,7 +5,7 @@
  */
 
 import { getSupabaseClient } from '../supabase-client';
-import type { UserDevice, VisitorDevice, DeviceType } from '../database.types';
+import type { UserDevice, VisitorDevice } from '../database.types';
 
 // ==========================================
 // Types
@@ -258,6 +258,7 @@ export async function getDeviceStats(): Promise<{
 /**
  * Detect device info from user agent
  * Call this on the client side
+ * Enhanced version with better accuracy
  */
 export function detectDeviceInfo(): DeviceInfo {
     if (typeof window === 'undefined') {
@@ -273,51 +274,156 @@ export function detectDeviceInfo(): DeviceInfo {
 
     const ua = navigator.userAgent;
 
-    // Detect device type
+    // ==========================================
+    // Enhanced Device Type Detection
+    // ==========================================
     let deviceType: string = 'desktop';
-    if (/Mobile|Android|iPhone|iPad/i.test(ua)) {
-        if (/iPad|Tablet/i.test(ua)) {
-            deviceType = 'tablet';
-        } else {
-            deviceType = 'mobile';
-        }
+    
+    // Check for mobile first (more specific patterns)
+    const mobilePatterns = [
+        /iPhone/i,
+        /iPod/i,
+        /Android.*Mobile/i,
+        /Mobile.*Android/i,
+        /webOS/i,
+        /BlackBerry/i,
+        /Windows Phone/i,
+        /Opera Mini/i,
+        /IEMobile/i,
+        /Mobile Safari/i,
+    ];
+    
+    const tabletPatterns = [
+        /iPad/i,
+        /Android(?!.*Mobile)/i,  // Android without "Mobile"
+        /Tablet/i,
+        /Kindle/i,
+        /Silk/i,
+        /PlayBook/i,
+    ];
+    
+    // Check tablet first (iPad, Android tablets, etc.)
+    if (tabletPatterns.some(pattern => pattern.test(ua))) {
+        deviceType = 'tablet';
+    }
+    // Then check mobile
+    else if (mobilePatterns.some(pattern => pattern.test(ua))) {
+        deviceType = 'mobile';
+    }
+    // Additional check using screen size for responsive detection
+    else if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        deviceType = window.innerWidth <= 480 ? 'mobile' : 'tablet';
     }
 
-    // Detect OS
+    // ==========================================
+    // Enhanced OS Detection
+    // ==========================================
     let osName = '';
     let osVersion = '';
-    if (/Windows NT (\d+\.\d+)/.test(ua)) {
+    
+    // Windows detection with version mapping
+    const windowsMatch = ua.match(/Windows NT (\d+\.\d+)/);
+    if (windowsMatch) {
         osName = 'Windows';
-        osVersion = RegExp.$1;
-    } else if (/Mac OS X (\d+[._]\d+)/.test(ua)) {
+        const ntVersion = windowsMatch[1];
+        // Map NT version to Windows version
+        const windowsVersionMap: Record<string, string> = {
+            '10.0': '10/11',
+            '6.3': '8.1',
+            '6.2': '8',
+            '6.1': '7',
+            '6.0': 'Vista',
+            '5.1': 'XP',
+        };
+        osVersion = windowsVersionMap[ntVersion] || ntVersion;
+    }
+    // macOS detection
+    else if (/Mac OS X/.test(ua)) {
         osName = 'macOS';
-        osVersion = RegExp.$1.replace('_', '.');
-    } else if (/Android (\d+\.\d+)/.test(ua)) {
-        osName = 'Android';
-        osVersion = RegExp.$1;
-    } else if (/iPhone OS (\d+_\d+)/.test(ua)) {
+        const macMatch = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/);
+        if (macMatch) {
+            osVersion = macMatch[1].replace(/_/g, '.');
+        }
+    }
+    // iOS detection (iPhone/iPad/iPod)
+    else if (/iPhone|iPad|iPod/.test(ua)) {
         osName = 'iOS';
-        osVersion = RegExp.$1.replace('_', '.');
-    } else if (/Linux/.test(ua)) {
+        const iosMatch = ua.match(/OS (\d+_\d+_?\d*)/);
+        if (iosMatch) {
+            osVersion = iosMatch[1].replace(/_/g, '.');
+        }
+    }
+    // Android detection
+    else if (/Android/.test(ua)) {
+        osName = 'Android';
+        const androidMatch = ua.match(/Android (\d+\.?\d*\.?\d*)/);
+        if (androidMatch) {
+            osVersion = androidMatch[1];
+        }
+    }
+    // Linux detection
+    else if (/Linux/.test(ua)) {
         osName = 'Linux';
+        if (/Ubuntu/.test(ua)) osName = 'Ubuntu';
+        else if (/Fedora/.test(ua)) osName = 'Fedora';
+        else if (/CrOS/.test(ua)) osName = 'Chrome OS';
     }
 
-    // Detect browser
+    // ==========================================
+    // Enhanced Browser Detection
+    // ==========================================
     let browser = '';
     let browserVersion = '';
-    if (/Chrome\/(\d+\.\d+)/.test(ua) && !/Edg/.test(ua)) {
-        browser = 'Chrome';
-        browserVersion = RegExp.$1;
-    } else if (/Firefox\/(\d+\.\d+)/.test(ua)) {
-        browser = 'Firefox';
-        browserVersion = RegExp.$1;
-    } else if (/Safari\/(\d+\.\d+)/.test(ua) && !/Chrome/.test(ua)) {
-        browser = 'Safari';
-        const match = ua.match(/Version\/(\d+\.\d+)/);
-        browserVersion = match ? match[1] : '';
-    } else if (/Edg\/(\d+\.\d+)/.test(ua)) {
+    
+    // Order matters! Check more specific browsers first
+    
+    // Samsung Browser
+    const samsungMatch = ua.match(/SamsungBrowser\/(\d+\.?\d*)/);
+    if (samsungMatch) {
+        browser = 'Samsung Browser';
+        browserVersion = samsungMatch[1];
+    }
+    // Edge (Chromium-based)
+    else if (/Edg\//.test(ua)) {
+        const edgeMatch = ua.match(/Edg\/(\d+\.?\d*\.?\d*)/);
         browser = 'Edge';
-        browserVersion = RegExp.$1;
+        browserVersion = edgeMatch ? edgeMatch[1] : '';
+    }
+    // Opera
+    else if (/OPR\//.test(ua) || /Opera/.test(ua)) {
+        const operaMatch = ua.match(/(?:OPR|Opera)[\/\s](\d+\.?\d*)/);
+        browser = 'Opera';
+        browserVersion = operaMatch ? operaMatch[1] : '';
+    }
+    // Brave (identifies as Chrome but has Brave in UA)
+    else if (/Brave/.test(ua)) {
+        const braveMatch = ua.match(/Brave\/(\d+\.?\d*)/) || ua.match(/Chrome\/(\d+\.?\d*)/);
+        browser = 'Brave';
+        browserVersion = braveMatch ? braveMatch[1] : '';
+    }
+    // Firefox
+    else if (/Firefox/.test(ua)) {
+        const firefoxMatch = ua.match(/Firefox\/(\d+\.?\d*)/);
+        browser = 'Firefox';
+        browserVersion = firefoxMatch ? firefoxMatch[1] : '';
+    }
+    // Safari (must check before Chrome because Chrome also has Safari in UA)
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+        browser = 'Safari';
+        const versionMatch = ua.match(/Version\/(\d+\.?\d*\.?\d*)/);
+        browserVersion = versionMatch ? versionMatch[1] : '';
+    }
+    // Chrome (check last because many browsers include Chrome in UA)
+    else if (/Chrome/.test(ua)) {
+        const chromeMatch = ua.match(/Chrome\/(\d+\.?\d*\.?\d*)/);
+        browser = 'Chrome';
+        browserVersion = chromeMatch ? chromeMatch[1] : '';
+    }
+    // Internet Explorer
+    else if (/MSIE|Trident/.test(ua)) {
+        browser = 'Internet Explorer';
+        const ieMatch = ua.match(/(?:MSIE |rv:)(\d+\.?\d*)/);
+        browserVersion = ieMatch ? ieMatch[1] : '';
     }
 
     return {

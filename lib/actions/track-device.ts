@@ -64,24 +64,85 @@ async function createSupabaseServerClient() {
 }
 
 // ==========================================
-// Helper: Get IP Address
+// Helper: Get IP Address (Enhanced for Vercel/Cloudflare)
 // ==========================================
 
 async function getIpAddress(): Promise<string> {
     const headersList = await headers();
 
-    // Check various headers for IP
-    const forwardedFor = headersList.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
+    // Priority order for IP detection:
+    // 1. Vercel-specific header (most reliable on Vercel)
+    const vercelForwardedFor = headersList.get('x-vercel-forwarded-for');
+    if (vercelForwardedFor) {
+        return vercelForwardedFor.split(',')[0].trim();
     }
 
+    // 2. Cloudflare connecting IP (most reliable on Cloudflare)
+    const cfConnectingIp = headersList.get('cf-connecting-ip');
+    if (cfConnectingIp) {
+        return cfConnectingIp.trim();
+    }
+
+    // 3. True-Client-IP (used by some CDNs like Akamai)
+    const trueClientIp = headersList.get('true-client-ip');
+    if (trueClientIp) {
+        return trueClientIp.trim();
+    }
+
+    // 4. X-Real-IP (nginx/some proxies)
     const realIp = headersList.get('x-real-ip');
     if (realIp) {
-        return realIp;
+        return realIp.trim();
+    }
+
+    // 5. X-Forwarded-For (standard proxy header - get the first/original IP)
+    const forwardedFor = headersList.get('x-forwarded-for');
+    if (forwardedFor) {
+        // Get the first IP (original client IP)
+        const ips = forwardedFor.split(',');
+        const clientIp = ips[0].trim();
+        
+        // Validate it's not a private IP (sometimes proxies add local IPs)
+        if (!isPrivateIP(clientIp)) {
+            return clientIp;
+        }
+        // If first is private, try to find a public IP in the chain
+        for (const ip of ips) {
+            const trimmedIp = ip.trim();
+            if (!isPrivateIP(trimmedIp)) {
+                return trimmedIp;
+            }
+        }
+        // Return first IP if all are private (local network)
+        return clientIp;
+    }
+
+    // 6. X-Client-IP (some load balancers)
+    const clientIp = headersList.get('x-client-ip');
+    if (clientIp) {
+        return clientIp.trim();
     }
 
     return '';
+}
+
+/**
+ * Check if an IP address is private/local
+ */
+function isPrivateIP(ip: string): boolean {
+    // IPv4 private ranges
+    const privateRanges = [
+        /^10\./,                    // 10.0.0.0 - 10.255.255.255
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // 172.16.0.0 - 172.31.255.255
+        /^192\.168\./,              // 192.168.0.0 - 192.168.255.255
+        /^127\./,                   // 127.0.0.0 - 127.255.255.255 (localhost)
+        /^169\.254\./,              // 169.254.0.0 - 169.254.255.255 (link-local)
+        /^::1$/,                    // IPv6 localhost
+        /^fc00:/i,                  // IPv6 unique local
+        /^fe80:/i,                  // IPv6 link-local
+    ];
+    
+    return privateRanges.some(range => range.test(ip));
 }
 
 // ==========================================

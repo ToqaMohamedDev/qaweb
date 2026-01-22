@@ -13,7 +13,7 @@
  * ============================================================================
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -49,8 +49,9 @@ export async function GET() {
             .select('id, name')
             .order('order_index', { ascending: true });
 
-        // 4. Get user stats
-        const stats = await getUserStats(supabase, user.id);
+        // 4. Get user stats (مع فلترة حسب المرحلة الدراسية)
+        const userStageId = profile?.educational_stage_id || null;
+        const stats = await getUserStats(supabase, user.id, userStageId);
 
         // 5. Get recent activity
         const recentActivity = await getRecentActivity(supabase, user.id);
@@ -81,43 +82,170 @@ export async function GET() {
 }
 
 /**
- * جلب إحصائيات المستخدم
+ * PATCH - تحديث بيانات الملف الشخصي
  */
-async function getUserStats(supabase: any, userId: string) {
+export async function PATCH(request: NextRequest) {
     try {
-        // Lesson progress
-        const { data: lessonProgress } = await supabase
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        const body = await request.json();
+        const { name, avatar_url, bio, educational_stage_id } = body;
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({
+                name,
+                avatar_url,
+                bio,
+                educational_stage_id: educational_stage_id || null,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('[Profile API] Update error:', error);
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 400 }
+            );
+        }
+
+        return NextResponse.json({ success: true, data });
+    } catch (error) {
+        console.error('[Profile API] PATCH error:', error);
+        return NextResponse.json(
+            { success: false, error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+/**
+ * دالة مساعدة لحساب إحصائيات الامتحانات
+ */
+function calculateExamStats(attempts: any[]) {
+    if (!attempts || attempts.length === 0) {
+        return { taken: 0, passed: 0, averageScore: 0, totalScore: 0 };
+    }
+
+    const taken = attempts.length;
+    const passed = attempts.filter(
+        (e) => (e.status === 'completed' || e.status === 'graded') && 
+               e.total_score && e.max_score && 
+               (e.total_score / e.max_score) >= 0.6
+    ).length;
+
+    let totalScore = 0;
+    let averageScore = 0;
+
+    const completedAttempts = attempts.filter(e => e.total_score != null && e.max_score != null && e.max_score > 0);
+    if (completedAttempts.length > 0) {
+        totalScore = completedAttempts.reduce((acc, e) => acc + (e.total_score || 0), 0);
+        const avgScores = completedAttempts.map(e => (e.total_score / e.max_score) * 100);
+        averageScore = Math.round(avgScores.reduce((a, b) => a + b, 0) / avgScores.length);
+    }
+
+    return { taken, passed, averageScore, totalScore };
+}
+
+/**
+ * جلب إحصائيات المستخدم (مع فصل إحصائيات الموقع عن المدرسين + فلترة حسب المرحلة)
+ */
+async function getUserStats(supabase: any, userId: string, stageId: string | null) {
+    try {
+        // جلب الدروس المفلترة حسب المرحلة
+        let lessonsQuery = supabase
+            .from('lessons')
+            .select('id')
+            .eq('is_published', true);
+        
+        if (stageId) {
+            lessonsQuery = lessonsQuery.eq('stage_id', stageId);
+        }
+        
+        const { data: stageLessons } = await lessonsQuery;
+        const stageLessonIds = (stageLessons || []).map((l: any) => l.id);
+
+        // Lesson progress - فلترة حسب الدروس الخاصة بالمرحلة
+        let lessonProgressQuery = supabase
             .from('user_lesson_progress')
             .select('*')
             .eq('user_id', userId);
+        
+        if (stageLessonIds.length > 0) {
+            lessonProgressQuery = lessonProgressQuery.in('lesson_id', stageLessonIds);
+        }
+        
+        const { data: lessonProgress } = await lessonProgressQuery;
 
-        // Total lessons
-        const { count: totalLessons } = await supabase
-            .from('lessons')
-            .select('*', { count: 'exact', head: true })
+        // Total lessons للمرحلة
+        const totalLessons = stageLessonIds.length;
+
+        // Comprehensive exam attempts (امتحانات الموقع) - فلترة حسب المرحلة
+        let compExamsQuery = supabase
+            .from('comprehensive_exams')
+            .select('id')
             .eq('is_published', true);
+        
+        if (stageId) {
+            compExamsQuery = compExamsQuery.eq('stage_id', stageId);
+        }
+        
+        const { data: stageCompExams } = await compExamsQuery;
+        const stageCompExamIds = (stageCompExams || []).map((e: any) => e.id);
 
-        // Exam attempts
-        const { data: examAttempts } = await supabase
+        let comprehensiveAttemptsQuery = supabase
             .from('comprehensive_exam_attempts')
             .select('*')
             .eq('student_id', userId);
+        
+        if (stageCompExamIds.length > 0) {
+            comprehensiveAttemptsQuery = comprehensiveAttemptsQuery.in('exam_id', stageCompExamIds);
+        }
+        
+        const { data: comprehensiveAttempts } = await comprehensiveAttemptsQuery;
+
+        // Teacher exam attempts (امتحانات المدرسين) - فلترة حسب المرحلة
+        let teacherExamsQuery = supabase
+            .from('teacher_exams')
+            .select('id')
+            .eq('is_published', true);
+        
+        if (stageId) {
+            teacherExamsQuery = teacherExamsQuery.eq('stage_id', stageId);
+        }
+        
+        const { data: stageTeacherExams } = await teacherExamsQuery;
+        const stageTeacherExamIds = (stageTeacherExams || []).map((e: any) => e.id);
+
+        let teacherAttemptsQuery = supabase
+            .from('teacher_exam_attempts')
+            .select('*')
+            .eq('student_id', userId);
+        
+        if (stageTeacherExamIds.length > 0) {
+            teacherAttemptsQuery = teacherAttemptsQuery.in('exam_id', stageTeacherExamIds);
+        }
+        
+        const { data: teacherAttempts } = await teacherAttemptsQuery;
+
+        // حساب إحصائيات امتحانات الموقع (Comprehensive)
+        const siteExamStats = calculateExamStats(comprehensiveAttempts || []);
+
+        // حساب إحصائيات امتحانات المدرسين (Teacher)
+        const teacherExamStats = calculateExamStats(teacherAttempts || []);
 
         const completedLessons = lessonProgress?.filter((p: any) => p.is_completed)?.length || 0;
-        const examsTaken = examAttempts?.length || 0;
-        const passedExams = examAttempts?.filter(
-            (e: any) => e.status === 'completed' || e.status === 'graded'
-        )?.length || 0;
-
-        let totalScore = 0;
-        let averageScore = 0;
-        if (examAttempts && examAttempts.length > 0) {
-            totalScore = examAttempts.reduce((acc: number, e: any) => acc + (e.total_score || 0), 0);
-            const avgScores = examAttempts.map((e: any) =>
-                (e.max_score ?? 0) > 0 ? ((e.total_score ?? 0) / e.max_score!) * 100 : 0
-            );
-            averageScore = avgScores.reduce((a: number, b: number) => a + b, 0) / avgScores.length;
-        }
 
         // Calculate active days and streak
         const activityDates = new Set<string>();
@@ -126,7 +254,12 @@ async function getUserStats(supabase: any, userId: string) {
                 activityDates.add(new Date(p.last_accessed_at || p.updated_at).toDateString());
             }
         });
-        examAttempts?.forEach((e: any) => {
+        comprehensiveAttempts?.forEach((e: any) => {
+            if (e.started_at) {
+                activityDates.add(new Date(e.started_at).toDateString());
+            }
+        });
+        teacherAttempts?.forEach((e: any) => {
             if (e.started_at) {
                 activityDates.add(new Date(e.started_at).toDateString());
             }
@@ -149,12 +282,31 @@ async function getUserStats(supabase: any, userId: string) {
         return {
             completedLessons,
             totalLessons: totalLessons || 0,
-            examsTaken,
-            passedExams,
-            totalScore,
+            
+            // إحصائيات امتحانات الموقع (Comprehensive)
+            siteExams: {
+                taken: siteExamStats.taken,
+                passed: siteExamStats.passed,
+                averageScore: siteExamStats.averageScore,
+                totalScore: siteExamStats.totalScore,
+            },
+            
+            // إحصائيات امتحانات المدرسين (Teacher)
+            teacherExams: {
+                taken: teacherExamStats.taken,
+                passed: teacherExamStats.passed,
+                averageScore: teacherExamStats.averageScore,
+                totalScore: teacherExamStats.totalScore,
+            },
+            
+            // الإحصائيات المجمعة (للتوافق مع الكود القديم)
+            examsTaken: siteExamStats.taken + teacherExamStats.taken,
+            passedExams: siteExamStats.passed + teacherExamStats.passed,
+            averageScore: siteExamStats.averageScore, // متوسط الموقع فقط
+            totalScore: siteExamStats.totalScore + teacherExamStats.totalScore,
+            
             activeDays: Math.max(activityDates.size, 1),
             currentStreak,
-            averageScore: Math.round(averageScore),
         };
 
     } catch (error) {
@@ -162,6 +314,8 @@ async function getUserStats(supabase: any, userId: string) {
         return {
             completedLessons: 0,
             totalLessons: 0,
+            siteExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+            teacherExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
             examsTaken: 0,
             passedExams: 0,
             totalScore: 0,

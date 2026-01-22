@@ -21,6 +21,7 @@ import {
     Bell,
     FileText,
     Heart,
+    MessageSquare,
 } from 'lucide-react';
 import { Avatar } from '@/components/common';
 import type { UserProfile } from '@/lib/types';
@@ -234,6 +235,20 @@ export function ProfileSidebar({
                                     <span className="text-gray-700 dark:text-gray-300">إعدادات الإشعارات</span>
                                 </div>
                                 <ChevronLeft className="h-4 w-4 text-gray-400 group-hover:-translate-x-1 transition-transform" />
+                            </Link>
+
+                            {/* Share Your Opinion */}
+                            <Link
+                                href="/profile/testimonial"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all text-sm font-medium group border border-amber-200/50 dark:border-amber-800/30"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                                        <MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <span className="text-amber-700 dark:text-amber-300">شاركنا رأيك</span>
+                                </div>
+                                <ChevronLeft className="h-4 w-4 text-amber-400 group-hover:-translate-x-1 transition-transform" />
                             </Link>
                         </div>
 

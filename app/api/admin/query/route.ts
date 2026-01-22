@@ -39,7 +39,8 @@ const DEFAULT_LIMIT = 100;
 // Helpers
 // =============================================
 
-async function createSupabaseServerClient() {
+// Client for authentication (uses anon key with cookies)
+async function createSupabaseAuthClient() {
     const cookieStore = await cookies();
 
     return createServerClient(
@@ -56,7 +57,21 @@ async function createSupabaseServerClient() {
     );
 }
 
-async function verifyAdmin(supabase: ReturnType<typeof createServerClient>) {
+// Client for admin operations (uses service role key to bypass RLS)
+function createSupabaseAdminClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            cookies: {
+                getAll() { return []; },
+                setAll() { },
+            },
+        }
+    );
+}
+
+async function verifyAdmin(supabase: Awaited<ReturnType<typeof createSupabaseAuthClient>>) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -122,10 +137,10 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const authClient = await createSupabaseAuthClient();
 
         // Verify admin access
-        const authResult = await verifyAdmin(supabase);
+        const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
@@ -133,8 +148,11 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Use admin client for queries (bypasses RLS)
+        const adminClient = createSupabaseAdminClient();
+
         // Build query
-        let query = supabase
+        let query = adminClient
             .from(table!)
             .select(select, { count: 'exact' })
             .order(orderBy, { ascending })
@@ -196,10 +214,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const authClient = await createSupabaseAuthClient();
 
         // Verify admin access
-        const authResult = await verifyAdmin(supabase);
+        const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
@@ -207,7 +225,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { data, error } = await supabase
+        // Use admin client for operations (bypasses RLS)
+        const adminClient = createSupabaseAdminClient();
+
+        const { data, error } = await adminClient
             .from(table)
             .insert(insertData)
             .select()
@@ -267,10 +288,10 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const authClient = await createSupabaseAuthClient();
 
         // Verify admin access
-        const authResult = await verifyAdmin(supabase);
+        const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
@@ -278,7 +299,10 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        const { data, error } = await supabase
+        // Use admin client for operations (bypasses RLS)
+        const adminClient = createSupabaseAdminClient();
+
+        const { data, error } = await adminClient
             .from(table)
             .update(updates)
             .eq('id', id)
@@ -333,10 +357,10 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const authClient = await createSupabaseAuthClient();
 
         // Verify admin access
-        const authResult = await verifyAdmin(supabase);
+        const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
@@ -344,7 +368,10 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const { error } = await supabase
+        // Use admin client for operations (bypasses RLS)
+        const adminClient = createSupabaseAdminClient();
+
+        const { error } = await adminClient
             .from(table!)
             .delete()
             .eq('id', id);

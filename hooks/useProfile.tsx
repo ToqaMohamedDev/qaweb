@@ -230,24 +230,22 @@ export function useProfile(): UseProfileReturn {
         fetchProfileData();
     }, [router, generateAchievements]);
 
-    // Handle save - uses direct supabase for now (can be converted to API later)
+    // Handle save - uses /api/profile PATCH
     const handleSave = useCallback(async () => {
         if (!user) return;
 
         try {
             setIsSaving(true);
 
-            // Update profile via API
-            const res = await fetch('/api/auth/user', {
+            // Update profile via API with educational_stage_id
+            const res = await fetch('/api/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: user.id,
-                    updates: {
-                        name: formData.name,
-                        avatar_url: formData.avatar_url,
-                        bio: formData.bio,
-                    }
+                    name: formData.name,
+                    avatar_url: formData.avatar_url,
+                    bio: formData.bio,
+                    educational_stage_id: formData.educational_stage_id || null,
                 })
             });
 
@@ -255,17 +253,19 @@ export function useProfile(): UseProfileReturn {
 
             if (result.success && result.data) {
                 setProfile(result.data as UserProfile);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
             } else {
                 // Fallback to direct update
                 await updateUserProfile(user.id, {
                     name: formData.name,
                     avatar_url: formData.avatar_url,
                     bio: formData.bio,
+                    educational_stage_id: formData.educational_stage_id || null,
                 } as any);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
             }
-
-            setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 3000);
         } catch (error) {
             logger.error('Error updating profile', { context: 'useProfile', data: error });
             alert('حدث خطأ أثناء حفظ البيانات');

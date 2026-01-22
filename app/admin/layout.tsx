@@ -59,6 +59,7 @@ const sidebarItems = [
         items: [
             { href: "/admin/devices", label: "الأجهزة", icon: Smartphone },
             { href: "/admin/messages", label: "الرسائل الواردة", icon: Mail },
+            { href: "/admin/testimonials", label: "آراء الطلاب", icon: Sparkles },
             { href: "/admin/support", label: "محادثات الدعم", icon: MessageSquare },
             { href: "/admin/notifications", label: "الإشعارات", icon: Bell },
             { href: "/admin/settings", label: "الإعدادات", icon: Settings },

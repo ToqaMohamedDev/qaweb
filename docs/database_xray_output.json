@@ -205,9 +205,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "id",
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": -0.0238, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -225,7 +231,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": -0.0294, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": -0.0412, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "02_TABLE_META",
@@ -285,7 +291,7 @@
     "section": "02_TABLE_META",
     "table_name": "profiles",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 5, \"live\": 3, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"112 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"160 kB\", \"total_bytes\": 163840}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 3, \"updates\": 11, \"hot_updates\": 9}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 62.50}"
+    "details": "{\"rows\": {\"dead\": 8, \"live\": 4, \"estimated\": 9}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"176 kB\", \"total_bytes\": 180224}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 4, \"updates\": 14, \"hot_updates\": 10}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 66.67}"
   },
   {
     "section": "02_TABLE_META",
@@ -337,9 +343,15 @@
   },
   {
     "section": "02_TABLE_META",
+    "table_name": "testimonials",
+    "name": "storage_info",
+    "details": "{\"rows\": {\"dead\": 0, \"live\": 0, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"32 kB\", \"table_size\": \"0 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"40 kB\", \"total_bytes\": 40960}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 0, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"آراء الطلاب - Student testimonials with admin approval workflow\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": null}"
+  },
+  {
+    "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 21, \"live\": 9, \"estimated\": 8}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 7, \"updates\": 937, \"hot_updates\": 579}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T04:14:26.677258+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 70.00}"
+    "details": "{\"rows\": {\"dead\": 4, \"live\": 3, \"estimated\": 3}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 10, \"updates\": 1010, \"hot_updates\": 609}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T23:08:16.715958+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 57.14}"
   },
   {
     "section": "02_TABLE_META",
@@ -357,7 +369,7 @@
     "section": "02_TABLE_META",
     "table_name": "visitor_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 53, \"live\": 130, \"estimated\": 123}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 115, \"updates\": 283, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-19T18:06:53.765019+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 28.96}"
+    "details": "{\"rows\": {\"dead\": 36, \"live\": 2, \"estimated\": 30}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 130, \"inserts\": 117, \"updates\": 289, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T19:55:08.265352+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 94.74}"
   },
   {
     "section": "05_COLUMN",
@@ -475,9 +487,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "user_id",
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "user_id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.8095, \"avg_width_bytes\": 16, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{d3ca9f51-b068-409a-9db0-21d17f830c58,5e48ef3f-96dc-4ca1-a8c7-702244b99695,920147cf-709d-4f13-8a14-1\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -495,7 +513,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "visitor_id",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.8965, \"avg_width_bytes\": 31, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.8994, \"avg_width_bytes\": 31, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -613,9 +631,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "content",
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "device_type",
-    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 0.1667, \"avg_width_bytes\": 4, \"distinct_values\": -0.25, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{mobile,desktop}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{desktop}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -633,7 +657,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "device_type",
-    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 0.8352, \"avg_width_bytes\": 4, \"distinct_values\": 2.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{desktop,mobile}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 0.8572, \"avg_width_bytes\": 4, \"distinct_values\": 2.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{desktop,mobile}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -751,9 +775,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "rating",
+    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"5\", \"identity\": null, \"nullable\": false, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "os_name",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 0.1667, \"avg_width_bytes\": 7, \"distinct_values\": -0.25, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Android,macOS}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 6, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{macOS}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -771,7 +801,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "os_name",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 0.0281, \"avg_width_bytes\": 4, \"distinct_values\": 5.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{macOS,\\\"\\\",Android,iOS,Windows}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": -0.0981, \"avg_width_bytes\": 3, \"distinct_values\": -0.13, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\",macOS,Android}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -883,9 +913,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "status",
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'pending'::text\", \"identity\": null, \"nullable\": false, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "os_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 0.7381, \"avg_width_bytes\": 5, \"distinct_values\": -0.25, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{10.15,6.0}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 8, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{10.15.7}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -897,7 +933,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "os_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 0.0966, \"avg_width_bytes\": 3, \"distinct_values\": 7.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{10.15,\\\"\\\",6.0,10}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": -0.0505, \"avg_width_bytes\": 3, \"distinct_values\": -0.13, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\",10.15,6.0}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1009,9 +1045,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "admin_notes",
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "browser",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.3333, \"avg_width_bytes\": 7, \"distinct_values\": -0.38, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 7, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1023,7 +1065,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "browser",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.1016, \"avg_width_bytes\": 4, \"distinct_values\": 6.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome,\\\"\\\",Safari}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": -0.0398, \"avg_width_bytes\": 4, \"distinct_values\": 3.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome,\\\"\\\"}\"}, \"description\": null}"
   },
   {
     "section": "06_CONSTRAINT_KEY",
@@ -1177,6 +1219,12 @@
   },
   {
     "section": "06_CONSTRAINT_KEY",
+    "table_name": "testimonials",
+    "name": "testimonials_pkey",
+    "details": "{\"type\": \"PRIMARY KEY\", \"columns\": [\"id\"], \"deferrable\": false, \"initially_deferred\": false}"
+  },
+  {
+    "section": "06_CONSTRAINT_KEY",
     "table_name": "user_devices",
     "name": "user_devices_pkey",
     "details": "{\"type\": \"PRIMARY KEY\", \"columns\": [\"id\"], \"deferrable\": false, \"initially_deferred\": false}"
@@ -1315,9 +1363,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "reviewed_by",
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "browser_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.3333, \"avg_width_bytes\": 6, \"distinct_values\": -0.38, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{143.0}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 7, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{144.0.0}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1329,13 +1383,25 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "browser_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.1059, \"avg_width_bytes\": 4, \"distinct_values\": 10.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{143.0,\\\"\\\",18.5}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.0220, \"avg_width_bytes\": 3, \"distinct_values\": 3.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{143.0,\\\"\\\"}\"}, \"description\": null}"
   },
   {
     "section": "07_CONSTRAINT_CHECK",
     "table_name": "teacher_ratings",
     "name": "teacher_ratings_rating_check",
     "details": "{\"type\": \"CHECK\", \"enforced\": true, \"expression\": \"((rating >= 1) AND (rating <= 5))\"}"
+  },
+  {
+    "section": "07_CONSTRAINT_CHECK",
+    "table_name": "testimonials",
+    "name": "testimonials_rating_check",
+    "details": "{\"type\": \"CHECK\", \"enforced\": true, \"expression\": \"((rating >= 1) AND (rating <= 5))\"}"
+  },
+  {
+    "section": "07_CONSTRAINT_CHECK",
+    "table_name": "testimonials",
+    "name": "testimonials_status_check",
+    "details": "{\"type\": \"CHECK\", \"enforced\": true, \"expression\": \"(status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))\"}"
   },
   {
     "section": "05_COLUMN",
@@ -1423,9 +1489,15 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "reviewed_at",
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "ip_address",
-    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.4286, \"avg_width_bytes\": 7, \"distinct_values\": -0.25, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{102.45.30.16,41.43.232.24}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 19, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{::1}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1437,7 +1509,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "ip_address",
-    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.0575, \"avg_width_bytes\": 8, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{102.45.30.16,::1,146.190.120.182,64.23.199.226,146.190.126.181,147.182.232.177,164.92.72.63,164.92.\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.3095, \"avg_width_bytes\": 7, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{102.45.30.16,64.23.199.226,146.190.120.182,::1}\"}, \"description\": null}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1449,7 +1521,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "chat_messages",
     "name": "chat_messages_sender_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"chat_messages\", \"columns\": [\"sender_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"chat_messages\", \"columns\": [\"sender_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1461,13 +1533,13 @@
     "section": "08_FK_OUTGOING",
     "table_name": "comprehensive_exam_attempts",
     "name": "comprehensive_exam_attempts_student_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"comprehensive_exam_attempts\", \"columns\": [\"student_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"comprehensive_exam_attempts\", \"columns\": [\"student_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "comprehensive_exams",
     "name": "comprehensive_exams_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"comprehensive_exams\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"comprehensive_exams\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1491,7 +1563,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "lesson_questions",
     "name": "lesson_questions_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"lesson_questions\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"lesson_questions\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1515,7 +1587,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "lessons",
     "name": "lessons_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"lessons\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"lessons\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1533,37 +1605,43 @@
     "section": "08_FK_OUTGOING",
     "table_name": "messages",
     "name": "messages_from_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"messages\", \"columns\": [\"from_user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"messages\", \"columns\": [\"from_user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "messages",
     "name": "messages_replied_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"messages\", \"columns\": [\"replied_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"messages\", \"columns\": [\"replied_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "notification_preferences",
     "name": "notification_preferences_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notification_preferences\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notification_preferences\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "notifications",
     "name": "notifications_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "notifications",
     "name": "notifications_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
+  },
+  {
+    "section": "08_FK_OUTGOING",
+    "table_name": "profiles",
+    "name": "profiles_educational_stage_id_fkey",
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"profiles\", \"columns\": [\"educational_stage_id\"]}, \"target\": {\"table\": \"educational_stages\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 4, \"target_rows\": 0}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "question_banks",
     "name": "question_banks_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"question_banks\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"question_banks\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1593,13 +1671,13 @@
     "section": "08_FK_OUTGOING",
     "table_name": "support_chats",
     "name": "support_chats_assigned_to_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"support_chats\", \"columns\": [\"assigned_to\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"support_chats\", \"columns\": [\"assigned_to\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "support_chats",
     "name": "support_chats_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"support_chats\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"support_chats\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1611,13 +1689,13 @@
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_exam_attempts",
     "name": "teacher_exam_attempts_student_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_exam_attempts\", \"columns\": [\"student_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_exam_attempts\", \"columns\": [\"student_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_exams",
     "name": "teacher_exams_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_exams\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_exams\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1635,31 +1713,31 @@
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_ratings",
     "name": "teacher_ratings_teacher_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_ratings\", \"columns\": [\"teacher_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_ratings\", \"columns\": [\"teacher_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_ratings",
     "name": "teacher_ratings_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_ratings\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_ratings\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_subscriptions",
     "name": "teacher_subscriptions_teacher_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_subscriptions\", \"columns\": [\"teacher_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_subscriptions\", \"columns\": [\"teacher_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "teacher_subscriptions",
     "name": "teacher_subscriptions_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_subscriptions\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"teacher_subscriptions\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 1, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "user_devices",
     "name": "user_devices_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 9, \"target_rows\": 3}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 3, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1671,7 +1749,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "user_lesson_likes",
     "name": "user_lesson_likes_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_lesson_likes\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_lesson_likes\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1683,7 +1761,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "user_lesson_progress",
     "name": "user_lesson_progress_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_lesson_progress\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 3}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_lesson_progress\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "05_COLUMN",
@@ -1765,15 +1843,21 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "created_at",
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": false, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "user_agent",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": -0.0952, \"avg_width_bytes\": 126, \"distinct_values\": -0.38, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chro\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 118, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "user_agent",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.5891, \"avg_width_bytes\": 79, \"distinct_values\": 11.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{vercel-screenshot/1.0,\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, l\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.7335, \"avg_width_bytes\": 75, \"distinct_values\": -0.13, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{vercel-screenshot/1.0,\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, l\"}, \"description\": null}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -1798,6 +1882,12 @@
     "table_name": "educational_stages",
     "name": "lessons_stage_id_fkey",
     "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"lessons\", \"columns\": [\"stage_id\"], \"row_count\": 0}, \"impact_analysis\": {\"warning\": null, \"cascade_risk\": \"MEDIUM\"}}"
+  },
+  {
+    "section": "09_FK_INCOMING",
+    "table_name": "educational_stages",
+    "name": "profiles_educational_stage_id_fkey",
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"profiles\", \"columns\": [\"educational_stage_id\"], \"row_count\": 4}, \"impact_analysis\": {\"warning\": null, \"cascade_risk\": \"MEDIUM\"}}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -1965,7 +2055,7 @@
     "section": "09_FK_INCOMING",
     "table_name": "profiles",
     "name": "user_devices_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"], \"row_count\": 9}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to user_devices\", \"cascade_risk\": \"HIGH\"}}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"], \"row_count\": 3}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to user_devices\", \"cascade_risk\": \"HIGH\"}}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -2095,6 +2185,12 @@
   },
   {
     "section": "05_COLUMN",
+    "table_name": "testimonials",
+    "name": "updated_at",
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": false, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "country",
     "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
@@ -2103,7 +2199,7 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "page_url",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 0.2116, \"avg_width_bytes\": 46, \"distinct_values\": -0.59, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{https://qaweb-beryl.vercel.app/,https://qaweb-ten.vercel.app/,http://localhost:3000/,https://qaweb-\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 0.2979, \"avg_width_bytes\": 46, \"distinct_values\": -0.70, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{https://qaweb-beryl.vercel.app/}\"}, \"description\": null}"
   },
   {
     "section": "10_RELATIONSHIP_SUMMARY",
@@ -2127,7 +2223,7 @@
     "section": "10_RELATIONSHIP_SUMMARY",
     "table_name": "educational_stages",
     "name": "connections",
-    "details": "{\"is_isolated\": false, \"incoming_fk_count\": 6, \"outgoing_fk_count\": 0, \"total_connections\": 6}"
+    "details": "{\"is_isolated\": false, \"incoming_fk_count\": 7, \"outgoing_fk_count\": 0, \"total_connections\": 7}"
   },
   {
     "section": "10_RELATIONSHIP_SUMMARY",
@@ -2163,7 +2259,7 @@
     "section": "10_RELATIONSHIP_SUMMARY",
     "table_name": "profiles",
     "name": "connections",
-    "details": "{\"is_isolated\": false, \"incoming_fk_count\": 22, \"outgoing_fk_count\": 1, \"total_connections\": 23}"
+    "details": "{\"is_isolated\": false, \"incoming_fk_count\": 22, \"outgoing_fk_count\": 2, \"total_connections\": 24}"
   },
   {
     "section": "10_RELATIONSHIP_SUMMARY",
@@ -2210,6 +2306,12 @@
   {
     "section": "10_RELATIONSHIP_SUMMARY",
     "table_name": "teacher_subscriptions",
+    "name": "connections",
+    "details": "{\"is_isolated\": false, \"incoming_fk_count\": 0, \"outgoing_fk_count\": 2, \"total_connections\": 2}"
+  },
+  {
+    "section": "10_RELATIONSHIP_SUMMARY",
+    "table_name": "testimonials",
     "name": "connections",
     "details": "{\"is_isolated\": false, \"incoming_fk_count\": 0, \"outgoing_fk_count\": 2, \"total_connections\": 2}"
   },
@@ -2319,19 +2421,19 @@
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "referrer",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 11, \"generated\": null, \"statistics\": {\"correlation\": 0.2536, \"avg_width_bytes\": 13, \"distinct_values\": 10.00, \"null_fraction_pct\": 2.44, \"most_common_values\": \"{\\\"\\\",https://accounts.google.com/,https://vercel.com/,https://www.google.com/}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 11, \"generated\": null, \"statistics\": {\"correlation\": 0.1690, \"avg_width_bytes\": 10, \"distinct_values\": -0.13, \"null_fraction_pct\": 3.33, \"most_common_values\": \"{\\\"\\\",https://accounts.google.com/,https://vercel.com/}\"}, \"description\": null}"
   },
   {
     "section": "11_INDEX",
     "table_name": "chat_messages",
     "name": "chat_messages_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX chat_messages_pkey ON public.chat_messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX chat_messages_pkey ON public.chat_messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "comprehensive_exam_attempts",
     "name": "comprehensive_exam_attempts_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exam_attempts_pkey ON public.comprehensive_exam_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exam_attempts_pkey ON public.comprehensive_exam_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2349,19 +2451,19 @@
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "comprehensive_exams_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exams_pkey ON public.comprehensive_exams USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 22, \"is_unused\": false, \"tuples_read\": 19, \"tuples_fetched\": 19}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exams_pkey ON public.comprehensive_exams USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 25, \"is_unused\": false, \"tuples_read\": 22, \"tuples_fetched\": 22}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_created_by",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 195, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 217, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_stage",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_stage ON public.comprehensive_exams USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 138, \"is_unused\": false, \"tuples_read\": 345, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_stage ON public.comprehensive_exams USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 186, \"is_unused\": false, \"tuples_read\": 454, \"tuples_fetched\": 4}}"
   },
   {
     "section": "11_INDEX",
@@ -2373,13 +2475,13 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 2, \"tuples_fetched\": 2}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 4, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 4}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 698, \"is_unused\": false, \"tuples_read\": 698, \"tuples_fetched\": 698}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 780, \"is_unused\": false, \"tuples_read\": 780, \"tuples_fetched\": 780}}"
   },
   {
     "section": "11_INDEX",
@@ -2421,19 +2523,19 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1219, \"is_unused\": false, \"tuples_read\": 25599, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1411, \"is_unused\": false, \"tuples_read\": 29631, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_subject_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 593, \"is_unused\": false, \"tuples_read\": 49812, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 689, \"is_unused\": false, \"tuples_read\": 57876, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "lessons_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 6, \"tuples_fetched\": 6}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 15, \"is_unused\": false, \"tuples_read\": 114, \"tuples_fetched\": 114}}"
   },
   {
     "section": "11_INDEX",
@@ -2469,7 +2571,13 @@
     "section": "11_INDEX",
     "table_name": "notifications",
     "name": "notifications_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "profiles",
+    "name": "idx_profiles_educational_stage_id",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_profiles_educational_stage_id ON public.profiles USING btree (educational_stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2511,7 +2619,7 @@
     "section": "11_INDEX",
     "table_name": "profiles",
     "name": "profiles_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 3, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 7, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 3}}"
   },
   {
     "section": "11_INDEX",
@@ -2529,7 +2637,7 @@
     "section": "11_INDEX",
     "table_name": "question_banks",
     "name": "idx_question_banks_lesson_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 5, \"tuples_fetched\": 5}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 13, \"tuples_fetched\": 13}}"
   },
   {
     "section": "11_INDEX",
@@ -2559,7 +2667,7 @@
     "section": "11_INDEX",
     "table_name": "site_settings",
     "name": "site_settings_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX site_settings_pkey ON public.site_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX site_settings_pkey ON public.site_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 4}}"
   },
   {
     "section": "11_INDEX",
@@ -2571,13 +2679,13 @@
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_pkey ON public.subjects USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 2, \"tuples_fetched\": 2}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_pkey ON public.subjects USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 3, \"is_unused\": false, \"tuples_read\": 32, \"tuples_fetched\": 29}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1394, \"is_unused\": false, \"tuples_read\": 1394, \"tuples_fetched\": 1394}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1558, \"is_unused\": false, \"tuples_read\": 1558, \"tuples_fetched\": 1558}}"
   },
   {
     "section": "11_INDEX",
@@ -2595,7 +2703,7 @@
     "section": "11_INDEX",
     "table_name": "teacher_exam_attempts",
     "name": "idx_teacher_exam_attempts_student",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_student ON public.teacher_exam_attempts USING btree (student_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 32, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_student ON public.teacher_exam_attempts USING btree (student_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 34, \"is_unused\": false, \"tuples_read\": 51, \"tuples_fetched\": 4}}"
   },
   {
     "section": "11_INDEX",
@@ -2625,7 +2733,7 @@
     "section": "11_INDEX",
     "table_name": "teacher_ratings",
     "name": "teacher_ratings_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_ratings_pkey ON public.teacher_ratings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_ratings_pkey ON public.teacher_ratings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 3, \"tuples_fetched\": 3}}"
   },
   {
     "section": "11_INDEX",
@@ -2643,19 +2751,43 @@
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "idx_teacher_subscriptions_user",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 45, \"is_unused\": false, \"tuples_read\": 658, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 67, \"is_unused\": false, \"tuples_read\": 946, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "teacher_subscriptions_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_subscriptions_pkey ON public.teacher_subscriptions USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_subscriptions_pkey ON public.teacher_subscriptions USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 3}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "teacher_subscriptions_user_id_teacher_id_key",
     "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"teacher_id\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_subscriptions_user_id_teacher_id_key ON public.teacher_subscriptions USING btree (user_id, teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 22, \"is_unused\": false, \"tuples_read\": 20, \"tuples_fetched\": 19}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "testimonials",
+    "name": "idx_testimonials_created_at",
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_created_at ON public.testimonials USING btree (created_at DESC)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "testimonials",
+    "name": "idx_testimonials_status",
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "testimonials",
+    "name": "idx_testimonials_user_id",
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_user_id ON public.testimonials USING btree (user_id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "testimonials",
+    "name": "testimonials_pkey",
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX testimonials_pkey ON public.testimonials USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2691,7 +2823,7 @@
     "section": "11_INDEX",
     "table_name": "user_lesson_likes",
     "name": "user_lesson_likes_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_likes_pkey ON public.user_lesson_likes USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_likes_pkey ON public.user_lesson_likes USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2703,7 +2835,7 @@
     "section": "11_INDEX",
     "table_name": "user_lesson_progress",
     "name": "user_lesson_progress_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_progress_pkey ON public.user_lesson_progress USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_progress_pkey ON public.user_lesson_progress USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2715,19 +2847,19 @@
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "idx_visitor_devices_last_seen",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_last_seen ON public.visitor_devices USING btree (last_seen_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 58, \"tuples_fetched\": 40}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_last_seen ON public.visitor_devices USING btree (last_seen_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 17, \"is_unused\": false, \"tuples_read\": 280, \"tuples_fetched\": 224}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "idx_visitor_devices_visitor",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 325, \"is_unused\": false, \"tuples_read\": 379, \"tuples_fetched\": 222}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 333, \"is_unused\": false, \"tuples_read\": 389, \"tuples_fetched\": 228}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "visitor_devices_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX visitor_devices_pkey ON public.visitor_devices USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 222, \"is_unused\": false, \"tuples_read\": 385, \"tuples_fetched\": 222}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX visitor_devices_pkey ON public.visitor_devices USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 230, \"is_unused\": false, \"tuples_read\": 646, \"tuples_fetched\": 358}}"
   },
   {
     "section": "05_COLUMN",
@@ -2793,13 +2925,13 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "first_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": -0.1190, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": -1.0000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "country",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": 0.8378, \"avg_width_bytes\": 1, \"distinct_values\": 5.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\",\\\"United States\\\"}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": 0.8318, \"avg_width_bytes\": 1, \"distinct_values\": 2.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\"}\"}, \"description\": null}"
   },
   {
     "section": "12_RLS_POLICY",
@@ -3229,6 +3361,42 @@
   },
   {
     "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Admins can update any testimonial",
+    "details": "{\"roles\": [\"public\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"is_admin()\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Public can view approved testimonials",
+    "details": "{\"roles\": [\"anon\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(status = 'approved'::text)\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can delete own pending testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"DELETE\", \"applies_to\": [\"DELETE\"], \"permissive\": true, \"using_expression\": \"((auth.uid() = user_id) AND (status = 'pending'::text))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can insert own testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"INSERT\", \"applies_to\": [\"INSERT\"], \"permissive\": true, \"using_expression\": null, \"with_check_expression\": \"(auth.uid() = user_id)\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can update own pending testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"((auth.uid() = user_id) AND (status = 'pending'::text))\", \"with_check_expression\": \"(auth.uid() = user_id)\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can view own testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(auth.uid() = user_id)\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
     "table_name": "user_devices",
     "name": "user_devices_admin_all",
     "details": "{\"roles\": [\"public\"], \"command\": \"ALL\", \"applies_to\": [\"SELECT\", \"INSERT\", \"UPDATE\", \"DELETE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
@@ -3333,13 +3501,13 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "last_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": 0.1190, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": -0.5000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "city",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": 0.8378, \"avg_width_bytes\": 1, \"distinct_values\": 5.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\",Portland}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": 0.8318, \"avg_width_bytes\": 1, \"distinct_values\": 2.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\"}\"}, \"description\": null}"
   },
   {
     "section": "13_TRIGGER",
@@ -3396,6 +3564,12 @@
     "details": "{\"level\": \"ROW\", \"events\": [\"INSERT\"], \"timing\": \"AFTER\", \"enabled\": true, \"function\": \"increment_subscriber_count()\", \"condition\": null, \"trigger_type\": \"AFTER\"}"
   },
   {
+    "section": "13_TRIGGER",
+    "table_name": "testimonials",
+    "name": "testimonials_updated_at",
+    "details": "{\"level\": \"ROW\", \"events\": [\"UPDATE\"], \"timing\": \"BEFORE\", \"enabled\": true, \"function\": \"update_testimonials_updated_at()\", \"condition\": null, \"trigger_type\": \"BEFORE\"}"
+  },
+  {
     "section": "05_COLUMN",
     "table_name": "comprehensive_exams",
     "name": "branch_tags",
@@ -3447,13 +3621,13 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "login_count",
-    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 0.4286, \"avg_width_bytes\": 4, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "first_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 0.8978, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 0.9003, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "14_FUNCTION",
@@ -3535,6 +3709,12 @@
   },
   {
     "section": "14_FUNCTION",
+    "table_name": "update_testimonials_updated_at",
+    "name": "signature",
+    "details": "{\"oid\": \"61516\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"INVOKER\", \"arguments\": \"\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"trigger\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
+  },
+  {
+    "section": "14_FUNCTION",
     "table_name": "upsert_user_device",
     "name": "signature",
     "details": "{\"oid\": \"39844\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"DEFINER\", \"arguments\": \"p_user_id uuid, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_country text DEFAULT NULL::text, p_city text DEFAULT NULL::text\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"text\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
@@ -3585,13 +3765,13 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "is_current_device",
-    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"false\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": -0.0714, \"avg_width_bytes\": 1, \"distinct_values\": -0.25, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{f,t}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"false\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 1, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{t}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
     "table_name": "visitor_devices",
     "name": "last_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": 0.9067, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": 0.8945, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -3937,6 +4117,12 @@
   },
   {
     "section": "16_TABLE_PRIVILEGE",
+    "table_name": "testimonials",
+    "name": "postgres",
+    "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"INSERT\", \"REFERENCES\", \"SELECT\", \"TRIGGER\", \"TRUNCATE\", \"UPDATE\"], \"with_grant_option\": true}"
+  },
+  {
+    "section": "16_TABLE_PRIVILEGE",
     "table_name": "user_devices",
     "name": "authenticated",
     "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"SELECT\"], \"with_grant_option\": false}"
@@ -4183,6 +4369,18 @@
   },
   {
     "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "update_testimonials_updated_at",
+    "name": "PUBLIC",
+    "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"update_testimonials_updated_at\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "update_testimonials_updated_at",
+    "name": "postgres",
+    "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"function\": \"update_testimonials_updated_at\", \"privilege\": \"EXECUTE\", \"with_grant_option\": true}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
     "table_name": "upsert_user_device",
     "name": "PUBLIC",
     "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"upsert_user_device\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
@@ -4275,25 +4473,25 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "chat_messages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 1, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 3, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 135, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 431, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 327, \"read\": 2, \"hit_ratio\": 99.39}, \"index_blocks\": {\"hit\": 1076, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 462, \"read\": 2, \"hit_ratio\": 99.57}, \"index_blocks\": {\"hit\": 1407, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 860, \"read\": 1, \"hit_ratio\": 99.88}, \"index_blocks\": {\"hit\": 1632, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1040, \"read\": 1, \"hit_ratio\": 99.90}, \"index_blocks\": {\"hit\": 1858, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4305,13 +4503,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2436, \"read\": 9, \"hit_ratio\": 99.63}, \"index_blocks\": {\"hit\": 3847, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 3642, \"read\": 9, \"hit_ratio\": 99.75}, \"index_blocks\": {\"hit\": 4480, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "messages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 1, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 9, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4323,31 +4521,31 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notifications",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 5109, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 7597, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 8855, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 6359, \"read\": 14}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 10345, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 7270, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "question_banks",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 6, \"read\": 1, \"hit_ratio\": 85.71}, \"index_blocks\": {\"hit\": 42, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 14, \"read\": 1, \"hit_ratio\": 93.33}, \"index_blocks\": {\"hit\": 78, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "site_settings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1, \"read\": 1, \"hit_ratio\": 50.00}, \"index_blocks\": {\"hit\": 8, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2, \"read\": 1, \"hit_ratio\": 66.67}, \"index_blocks\": {\"hit\": 10, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1677, \"read\": 1, \"hit_ratio\": 99.94}, \"index_blocks\": {\"hit\": 3396, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1914, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 3784, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4359,49 +4557,55 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4, \"read\": 1, \"hit_ratio\": 80.00}, \"index_blocks\": {\"hit\": 28, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 12, \"read\": 1, \"hit_ratio\": 92.31}, \"index_blocks\": {\"hit\": 99, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 230, \"read\": 1, \"hit_ratio\": 99.57}, \"index_blocks\": {\"hit\": 481, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 271, \"read\": 1, \"hit_ratio\": 99.63}, \"index_blocks\": {\"hit\": 686, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_ratings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 16, \"read\": 1, \"hit_ratio\": 94.12}, \"index_blocks\": {\"hit\": 54, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 17, \"read\": 1, \"hit_ratio\": 94.44}, \"index_blocks\": {\"hit\": 57, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_subscriptions",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 80, \"read\": 1, \"hit_ratio\": 98.77}, \"index_blocks\": {\"hit\": 226, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 99, \"read\": 1, \"hit_ratio\": 99.00}, \"index_blocks\": {\"hit\": 310, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+  },
+  {
+    "section": "19_STORAGE_ANALYSIS",
+    "table_name": "testimonials",
+    "name": "io_stats",
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 52, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4747, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2186, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5265, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2471, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_lesson_likes",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 0, \"read\": 0}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 1, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_lesson_progress",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 2, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 93, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "visitor_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2141, \"read\": 5, \"hit_ratio\": 99.77}, \"index_blocks\": {\"hit\": 3021, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2768, \"read\": 5, \"hit_ratio\": 99.82}, \"index_blocks\": {\"hit\": 3178, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "05_COLUMN",
@@ -4534,6 +4738,12 @@
     "table_name": "teacher_subscriptions",
     "name": "security_status",
     "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 3}, \"grants\": {\"role_count\": 3, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
+  },
+  {
+    "section": "20_SECURITY_AUDIT",
+    "table_name": "testimonials",
+    "name": "security_status",
+    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 6}, \"grants\": {\"role_count\": 1, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
   },
   {
     "section": "20_SECURITY_AUDIT",
@@ -4717,6 +4927,12 @@
   },
   {
     "section": "26_FUNCTION_SOURCE",
+    "table_name": "update_testimonials_updated_at",
+    "name": "source_code",
+    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"update_testimonials_updated_at()\", \"return_type\": \"trigger\", \"source_length\": 56, \"source_preview\": \"\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.update_testimonials_updated_at()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
+  },
+  {
+    "section": "26_FUNCTION_SOURCE",
     "table_name": "upsert_user_device",
     "name": "source_code",
     "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_user_device(p_user_id uuid, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_country text DEFAULT NULL::text, p_city text DEFAULT NULL::text)\", \"return_type\": \"text\", \"source_length\": 3243, \"source_preview\": \"\\nDECLARE\\n    v_device_id UUID;\\n    v_fingerprint TEXT;\\n    v_ip INET;\\n    v_device_type device_type;\\nBEGIN\\n    -- Validate user_id\\n    IF p_user_id IS NULL THEN\\n        RAISE EXCEPTION 'user_id cannot be null';\\n    END IF;\\n    \\n    -- Convert device type string to enum\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP string to INET\\n    IF p_ip_address IS NULL OR p_ip_address = '' OR p_ip_address = '0.0.0.0' THEN\\n        v_ip := NULL;\\n    ELSE\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    END IF;\\n\\n    -- Create fingerprint for matching\\n    v_fingerprint := md5(\\n        COALESCE(p_os_name, '') || \\n        COALESCE(p_browser, '') || \\n        COALESCE(LEFT(p_user_agent, 200), '')\\n    );\\n    \\n    -- Try to find existing device\\n    SELECT id INTO v_device_id\\n    FROM user_devices\\n    WHERE user_id = \", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_user_device(p_user_id uuid, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_country text DEFAULT NULL::text, p_city text DEFAULT NULL::text)\\n RETURNS text\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n    v_device_id UUID;\\n    v_fingerprint TEXT;\\n    v_ip INET;\\n    v_device_type device_type;\\nBEGIN\\n    -- Validate user_id\\n    IF p_user_id IS NULL THEN\\n        RAISE EXCEPTION 'user_id cannot be null';\\n    END IF;\\n    \\n    -- Convert device type string to enum\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP string to INET\\n    IF p_ip_address IS NULL OR p_ip_address = '' OR p_ip_address = '0.0.0.0' THEN\\n        v_ip := NULL;\\n    ELSE\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    END IF;\\n\\n    -- Create fingerprint for matching\\n    v_fingerprint := md5(\\n        COALESCE(p_os_name, '') || \\n        COALESCE(p_browser, '') || \\n        COALESCE(LEFT(p_user_agent, 200), '')\\n    );\\n    \\n    -- Try to find existing device\\n    SELECT id INTO v_device_id\\n    FROM user_devices\\n    WHERE user_id = p_user_id\\n      AND md5(\\n          COALESCE(os_name, '') || \\n          COALESCE(browser, '') || \\n          COALESCE(LEFT(user_agent, 200), '')\\n      ) = v_fingerprint\\n    LIMIT 1;\\n\\n    IF v_device_id IS NOT NULL THEN\\n        -- Update existing device\\n        UPDATE user_devices\\n        SET \\n            device_type = COALESCE(v_device_type, device_type),\\n            os_name = COALESCE(NULLIF(p_os_name, ''), os_name),\\n            os_version = COALESCE(NULLIF(p_os_version, ''), os_version),\\n            browser = COALESCE(NULLIF(p_browser, ''), browser),\\n            browser_version = COALESCE(NULLIF(p_browser_version, ''), browser_version),\\n            ip_address = COALESCE(v_ip, ip_address),\\n            user_agent = COALESCE(NULLIF(p_user_agent, ''), user_agent),\\n            country = COALESCE(p_country, country),\\n            city = COALESCE(p_city, city),\\n            last_seen_at = NOW(),\\n            login_count = login_count + 1,\\n            is_current_device = TRUE\\n        WHERE id = v_device_id;\\n        \\n        -- Mark other devices as not current\\n        UPDATE user_devices \\n        SET is_current_device = FALSE \\n        WHERE user_id = p_user_id AND id != v_device_id;\\n        \\n        RETURN v_device_id::TEXT;\\n    ELSE\\n        -- Insert new device\\n        INSERT INTO user_devices (\\n            user_id, device_type, os_name, os_version, \\n            browser, browser_version, ip_address, user_agent, \\n            country, city, first_seen_at, last_seen_at, \\n            login_count, is_current_device\\n        ) VALUES (\\n            p_user_id, COALESCE(v_device_type, 'unknown'),\\n            NULLIF(p_os_name, ''), NULLIF(p_os_version, ''),\\n            NULLIF(p_browser, ''), NULLIF(p_browser_version, ''),\\n            v_ip, NULLIF(p_user_agent, ''),\\n            p_country, p_city,\\n            NOW(), NOW(),\\n            1, TRUE\\n        )\\n        RETURNING id INTO v_device_id;\\n        \\n        -- Mark other devices as not current\\n        UPDATE user_devices \\n        SET is_current_device = FALSE \\n        WHERE user_id = p_user_id AND id != v_device_id;\\n        \\n        RETURN v_device_id::TEXT;\\n    END IF;\\n\\nEXCEPTION WHEN OTHERS THEN\\n    RAISE WARNING 'upsert_user_device error: %', SQLERRM;\\n    RETURN NULL;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::text\", \"NULL::text\"]}"
@@ -4737,7 +4953,7 @@
     "section": "27_DATABASE_CONFIG",
     "table_name": "postgres",
     "name": "settings",
-    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 15, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15494291}"
+    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 19, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15559827}"
   },
   {
     "section": "05_COLUMN",
@@ -4794,9 +5010,21 @@
     "details": "{\"tags\": null, \"event\": \"sql_drop\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"pgrst_drop_watch\"}"
   },
   {
+    "section": "05_COLUMN",
+    "table_name": "profiles",
+    "name": "educational_stage_id",
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 29, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": \"المرحلة الدراسية للمستخدم - User educational stage reference\"}"
+  },
+  {
     "section": "29_REPLICATION_SLOT",
-    "table_name": "supabase_realtime_replication_slot_v2_71_0",
+    "table_name": "supabase_realtime_messages_replication_slot_v2_71_4",
     "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 179848, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/82000028\", \"catalog_xmin\": \"8727\", \"safe_wal_size\": 4311744416, \"confirmed_flush_lsn\": \"1/82000060\"}"
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 197084, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/BD000028\", \"catalog_xmin\": \"8890\", \"safe_wal_size\": 4311744416, \"confirmed_flush_lsn\": \"1/BD000061\"}"
+  },
+  {
+    "section": "29_REPLICATION_SLOT",
+    "table_name": "supabase_realtime_replication_slot_v2_71_4",
+    "name": "configuration",
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 197174, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/BD000028\", \"catalog_xmin\": \"8890\", \"safe_wal_size\": 4311744416, \"confirmed_flush_lsn\": \"1/BD000060\"}"
   }
 ]

@@ -9,10 +9,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User as UserIcon,
-    UserCircle,
     ChevronDown,
     Shield,
-    Settings,
     LogOut,
     Trophy,
     Crown,
@@ -230,15 +228,6 @@ export function UserProfileDropdown({
                                     />
                                 </motion.div>
                             )}
-
-                            <motion.div variants={itemVariants}>
-                                <MenuLink
-                                    href="/settings"
-                                    icon={Settings}
-                                    label="الإعدادات"
-                                    description="تخصيص التطبيق"
-                                />
-                            </motion.div>
 
                             {/* Divider */}
                             <motion.div variants={itemVariants} className="py-2">

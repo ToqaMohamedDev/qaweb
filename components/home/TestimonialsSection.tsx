@@ -4,32 +4,68 @@
 
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Star, Sparkles } from 'lucide-react';
 import { containerVariants, itemVariants } from '@/lib/animations';
 
-const testimonials = [
-    {
-        name: 'أحمد محمد',
-        role: 'طالب ثانوي',
-        content: 'المنصة سهّلت علييا فهم قواعد اللغة العربية بطريقة ممتعة. الأسئلة التفاعلية ساعدتني كتير!',
-        rating: 5,
-    },
-    {
-        name: 'سارة أحمد',
-        role: 'طالبة جامعية',
-        content: 'أفضل منصة تعليمية استخدمتها. المحتوى متنوع والامتحانات شاملة. أنصح الكل بتجربتها!',
-        rating: 5,
-    },
-    {
-        name: 'محمود علي',
-        role: 'معلم لغة',
-        content: 'استخدمت المنصة مع طلابي ولاحظت تحسن كبير في مستواهم. محتوى قيّم جداً.',
-        rating: 5,
-    },
-];
+// =============================================
+// Types
+// =============================================
+
+interface TestimonialProfile {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+    role: string;
+}
+
+interface Testimonial {
+    id: string;
+    content: string;
+    rating: number;
+    created_at: string;
+    profiles: TestimonialProfile;
+}
+
+
+const getRoleLabel = (role: string) => {
+    switch (role) {
+        case 'student': return 'طالب';
+        case 'teacher': return 'معلم';
+        case 'admin': return 'مدير';
+        default: return 'مستخدم';
+    }
+};
 
 export function TestimonialsSection() {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchTestimonials = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const res = await fetch('/api/testimonials?limit=6');
+            if (res.ok) {
+                const result = await res.json();
+                setTestimonials(result.data || []);
+            }
+        } catch {
+            setTestimonials([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTestimonials();
+    }, [fetchTestimonials]);
+
+    // Don't render section if no testimonials and not loading
+    if (!isLoading && testimonials.length === 0) {
+        return null;
+    }
+
     return (
         <section className="py-14 sm:py-20 bg-gray-50/50 dark:bg-[#0d0d12]">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
@@ -56,7 +92,7 @@ export function TestimonialsSection() {
                     initial="hidden"
                     animate="visible"
                 >
-                    {testimonials.map((testimonial, index) => (
+                    {testimonials.slice(0, 3).map((testimonial, index) => (
                         <motion.div
                             key={index}
                             variants={itemVariants}
@@ -95,11 +131,11 @@ export function TestimonialsSection() {
                                     {/* Author */}
                                     <div className="flex items-center gap-3 pt-3 border-t border-amber-200/50 dark:border-amber-500/20">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-amber-500/30">
-                                            {testimonial.name.charAt(0)}
+                                            {testimonial.profiles?.name?.charAt(0) || '؟'}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-sm text-gray-800 dark:text-white">{testimonial.name}</p>
-                                            <p className="text-xs text-amber-600 dark:text-amber-300/70">{testimonial.role}</p>
+                                            <p className="font-bold text-sm text-gray-800 dark:text-white">{testimonial.profiles?.name || 'مستخدم'}</p>
+                                            <p className="text-xs text-amber-600 dark:text-amber-300/70">{getRoleLabel(testimonial.profiles?.role)}</p>
                                         </div>
                                     </div>
 
