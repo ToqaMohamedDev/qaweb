@@ -14,13 +14,13 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createClient();
 
         // 1. Get authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
