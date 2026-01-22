@@ -155,19 +155,31 @@ export async function loginUser(userId: string, userData?: {
     }
 
     try {
-        await OneSignalInstance.login(userId);
+        // التحقق من ما إذا كان المستخدم مسجلاً بالفعل بنفس المعرف لتجنب التكرار
+        const currentExternalId = OneSignalInstance.User.externalId;
+        if (currentExternalId !== userId) {
+            await OneSignalInstance.login(userId);
+            console.log('✅ User logged in to OneSignal:', userId);
+        } else {
+            console.log('ℹ️ User already logged in to OneSignal:', userId);
+        }
+
+        // تحديث البيانات وال Tags
+        const tags: Record<string, string> = {
+            user_id: userId // إضافة user_id دائماً
+        };
 
         if (userData) {
-            const tags: Record<string, string> = {};
             if (userData.email) tags.email = userData.email;
             if (userData.name) tags.name = userData.name;
             if (userData.role) tags.role = userData.role;
-            await OneSignalInstance.User.addTags(tags);
         }
 
-        console.log('✅ User logged in to OneSignal:', userId);
+        await OneSignalInstance.User.addTags(tags);
+        console.log('✅ User tags updated');
+
     } catch (error) {
-        console.warn('Failed to login user to OneSignal:', error);
+        console.warn('Failed to login/sync user to OneSignal:', error);
     }
 }
 

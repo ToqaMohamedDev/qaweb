@@ -176,11 +176,9 @@ export function OneSignalProvider({
         if (!isInitialized) return;
 
         try {
-            const { loginUser, addUserTag } = await import('@/lib/onesignal');
+            const { loginUser } = await import('@/lib/onesignal');
             await loginUser(userId, userData);
 
-            // Add user_id tag for server-side targeting
-            await addUserTag('user_id', userId);
 
             console.log('✅ OneSignal: User synced:', userId);
         } catch (err) {
