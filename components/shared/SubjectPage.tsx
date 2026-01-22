@@ -140,18 +140,42 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                 const stagesResult = await stagesRes.json();
                 const allStages = stagesResult.data || [];
 
-                // Find default stage (الصف الثالث الثانوي)
+                // Try to get user's selected educational stage from profile first
                 let stageId: string | null = null;
-                const defaultStage = allStages.find((s: any) =>
-                    s.name?.includes('ثالث') && s.name?.includes('ثانوي')
-                );
+                let userStageName: string | null = null;
 
-                if (defaultStage) {
-                    stageId = defaultStage.id;
-                    setStageName(defaultStage.name);
-                } else if (allStages.length > 0) {
-                    stageId = allStages[0].id;
-                    setStageName(allStages[0].name);
+                try {
+                    const profileRes = await fetch('/api/profile');
+                    const profileResult = await profileRes.json();
+
+                    if (profileResult.success && profileResult.data?.profile?.educational_stage_id) {
+                        const userStageId = profileResult.data.profile.educational_stage_id;
+                        const userStage = allStages.find((s: any) => s.id === userStageId);
+
+                        if (userStage) {
+                            stageId = userStage.id;
+                            userStageName = userStage.name;
+                            setStageName(userStage.name);
+                        }
+                    }
+                } catch (profileError) {
+                    // User not logged in or profile error - continue with default stage
+                    console.log('Profile fetch skipped (user may not be logged in)');
+                }
+
+                // If no user stage found, fallback to default stage (الصف الثالث الثانوي)
+                if (!stageId) {
+                    const defaultStage = allStages.find((s: any) =>
+                        s.name?.includes('ثالث') && s.name?.includes('ثانوي')
+                    );
+
+                    if (defaultStage) {
+                        stageId = defaultStage.id;
+                        setStageName(defaultStage.name);
+                    } else if (allStages.length > 0) {
+                        stageId = allStages[0].id;
+                        setStageName(allStages[0].name);
+                    }
                 }
 
                 if (!stageId) {
@@ -345,6 +369,7 @@ export function SubjectPage({ subject, subjectSlug, subjectSearchPatterns }: Sub
                                     isLoading={isLoading}
                                     subject={subject}
                                     translations={t}
+                                    stageName={stageName}
                                 />
                             )}
                         </AnimatePresence>
@@ -471,9 +496,10 @@ interface ExamsGridProps {
     isLoading: boolean;
     subject: string;
     translations: Translations;
+    stageName?: string;
 }
 
-function ExamsGrid({ exams, isLoading, subject, translations: t }: ExamsGridProps) {
+function ExamsGrid({ exams, isLoading, subject, translations: t, stageName }: ExamsGridProps) {
     const isArabic = subject === 'arabic';
 
     if (isLoading) {
@@ -549,7 +575,7 @@ function ExamsGrid({ exams, isLoading, subject, translations: t }: ExamsGridProp
                                 <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-violet-300/80 mb-4">
                                     <div className="flex items-center gap-1.5">
                                         <GraduationCap className="h-4 w-4 text-violet-500" />
-                                        <span>{isArabic ? 'الصف الثالث الثانوي' : '3rd Secondary'}</span>
+                                        <span>{stageName || (isArabic ? 'الصف الثالث الثانوي' : '3rd Secondary')}</span>
                                     </div>
                                     <div className="w-1 h-1 rounded-full bg-violet-400/50" />
                                     <span>{isArabic ? 'لغة عربية' : 'English'}</span>
