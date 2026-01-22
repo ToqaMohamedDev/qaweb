@@ -6,7 +6,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { TrendingUp, BookOpen, Award, Play, Sparkles } from 'lucide-react';
+import { TrendingUp, BookOpen, Award, Play, Sparkles, FileText, GraduationCap } from 'lucide-react';
 import type { UserStats } from './types';
 
 interface ProgressSummaryProps {
@@ -14,6 +14,10 @@ interface ProgressSummaryProps {
 }
 
 export function ProgressSummary({ stats }: ProgressSummaryProps) {
+    // Get separate exam stats
+    const siteExams = stats.siteExams || { taken: 0, passed: 0, averageScore: 0 };
+    const teacherExams = stats.teacherExams || { taken: 0, passed: 0, averageScore: 0 };
+
     return (
         <div className="bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 shadow-lg">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
@@ -48,15 +52,15 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                     </div>
                 </div>
 
-                {/* Exams Progress */}
+                {/* Site Exams Progress */}
                 <div>
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <Award className="h-4 w-4 text-green-500" />
-                            الامتحانات الناجحة
+                            <FileText className="h-4 w-4 text-green-500" />
+                            امتحانات الموقع الناجحة
                         </span>
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
-                            {stats.passedExams} / {stats.examsTaken}
+                            {siteExams.passed} / {siteExams.taken}
                         </span>
                     </div>
                     <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -64,12 +68,38 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             initial={{ width: 0 }}
                             animate={{
                                 width:
-                                    stats.examsTaken > 0
-                                        ? `${(stats.passedExams / stats.examsTaken) * 100}%`
+                                    siteExams.taken > 0
+                                        ? `${(siteExams.passed / siteExams.taken) * 100}%`
                                         : '0%',
                             }}
                             transition={{ duration: 1, delay: 0.5 }}
                             className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                        />
+                    </div>
+                </div>
+
+                {/* Teacher Exams Progress */}
+                <div>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 text-purple-500" />
+                            امتحانات المدرسين الناجحة
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                            {teacherExams.passed} / {teacherExams.taken}
+                        </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{
+                                width:
+                                    teacherExams.taken > 0
+                                        ? `${(teacherExams.passed / teacherExams.taken) * 100}%`
+                                        : '0%',
+                            }}
+                            transition={{ duration: 1, delay: 0.7 }}
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
                         />
                     </div>
                 </div>
@@ -97,3 +127,4 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
         </div>
     );
 }
+

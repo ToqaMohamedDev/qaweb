@@ -67,9 +67,10 @@ export function useProfile(): UseProfileReturn {
     const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
     const [formData, setFormData] = useState<ProfileFormData>(initialFormData);
 
-    // Calculate level
-    const userLevel = Math.floor((stats.completedLessons + stats.examsTaken * 2) / 5) + 1;
-    const levelProgress = ((stats.completedLessons + stats.examsTaken * 2) % 5) * 20;
+    // Calculate level - only count actual progress
+    const totalPoints = stats.completedLessons + stats.examsTaken * 2;
+    const userLevel = totalPoints > 0 ? Math.floor(totalPoints / 5) + 1 : 1;
+    const levelProgress = totalPoints > 0 ? ((totalPoints % 5) * 20) : 0;
 
     // Format relative date
     const formatRelativeDate = useCallback((dateString: string): string => {

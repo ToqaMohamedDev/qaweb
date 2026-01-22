@@ -10,17 +10,54 @@ export async function fetchHomeLessonsAction() {
     const supabase = await createClient();
 
     try {
-        // 1. Get Stage
-        const { data: stage, error: stageError } = await supabase
-            .from('educational_stages')
-            .select('id, name')
-            .eq('slug', DEFAULT_STAGE_SLUG)
-            .single();
+        // 1. Try to get user's selected educational stage from their profile
+        let stageId: string | null = null;
+        let stageName: string = '';
 
-        if (stageError || !stage) {
-            console.error('Fetch lessons error (Stage):', stageError);
-            return { error: 'Stage not found', arabicLessons: [], englishLessons: [], selectedStageName: '' };
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+            // Get user's profile with their selected educational stage
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('educational_stage_id')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.educational_stage_id) {
+                // Get the stage name for the user's selected stage
+                const { data: userStage } = await supabase
+                    .from('educational_stages')
+                    .select('id, name')
+                    .eq('id', profile.educational_stage_id)
+                    .single();
+
+                if (userStage) {
+                    stageId = userStage.id;
+                    stageName = userStage.name;
+                }
+            }
         }
+
+        // 2. If no user stage found, fallback to default stage (grade-3-secondary)
+        if (!stageId) {
+            const { data: defaultStage, error: stageError } = await supabase
+                .from('educational_stages')
+                .select('id, name')
+                .eq('slug', DEFAULT_STAGE_SLUG)
+                .single();
+
+            if (stageError || !defaultStage) {
+                console.error('Fetch lessons error (Stage):', stageError);
+                return { error: 'Stage not found', arabicLessons: [], englishLessons: [], selectedStageName: '' };
+            }
+
+            stageId = defaultStage.id;
+            stageName = defaultStage.name;
+        }
+
+        // Use the determined stage for fetching lessons
+        const stage = { id: stageId, name: stageName };
 
         // 2. Fetch Subjects
         const [arabicSubjectRes, englishSubjectRes] = await Promise.all([
