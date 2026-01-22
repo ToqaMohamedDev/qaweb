@@ -44,8 +44,8 @@ class ApiClient {
         method: HttpMethod,
         endpoint: string,
         options: {
-            params?: Record<string, any>;
-            body?: any;
+            params?: Record<string, string | number | boolean | undefined | null>;
+            body?: unknown;
             config?: RequestConfig;
         } = {}
     ): Promise<ApiResponse<T>> {
@@ -133,23 +133,23 @@ class ApiClient {
     // HTTP Methods
     // =============================================
 
-    async get<T>(endpoint: string, params?: Record<string, any>, config?: RequestConfig): Promise<ApiResponse<T>> {
+    async get<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined | null>, config?: RequestConfig): Promise<ApiResponse<T>> {
         return this.request<T>('GET', endpoint, { params, config });
     }
 
-    async post<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<ApiResponse<T>> {
+    async post<T>(endpoint: string, body?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
         return this.request<T>('POST', endpoint, { body, config });
     }
 
-    async put<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<ApiResponse<T>> {
+    async put<T>(endpoint: string, body?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
         return this.request<T>('PUT', endpoint, { body, config });
     }
 
-    async patch<T>(endpoint: string, body?: any, config?: RequestConfig): Promise<ApiResponse<T>> {
+    async patch<T>(endpoint: string, body?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
         return this.request<T>('PATCH', endpoint, { body, config });
     }
 
-    async delete<T>(endpoint: string, params?: Record<string, any>, config?: RequestConfig): Promise<ApiResponse<T>> {
+    async delete<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined | null>, config?: RequestConfig): Promise<ApiResponse<T>> {
         return this.request<T>('DELETE', endpoint, { params, config });
     }
 
@@ -160,7 +160,7 @@ class ApiClient {
     /**
      * Fetch data and return just the data (not the full response)
      */
-    async fetchData<T>(endpoint: string, params?: Record<string, any>): Promise<T | null> {
+    async fetchData<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined | null>): Promise<T | null> {
         try {
             const response = await this.get<T>(endpoint, params);
             return response.data ?? null;
@@ -172,7 +172,7 @@ class ApiClient {
     /**
      * Fetch array data with fallback to empty array
      */
-    async fetchArray<T>(endpoint: string, params?: Record<string, any>): Promise<T[]> {
+    async fetchArray<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined | null>): Promise<T[]> {
         try {
             const response = await this.get<T[]>(endpoint, params);
             return response.data ?? [];

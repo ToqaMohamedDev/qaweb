@@ -6,7 +6,8 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { Json } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
 
@@ -85,7 +86,7 @@ export function useCreateStage(): UseMutationResult<Partial<Stage>, Stage> {
         try {
             const { data, error: err } = await supabase
                 .from('educational_stages')
-                .insert(input as any)
+                .insert(input as Tables['educational_stages']['Insert'])
                 .select()
                 .single();
 
@@ -206,7 +207,7 @@ export function useCreateSubject(): UseMutationResult<Partial<Subject>, Subject>
         try {
             const { data, error: err } = await supabase
                 .from('subjects')
-                .insert(input as any)
+                .insert(input as Tables['subjects']['Insert'])
                 .select()
                 .single();
 
@@ -341,7 +342,7 @@ export function useCreateLesson(): UseMutationResult<Partial<Lesson>, Lesson> {
         try {
             const { data, error: err } = await supabase
                 .from('lessons')
-                .insert(input as any)
+                .insert(input as Tables['lessons']['Insert'])
                 .select()
                 .single();
 
@@ -510,7 +511,7 @@ export function useCreateExam(): UseMutationResult<Partial<Exam>, Exam> {
         try {
             const { data, error: err } = await supabase
                 .from('comprehensive_exams')
-                .insert(input as any)
+                .insert(input as Tables['comprehensive_exams']['Insert'])
                 .select()
                 .single();
 
@@ -532,7 +533,7 @@ interface UseUpdateExamInput {
     examId?: string;
     id?: string;
     updates?: Partial<Exam>;
-    [key: string]: any;
+    [key: string]: string | number | boolean | null | undefined | Partial<Exam>;
 }
 
 export function useUpdateExam(): UseMutationResult<UseUpdateExamInput, Exam> {
@@ -547,7 +548,8 @@ export function useUpdateExam(): UseMutationResult<UseUpdateExamInput, Exam> {
             // Support both { examId, updates } and { id, ...updates } formats
             const examId = input.examId || input.id;
             const updates = input.updates || (() => {
-                const { examId: _, id: __, ...rest } = input;
+                const { examId: _examId, id: _id, ...rest } = input;
+                void _examId; void _id;
                 return rest;
             })();
 
@@ -555,7 +557,7 @@ export function useUpdateExam(): UseMutationResult<UseUpdateExamInput, Exam> {
 
             const { data, error: err } = await supabase
                 .from('comprehensive_exams')
-                .update(updates as any)
+                .update(updates as Tables['comprehensive_exams']['Update'])
                 .eq('id', examId)
                 .select()
                 .single();
@@ -735,8 +737,14 @@ interface UseQuestionBanksOptions {
     search?: string;
 }
 
-export function useQuestionBanks(options?: UseQuestionBanksOptions): UseQueryResult<QuestionBank & { lessons?: any; educational_stages?: any; subjects?: any }> {
-    const [data, setData] = useState<(QuestionBank & { lessons?: any; educational_stages?: any; subjects?: any })[]>([]);
+interface QuestionBankWithRelations extends QuestionBank {
+    lessons?: { id: string; title: string; stage_id: string | null; subject_id: string | null } | null;
+    educational_stages?: { id: string; name: string; slug: string } | null;
+    subjects?: { id: string; name: string; slug: string } | null;
+}
+
+export function useQuestionBanks(options?: UseQuestionBanksOptions): UseQueryResult<QuestionBankWithRelations> {
+    const [data, setData] = useState<QuestionBankWithRelations[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -762,13 +770,13 @@ export function useQuestionBanks(options?: UseQuestionBanksOptions): UseQueryRes
             const { data: result, error: err } = await query;
 
             if (err) throw err;
-            setData((result || []) as any);
+            setData((result || []) as QuestionBankWithRelations[]);
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Error fetching question banks');
         } finally {
             setIsLoading(false);
         }
-    }, [options?.stage_id, options?.subject_id, options?.lesson_id, options?.search]);
+    }, [options?.stage_id, options?.subject_id, options?.lesson_id]);
 
     useEffect(() => {
         refetch();
@@ -804,22 +812,27 @@ export function useDeleteQuestionBank(): UseMutationResult<string, void> {
     return { mutateAsync, isPending, error };
 }
 
-export function useUpdateQuestionBank(): UseMutationResult<{ id: string; questions: any[] }, QuestionBank> {
+export function useUpdateQuestionBank(): UseMutationResult<{ id: string; questions: Record<string, unknown>[] }, QuestionBank> {
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const mutateAsync = async (input: { id: string; questions: any[] }): Promise<QuestionBank> => {
+    const mutateAsync = async (input: { id: string; questions: Record<string, unknown>[] }): Promise<QuestionBank> => {
         const supabase = createClient();
         setIsPending(true);
         setError(null);
         try {
             const { id, questions } = input;
-            const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
+            let totalPoints = 0;
+            for (const q of questions) {
+                if (typeof q.points === 'number') {
+                    totalPoints += q.points;
+                }
+            }
 
             const { data, error: err } = await supabase
                 .from('question_banks')
                 .update({
-                    questions,
+                    questions: questions as unknown as Json[],
                     total_questions: questions.length,
                     total_points: totalPoints,
                 })
@@ -875,26 +888,31 @@ export function useUsers(): UseQueryResult<Profile> {
     return { data, isLoading, error, refetch };
 }
 
-export function useUpdateUser(): UseMutationResult<any, Profile> {
+interface UpdateUserInput {
+    id?: string;
+    teacherId?: string;
+    updates?: Partial<Profile>;
+}
+
+export function useUpdateUser(): UseMutationResult<UpdateUserInput, Profile> {
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const mutateAsync = async (input: any): Promise<Profile> => {
+    const mutateAsync = async (input: UpdateUserInput): Promise<Profile> => {
         const supabase = createClient();
         setIsPending(true);
         setError(null);
         try {
             // Support both formats: { id, ...updates } and { teacherId, updates }
             let id: string;
-            let updates: any;
+            let updates: Partial<Profile>;
 
             if (input.teacherId) {
                 id = input.teacherId;
                 updates = input.updates || {};
             } else if (input.id) {
-                const { id: inputId, ...rest } = input;
-                id = inputId;
-                updates = rest;
+                id = input.id;
+                updates = input.updates || {};
             } else {
                 throw new Error('Missing id or teacherId');
             }
@@ -982,7 +1000,7 @@ export function useTeachers(): UseQueryResult<Profile> {
     return { data, isLoading, error, refetch };
 }
 
-export function useUpdateTeacher(): UseMutationResult<any, Profile> {
+export function useUpdateTeacher(): UseMutationResult<UpdateUserInput, Profile> {
     return useUpdateUser();
 }
 

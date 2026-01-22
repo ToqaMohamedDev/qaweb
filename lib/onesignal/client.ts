@@ -28,6 +28,15 @@ const STORAGE_TAGS_HASH_KEY = 'onesignal_tags_hash';
 
 let isInitialized = false;
 let initializationInProgress = false;
+interface OneSignalEvent {
+    notification?: {
+        launchURL?: string;
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let OneSignalInstance: any = null;
 
 // ============================================================================
@@ -128,7 +137,7 @@ export async function initOneSignal(): Promise<boolean> {
     try {
         // Dynamic import to avoid SSR issues
         const OneSignalModule = await import('react-onesignal');
-        OneSignalInstance = OneSignalModule.default;
+        OneSignalInstance = OneSignalModule.default as typeof OneSignalInstance;
 
         const { ONESIGNAL_APP_ID, validateOneSignalConfig } = await import('./config');
 
@@ -155,22 +164,25 @@ export async function initOneSignal(): Promise<boolean> {
         console.log('✅ OneSignal initialized successfully');
         return true;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorString = String(error);
+        
         // تجاهل خطأ "already initialized"
-        if (error?.message?.includes('already initialized') ||
-            error?.toString()?.includes('already initialized')) {
+        if (errorMessage.includes('already initialized') ||
+            errorString.includes('already initialized')) {
             isInitialized = true;
             return true;
         }
 
         // تسجيل خطأ domain restriction بدون كسر التطبيق
-        if (error?.message?.includes('Can only be used on')) {
+        if (errorMessage.includes('Can only be used on')) {
             console.warn('⚠️ OneSignal: Domain not allowed.');
             return false;
         }
 
         // أي خطأ آخر - نتجاهله ونستمر
-        console.warn('⚠️ OneSignal init failed (non-blocking):', error?.message || error);
+        console.warn('⚠️ OneSignal init failed (non-blocking):', errorMessage);
         return false;
 
     } finally {
@@ -190,17 +202,17 @@ function setupEventListeners(): void {
 
     try {
         // استماع لتغيير حالة الاشتراك
-        OneSignalInstance.User.PushSubscription.addEventListener('change', (event: any) => {
+        OneSignalInstance.User.PushSubscription.addEventListener('change', (event: OneSignalEvent) => {
             console.log('📱 Push subscription changed:', event);
         });
 
         // استماع للإشعارات الواردة (عندما يكون التطبيق مفتوح)
-        OneSignalInstance.Notifications.addEventListener('foregroundWillDisplay', (event: any) => {
+        OneSignalInstance.Notifications.addEventListener('foregroundWillDisplay', (event: OneSignalEvent) => {
             console.log('📩 Notification received in foreground:', event.notification);
         });
 
         // استماع للنقر على الإشعار
-        OneSignalInstance.Notifications.addEventListener('click', (event: any) => {
+        OneSignalInstance.Notifications.addEventListener('click', (event: OneSignalEvent) => {
             console.log('👆 Notification clicked:', event.notification);
             const url = event.notification?.launchURL;
             if (url && typeof window !== 'undefined') {
@@ -270,9 +282,9 @@ export async function loginUser(userId: string, userData?: {
             try {
                 await OneSignalInstance.User.addTags(tags);
                 console.log('✅ OneSignal: User tags updated');
-            } catch (tagError: any) {
+            } catch (tagError: unknown) {
                 // تجاهل أخطاء 409 - غير مؤثرة
-                if (!tagError?.toString()?.includes('409')) {
+                if (!String(tagError).includes('409')) {
                     console.warn('⚠️ OneSignal: Tag update failed (non-blocking):', tagError);
                 }
             }
@@ -282,9 +294,10 @@ export async function loginUser(userId: string, userData?: {
         setSyncedUser(userId, currentTagsHash);
         console.log('✅ OneSignal: User synced:', userId);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorString = String(error);
         // تجاهل أخطاء 409 Conflict تماماً
-        if (error?.toString()?.includes('409') || error?.toString()?.includes('Conflict')) {
+        if (errorString.includes('409') || errorString.includes('Conflict')) {
             console.log('ℹ️ OneSignal: Conflict ignored (user switch in progress)');
             return;
         }

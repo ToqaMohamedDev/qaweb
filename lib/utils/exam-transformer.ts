@@ -1,4 +1,85 @@
-import { ComprehensiveExam, ExamBlock, ExamQuestion } from '@/lib/types/exam';
+// Raw data interfaces for exam transformation
+interface RawPoetryVerse {
+    firstHalf?: string;
+    secondHalf?: string;
+}
+
+interface RawOption {
+    textAr?: string;
+    textEn?: string;
+    text?: string;
+    isCorrect?: boolean;
+}
+
+interface RawQuestion {
+    id?: string;
+    type?: string;
+    stem?: string;
+    textAr?: string;
+    textEn?: string;
+    question?: string;
+    options?: (string | RawOption)[];
+    correctIndex?: number;
+    points?: number;
+    correctAnswerAr?: string;
+    correctAnswerEn?: string;
+    correctAnswer?: string | number;
+    underlinedWord?: string;
+    blankTextAr?: string;
+    blankTextEn?: string;
+    extractionTarget?: string;
+    explanationAr?: string;
+    explanationEn?: string;
+    explanation?: string;
+    text?: string;
+}
+
+interface RawSubsection {
+    questions?: RawQuestion[];
+}
+
+interface RawBlock {
+    id?: string;
+    type?: string;
+    contentType?: string;
+    order?: number;
+    title?: string;
+    titleAr?: string;
+    readingTitle?: string;
+    poetryTitle?: string;
+    genre?: string;
+    bodyText?: string;
+    readingText?: string;
+    poemTitle?: string;
+    poet?: string;
+    verses?: { shatrA: string; shatrB: string }[];
+    poetryVerses?: RawPoetryVerse[];
+    contextText?: string;
+    prompt?: string;
+    questions?: RawQuestion[];
+    subsections?: RawSubsection[];
+}
+
+interface RawExamData {
+    id: string;
+    type?: string;
+    language?: string;
+    exam_title?: string;
+    exam_description?: string;
+    total_marks?: number;
+    duration_minutes?: number;
+    blocks?: RawBlock[];
+    is_published?: boolean;
+    title?: string | { ar?: string; en?: string };
+    description?: string | { ar?: string; en?: string };
+    questions?: RawQuestion[];
+}
+
+interface RawSection {
+    id: string;
+    title?: string;
+    questions?: RawQuestion[];
+}
 
 export interface ExamRunnerBlock {
     id: string;
@@ -40,16 +121,16 @@ export interface ExamRunnerData {
     durationMinutes: number;
     blocks: ExamRunnerBlock[];
     /** For English exams that use sections instead of blocks */
-    sections?: any[];
+    sections?: RawSection[];
     isPublished: boolean;
 }
 
-export function transformExamData(examData: any, source: 'comprehensive' | 'template' = 'comprehensive'): ExamRunnerData {
+export function transformExamData(examData: RawExamData, source: 'comprehensive' | 'template' = 'comprehensive'): ExamRunnerData {
     if (source === 'comprehensive') {
-        const rawBlocks = (examData.blocks || []) as any[];
+        const rawBlocks = (examData.blocks || []) as RawBlock[];
 
-        const blocks: ExamRunnerBlock[] = rawBlocks.map((block: any, blockIndex: number) => {
-            let blockType = block.type;
+        const blocks: ExamRunnerBlock[] = rawBlocks.map((block: RawBlock, blockIndex: number) => {
+            let blockType: string = block.type || 'questions_only';
             if (!blockType && block.contentType) {
                 if (block.contentType === 'reading') blockType = 'reading_passage';
                 else if (block.contentType === 'poetry') blockType = 'poetry_text';
@@ -57,38 +138,38 @@ export function transformExamData(examData: any, source: 'comprehensive' | 'temp
             }
 
             const hasReadingContent = block.readingText && block.readingText.trim().length > 0;
-            const hasPoetryContent = block.poetryVerses && block.poetryVerses.some((v: any) => v.firstHalf?.trim() || v.secondHalf?.trim());
+            const hasPoetryContent = block.poetryVerses && block.poetryVerses.some((v: RawPoetryVerse) => v.firstHalf?.trim() || v.secondHalf?.trim());
             const hasGrammarContent = block.contextText && block.contextText.trim().length > 0;
             const hasContent = !!(hasReadingContent || hasPoetryContent || hasGrammarContent);
 
             let verses = block.verses;
             if (!verses && block.poetryVerses) {
-                verses = block.poetryVerses.map((v: any) => ({
+                verses = block.poetryVerses.map((v: RawPoetryVerse) => ({
                     shatrA: v.firstHalf || '',
                     shatrB: v.secondHalf || '',
                 }));
             }
 
-            let rawQuestions = [...(block.questions || [])];
+            let rawQuestions: RawQuestion[] = [...(block.questions || [])];
             if (block.subsections && Array.isArray(block.subsections)) {
-                block.subsections.forEach((sub: any) => {
+                block.subsections.forEach((sub: RawSubsection) => {
                     if (sub.questions && Array.isArray(sub.questions)) {
                         rawQuestions = [...rawQuestions, ...sub.questions];
                     }
                 });
             }
 
-            const questions: ExamRunnerQuestion[] = rawQuestions.map((q: any) => ({
+            const questions: ExamRunnerQuestion[] = rawQuestions.map((q: RawQuestion) => ({
                 id: q.id || `q-${blockIndex}-${Math.random().toString(36).substr(2, 9)}`,
                 type: q.type || 'mcq',
                 stem: q.stem || q.textAr || q.textEn || q.question || '',
-                options: (q.options || []).map((opt: any, optIdx: number) => {
+                options: (q.options || []).map((opt: string | RawOption, optIdx: number) => {
                     if (typeof opt === 'string') return opt;
                     return opt.textAr || opt.textEn || opt.text || `الخيار ${optIdx + 1}`;
                 }),
-                correctIndex: q.correctIndex ?? (q.options || []).findIndex((o: any) => o?.isCorrect) ?? 0,
+                correctIndex: q.correctIndex ?? (q.options || []).findIndex((o: string | RawOption) => typeof o !== 'string' && o?.isCorrect) ?? 0,
                 points: q.points || 1,
-                correctAnswer: q.correctAnswerAr || q.correctAnswerEn || q.correctAnswer,
+                correctAnswer: q.correctAnswerAr || q.correctAnswerEn || (typeof q.correctAnswer === 'string' ? q.correctAnswer : undefined),
                 underlinedWord: q.underlinedWord,
                 blankText: q.blankTextAr || q.blankTextEn,
                 extractionTarget: q.extractionTarget,
@@ -115,21 +196,21 @@ export function transformExamData(examData: any, source: 'comprehensive' | 'temp
         return {
             id: examData.id,
             type: examData.type || 'comprehensive',
-            language: examData.language,
-            examTitle: examData.exam_title,
-            examDescription: examData.exam_description,
-            totalMarks: examData.total_marks,
-            durationMinutes: examData.duration_minutes,
+            language: examData.language || 'arabic',
+            examTitle: examData.exam_title || '',
+            examDescription: examData.exam_description || '',
+            totalMarks: examData.total_marks || 0,
+            durationMinutes: examData.duration_minutes || 0,
             blocks: blocks,
-            isPublished: examData.is_published,
+            isPublished: examData.is_published ?? false,
         };
     } else {
         // Template support (legacy)
         const title = typeof examData.title === 'object'
-            ? (examData.title as any)?.ar || ''
+            ? (examData.title as { ar?: string })?.ar || ''
             : examData.title || '';
         const description = typeof examData.description === 'object'
-            ? (examData.description as any)?.ar || ''
+            ? (examData.description as { ar?: string })?.ar || ''
             : examData.description || '';
 
         const templateQuestions = examData.questions || [];
@@ -141,12 +222,12 @@ export function transformExamData(examData: any, source: 'comprehensive' | 'temp
             genre: 'Literary',
             bodyText: description || '',
             order: 0,
-            questions: templateQuestions.map((q: any, idx: number) => ({
+            questions: templateQuestions.map((q: RawQuestion, idx: number) => ({
                 id: q.id || `q-${idx}`,
                 type: 'mcq',
                 stem: q.question || q.text || '',
-                options: q.options || [],
-                correctIndex: q.correctAnswer || 0,
+                options: (q.options || []).map((opt: string | RawOption) => typeof opt === 'string' ? opt : opt.text || ''),
+                correctIndex: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
                 points: q.points || 1,
             }))
         } as ExamRunnerBlock] : [];
@@ -158,7 +239,7 @@ export function transformExamData(examData: any, source: 'comprehensive' | 'temp
             examTitle: title,
             examDescription: description,
             totalMarks: templateQuestions.length,
-            durationMinutes: examData.duration_minutes,
+            durationMinutes: examData.duration_minutes || 0,
             blocks: blocks,
             isPublished: true,
         };

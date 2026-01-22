@@ -7,14 +7,14 @@
 // Base Response Types
 // =============================================
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;
     message?: string;
 }
 
-export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
+export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
     total?: number;
     page?: number;
     limit?: number;
@@ -113,15 +113,37 @@ export interface SubscriptionResponse {
 // Exam Types
 // =============================================
 
+export interface ExamAttemptData {
+    id: string;
+    user_id: string;
+    exam_id: string;
+    answers?: Record<string, unknown>;
+    score?: number;
+    completed_at?: string;
+    created_at?: string;
+    [key: string]: unknown;
+}
+
+export interface ExamData {
+    id: string;
+    exam_title?: string;
+    title?: string;
+    language?: string;
+    duration_minutes?: number;
+    blocks?: unknown[];
+    sections?: unknown[];
+    [key: string]: unknown;
+}
+
 export interface ExamFetchResponse {
     success: boolean;
     data?: {
-        exam: any;
+        exam: ExamData;
         examTable: string;
         attemptsTable: string;
         user: { id: string; email: string } | null;
-        existingAttempt: any | null;
-        inProgressAttempt: any | null;
+        existingAttempt: ExamAttemptData | null;
+        inProgressAttempt: ExamAttemptData | null;
     };
     error?: string;
 }

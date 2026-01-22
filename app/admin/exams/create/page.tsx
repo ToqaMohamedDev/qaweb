@@ -332,12 +332,12 @@ export default function CreateExamPage() {
     // Populate Data when fetching existing exam
     useEffect(() => {
         if (fetchedExam) {
-            setExamTitleAr(fetchedExam.exam_title || '');
-            setDuration(fetchedExam.duration_minutes || 60);
-            setTotalScore(fetchedExam.total_marks || 100);
+            setExamTitleAr(String(fetchedExam.exam_title || ''));
+            setDuration(Number(fetchedExam.duration_minutes) || 60);
+            setTotalScore(Number(fetchedExam.total_marks) || 100);
 
-            if (fetchedExam.stage_id) setSelectedStage(fetchedExam.stage_id);
-            if (fetchedExam.subject_id) setSelectedSubject(fetchedExam.subject_id);
+            if (fetchedExam.stage_id) setSelectedStage(String(fetchedExam.stage_id));
+            if (fetchedExam.subject_id) setSelectedSubject(String(fetchedExam.subject_id));
 
             // Set language based on exam type
             if (fetchedExam.language === 'english') setLang('en');
