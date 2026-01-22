@@ -3,6 +3,8 @@
 // =============================================
 // useProfile Hook - جلب بيانات الملف الشخصي
 // =============================================
+// يستخدم /api/profile للحصول على البيانات
+// يعمل على Vercel و Local بشكل موحد
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +18,7 @@ import {
     Zap,
     Trophy,
 } from 'lucide-react';
-import { supabase, getProfile, updateProfile as updateUserProfile } from '@/lib/supabase';
+import { supabase, updateProfile as updateUserProfile } from '@/lib/supabase';
 import { logger } from '@/lib/utils/logger';
 import type { UserProfile } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
@@ -85,7 +87,7 @@ export function useProfile(): UseProfileReturn {
         return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
     }, []);
 
-    // Generate achievements
+    // Generate achievements based on stats
     const generateAchievements = useCallback((currentStats: UserStats) => {
         const achievementsList: Achievement[] = [
             {
@@ -161,178 +163,32 @@ export function useProfile(): UseProfileReturn {
         setAchievements(achievementsList);
     }, []);
 
-    // Fetch user stats
-    const fetchUserStats = useCallback(async (userId: string) => {
-        try {
-            const { data: lessonProgress } = await supabase
-                .from('user_lesson_progress')
-                .select('*')
-                .eq('user_id', userId);
-
-            const { count: totalLessons } = await supabase
-                .from('lessons')
-                .select('*', { count: 'exact', head: true })
-                .eq('is_published', true);
-
-            const { data: examAttempts } = await supabase
-                .from('comprehensive_exam_attempts')
-                .select('*')
-                .eq('student_id', userId);
-
-            const completedLessons = lessonProgress?.filter((p) => p.is_completed)?.length || 0;
-            const examsTaken = examAttempts?.length || 0;
-            const passedExams = examAttempts?.filter(
-                (e) => e.status === 'completed' || e.status === 'graded'
-            )?.length || 0;
-
-            let totalScore = 0;
-            let averageScore = 0;
-            if (examAttempts && examAttempts.length > 0) {
-                totalScore = examAttempts.reduce((acc, e) => acc + (e.total_score || 0), 0);
-                const avgScores = examAttempts.map((e) =>
-                    (e.max_score ?? 0) > 0 ? ((e.total_score ?? 0) / e.max_score!) * 100 : 0
-                );
-                averageScore = avgScores.reduce((a, b) => a + b, 0) / avgScores.length;
-            }
-
-            const activityDates = new Set<string>();
-            lessonProgress?.forEach((p: any) => {
-                if (p.last_accessed_at || p.updated_at) {
-                    activityDates.add(new Date(p.last_accessed_at || p.updated_at).toDateString());
-                }
-            });
-            examAttempts?.forEach((e) => {
-                if (e.started_at) {
-                    activityDates.add(new Date(e.started_at).toDateString());
-                }
-            });
-
-            let currentStreak = 0;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            for (let i = 0; i < 30; i++) {
-                const checkDate = new Date(today);
-                checkDate.setDate(checkDate.getDate() - i);
-                if (activityDates.has(checkDate.toDateString())) {
-                    currentStreak++;
-                } else if (i > 0) {
-                    break;
-                }
-            }
-
-            const newStats: UserStats = {
-                completedLessons,
-                totalLessons: totalLessons || 0,
-                examsTaken,
-                passedExams,
-                totalScore,
-                activeDays: Math.max(activityDates.size, 1),
-                currentStreak,
-                averageScore: Math.round(averageScore),
-            };
-
-            setStats(newStats);
-            generateAchievements(newStats);
-        } catch (error) {
-            logger.error('Error fetching user stats', { context: 'useProfile', data: error });
-        }
-    }, [generateAchievements]);
-
-    // Fetch recent activity
-    const fetchRecentActivity = useCallback(async (userId: string) => {
-        try {
-            const activities: ActivityItem[] = [];
-
-            const { data: lessonProgress } = await supabase
-                .from('user_lesson_progress')
-                .select(`
-                    id,
-                    lesson_id,
-                    is_completed,
-                    last_accessed_at,
-                    lessons:lesson_id (title, subject_id)
-                `)
-                .eq('user_id', userId)
-                .order('last_accessed_at', { ascending: false })
-                .limit(5);
-
-            if (lessonProgress) {
-                lessonProgress.forEach((p: unknown) => {
-                    const item = p as { id: string; lessons: { title: string } | null; last_accessed_at: string; is_completed: boolean };
-                    if (item.lessons) {
-                        activities.push({
-                            id: item.id,
-                            type: 'lesson',
-                            title: item.lessons.title || 'درس',
-                            date: item.last_accessed_at,
-                            status: item.is_completed ? 'مكتمل' : 'قيد التقدم',
-                        });
-                    }
-                });
-            }
-
-            const { data: examAttempts } = await supabase
-                .from('comprehensive_exam_attempts')
-                .select(`
-                    id,
-                    exam_id,
-                    started_at,
-                    total_score,
-                    max_score,
-                    status,
-                    comprehensive_exams:exam_id (exam_title)
-                `)
-                .eq('student_id', userId)
-                .order('started_at', { ascending: false })
-                .limit(5);
-
-            if (examAttempts) {
-                examAttempts.forEach((e: unknown) => {
-                    const exam = e as { id: string; comprehensive_exams: { exam_title: string } | null; started_at: string; total_score: number; max_score: number; status: string };
-                    const score = exam.max_score > 0
-                        ? Math.round((exam.total_score / exam.max_score) * 100)
-                        : 0;
-                    activities.push({
-                        id: exam.id,
-                        type: 'exam',
-                        title: exam.comprehensive_exams?.exam_title || 'امتحان',
-                        date: exam.started_at,
-                        score,
-                        status:
-                            exam.status === 'completed' || exam.status === 'graded'
-                                ? 'مكتمل'
-                                : exam.status === 'in_progress'
-                                    ? 'قيد التنفيذ'
-                                    : exam.status,
-                    });
-                });
-            }
-
-            activities.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-            setRecentActivity(activities.slice(0, 8));
-        } catch (error) {
-            logger.error('Error fetching recent activity', { context: 'useProfile', data: error });
-        }
-    }, []);
-
-    // Fetch user data via API for Vercel compatibility
+    // Fetch all profile data from unified API
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchProfileData = async () => {
             try {
-                // Use API instead of direct supabase.auth.getUser()
-                const authRes = await fetch('/api/auth/user?includeProfile=true');
-                const authResult = await authRes.json();
+                console.log('[useProfile] Fetching profile data from API...');
 
-                if (!authResult.success || !authResult.data?.user) {
+                const res = await fetch('/api/profile');
+                const result = await res.json();
+
+                if (!result.success || !result.data?.user) {
+                    console.log('[useProfile] No user found, redirecting to login');
                     router.push('/login');
                     return;
                 }
 
-                const authUser = authResult.data.user;
-                const userProfile = authResult.data.profile;
+                const { user: authUser, profile: userProfile, stages: stagesData, stats: userStats, recentActivity: activity } = result.data;
 
-                // Create a user-like object for compatibility
+                console.log('[useProfile] Data received:', {
+                    hasUser: !!authUser,
+                    hasProfile: !!userProfile,
+                    stagesCount: stagesData?.length,
+                    stats: userStats,
+                    activityCount: activity?.length
+                });
+
+                // Set user
                 setUser({
                     id: authUser.id,
                     email: authUser.email,
@@ -340,6 +196,7 @@ export function useProfile(): UseProfileReturn {
                     created_at: authUser.created_at,
                 } as User);
 
+                // Set profile and form data
                 if (userProfile) {
                     setProfile(userProfile as UserProfile);
                     setFormData({
@@ -350,38 +207,63 @@ export function useProfile(): UseProfileReturn {
                     });
                 }
 
-                const { data: stagesData } = await supabase
-                    .from('educational_stages')
-                    .select('id, name')
-                    .order('order_index', { ascending: true });
+                // Set stages
                 setStages(stagesData || []);
 
-                await fetchUserStats(authUser.id);
-                await fetchRecentActivity(authUser.id);
+                // Set stats and generate achievements
+                if (userStats) {
+                    setStats(userStats);
+                    generateAchievements(userStats);
+                }
+
+                // Set recent activity
+                setRecentActivity(activity || []);
+
             } catch (error) {
-                logger.error('Error fetching user', { context: 'useProfile', data: error });
+                logger.error('Error fetching profile data', { context: 'useProfile', data: error });
+                console.error('[useProfile] Error:', error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchUser();
-    }, [router, fetchUserStats, fetchRecentActivity]);
+        fetchProfileData();
+    }, [router, generateAchievements]);
 
-    // Handle save
+    // Handle save - uses direct supabase for now (can be converted to API later)
     const handleSave = useCallback(async () => {
         if (!user) return;
 
         try {
             setIsSaving(true);
-            await updateUserProfile(user.id, {
-                name: formData.name,
-                avatar_url: formData.avatar_url,
-                bio: formData.bio,
-            } as any);
 
-            const updatedProfile = await getProfile(user.id) as any;
-            setProfile(updatedProfile as UserProfile);
+            // Update profile via API
+            const res = await fetch('/api/auth/user', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    updates: {
+                        name: formData.name,
+                        avatar_url: formData.avatar_url,
+                        bio: formData.bio,
+                    }
+                })
+            });
+
+            const result = await res.json();
+
+            if (result.success && result.data) {
+                setProfile(result.data as UserProfile);
+            } else {
+                // Fallback to direct update
+                await updateUserProfile(user.id, {
+                    name: formData.name,
+                    avatar_url: formData.avatar_url,
+                    bio: formData.bio,
+                } as any);
+            }
+
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (error) {
@@ -426,6 +308,7 @@ export function useProfile(): UseProfileReturn {
                     .upload(filePath, file, { upsert: true });
 
                 if (uploadError) {
+                    // Fallback to base64
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const dataUrl = e.target?.result as string;
