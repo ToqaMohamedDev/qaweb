@@ -1,38 +1,127 @@
 /**
  * ============================================================================
- * ONESIGNAL CLIENT UTILITIES
+ * ONESIGNAL CLIENT UTILITIES - OPTIMIZED VERSION
  * ============================================================================
  * 
  * دوال التعامل مع OneSignal في المتصفح (Client-side)
- * All functions use dynamic imports to avoid SSR issues
+ * 
+ * المبادئ:
+ * - Init مرة واحدة فقط
+ * - Login مرة واحدة فقط لكل مستخدم
+ * - Tags update مرة واحدة فقط عند تغيير البيانات
+ * - استخدام localStorage لتتبع حالة المستخدم عبر الجلسات
  * ============================================================================
  */
 
 'use client';
 
-// حالة التهيئة
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const STORAGE_KEY = 'onesignal_synced_user';
+const STORAGE_TAGS_HASH_KEY = 'onesignal_tags_hash';
+
+// ============================================================================
+// MODULE STATE (singleton pattern)
+// ============================================================================
+
 let isInitialized = false;
-let initializationAttempted = false;
+let initializationInProgress = false;
 let OneSignalInstance: any = null;
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * إنشاء hash بسيط للبيانات لمقارنتها
+ */
+function simpleHash(data: Record<string, string>): string {
+    return JSON.stringify(Object.entries(data).sort());
+}
+
+/**
+ * الحصول على آخر مستخدم تم مزامنته من localStorage
+ */
+function getLastSyncedUser(): { userId: string; tagsHash: string } | null {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const userId = localStorage.getItem(STORAGE_KEY);
+        const tagsHash = localStorage.getItem(STORAGE_TAGS_HASH_KEY) || '';
+        return userId ? { userId, tagsHash } : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * حفظ معرف المستخدم المتزامن في localStorage
+ */
+function setSyncedUser(userId: string, tagsHash: string): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+        localStorage.setItem(STORAGE_KEY, userId);
+        localStorage.setItem(STORAGE_TAGS_HASH_KEY, tagsHash);
+    } catch {
+        // ignore storage errors
+    }
+}
+
+/**
+ * مسح بيانات المستخدم المتزامن
+ */
+function clearSyncedUser(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_TAGS_HASH_KEY);
+    } catch {
+        // ignore storage errors
+    }
+}
+
+/**
+ * Helper function to delay execution
+ */
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
 /**
  * تهيئة OneSignal
- * يجب استدعاؤها مرة واحدة عند بدء التطبيق
+ * يتم استدعاؤها مرة واحدة فقط - أي استدعاءات إضافية ستُرجع النتيجة المحفوظة
  */
 export async function initOneSignal(): Promise<boolean> {
-    // منع التهيئة المتكررة
+    // إذا كانت التهيئة اكتملت، نُرجع true
     if (isInitialized) {
         return true;
     }
 
-    // منع محاولات التهيئة المتكررة
-    if (initializationAttempted) {
-        return false;
+    // إذا كانت التهيئة قيد التنفيذ، ننتظر
+    if (initializationInProgress) {
+        // انتظار حتى تكتمل التهيئة
+        let attempts = 0;
+        while (initializationInProgress && attempts < 50) {
+            await delay(100);
+            attempts++;
+        }
+        return isInitialized;
     }
-    initializationAttempted = true;
+
+    // بدء التهيئة
+    initializationInProgress = true;
 
     // التحقق من أننا في المتصفح
     if (typeof window === 'undefined') {
+        initializationInProgress = false;
         return false;
     }
 
@@ -45,7 +134,8 @@ export async function initOneSignal(): Promise<boolean> {
 
         // التحقق من الإعدادات
         if (!validateOneSignalConfig()) {
-            console.warn('OneSignal config is not valid');
+            console.warn('⚠️ OneSignal config is not valid');
+            initializationInProgress = false;
             return false;
         }
 
@@ -64,6 +154,7 @@ export async function initOneSignal(): Promise<boolean> {
         isInitialized = true;
         console.log('✅ OneSignal initialized successfully');
         return true;
+
     } catch (error: any) {
         // تجاهل خطأ "already initialized"
         if (error?.message?.includes('already initialized') ||
@@ -79,13 +170,20 @@ export async function initOneSignal(): Promise<boolean> {
         }
 
         // أي خطأ آخر - نتجاهله ونستمر
-        console.warn('OneSignal init failed (non-blocking):', error?.message || error);
+        console.warn('⚠️ OneSignal init failed (non-blocking):', error?.message || error);
         return false;
+
+    } finally {
+        initializationInProgress = false;
     }
 }
 
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+
 /**
- * إعداد Event Listeners
+ * إعداد Event Listeners - يتم استدعاؤها مرة واحدة فقط عند init
  */
 function setupEventListeners(): void {
     if (!OneSignalInstance) return;
@@ -99,122 +197,96 @@ function setupEventListeners(): void {
         // استماع للإشعارات الواردة (عندما يكون التطبيق مفتوح)
         OneSignalInstance.Notifications.addEventListener('foregroundWillDisplay', (event: any) => {
             console.log('📩 Notification received in foreground:', event.notification);
-            // يمكن إضافة toast أو UI notification هنا
         });
 
         // استماع للنقر على الإشعار
         OneSignalInstance.Notifications.addEventListener('click', (event: any) => {
             console.log('👆 Notification clicked:', event.notification);
-            // التوجيه للصفحة المناسبة
             const url = event.notification?.launchURL;
             if (url && typeof window !== 'undefined') {
                 window.location.href = url;
             }
         });
     } catch (error) {
-        console.warn('Failed to setup OneSignal event listeners:', error);
+        console.warn('⚠️ Failed to setup OneSignal event listeners:', error);
     }
 }
 
-/**
- * طلب إذن الإشعارات من المستخدم
- */
-export async function requestNotificationPermission(): Promise<boolean> {
-    if (!isInitialized || !OneSignalInstance) {
-        console.warn('OneSignal not initialized');
-        return false;
-    }
-
-    try {
-        const permission = await OneSignalInstance.Notifications.permission;
-
-        if (permission) {
-            console.log('Notifications already permitted');
-            return true;
-        }
-
-        await OneSignalInstance.Slidedown.promptPush();
-        const newPermission = await OneSignalInstance.Notifications.permission;
-        return newPermission;
-    } catch (error) {
-        console.warn('Failed to request notification permission:', error);
-        return false;
-    }
-}
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
 
 /**
  * تسجيل دخول المستخدم مع OneSignal
+ * 
+ * هذه الدالة ذكية:
+ * - لن تفعل شيء إذا كان نفس المستخدم مسجل بنفس البيانات
+ * - ستُحدث البيانات فقط إذا تغيرت
  */
-/**
- * Helper function to delay execution
- */
-function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 export async function loginUser(userId: string, userData?: {
     email?: string;
     name?: string;
     role?: 'student' | 'teacher' | 'admin';
 }): Promise<void> {
     if (!isInitialized || !OneSignalInstance) {
+        console.warn('⚠️ OneSignal not initialized, skipping login');
         return;
     }
 
     try {
-        // التحقق من ما إذا كان المستخدم مسجلاً بالفعل بنفس المعرف لتجنب التكرار
-        const currentExternalId = OneSignalInstance.User.externalId;
-        let didLogin = false;
+        // بناء الـ tags
+        const tags: Record<string, string> = { user_id: userId };
+        if (userData?.email) tags.email = userData.email;
+        if (userData?.name) tags.name = userData.name;
+        if (userData?.role) tags.role = userData.role;
 
+        const currentTagsHash = simpleHash(tags);
+        const lastSynced = getLastSyncedUser();
+
+        // التحقق: هل نفس المستخدم بنفس البيانات؟
+        if (lastSynced?.userId === userId && lastSynced?.tagsHash === currentTagsHash) {
+            console.log('ℹ️ OneSignal: User already synced with same data, skipping');
+            return;
+        }
+
+        // التحقق من OneSignal's current state
+        const currentExternalId = OneSignalInstance.User?.externalId;
+
+        // هل نحتاج login؟
         if (currentExternalId !== userId) {
+            console.log('🔄 OneSignal: Logging in user:', userId);
             await OneSignalInstance.login(userId);
-            didLogin = true;
-            console.log('✅ User logged in to OneSignal:', userId);
 
-            // إضافة تأخير للسماح لـ OneSignal بإكمال عملية تبديل المستخدم
-            await delay(500);
-        } else {
-            console.log('ℹ️ User already logged in to OneSignal:', userId);
+            // انتظار قصير للسماح لـ OneSignal بتحديث حالته الداخلية
+            await delay(300);
         }
 
-        // تحديث البيانات وال Tags مع retry logic
-        const tags: Record<string, string> = {
-            user_id: userId
-        };
+        // هل نحتاج تحديث tags؟
+        if (lastSynced?.tagsHash !== currentTagsHash) {
+            console.log('🔄 OneSignal: Updating user tags');
 
-        if (userData) {
-            if (userData.email) tags.email = userData.email;
-            if (userData.name) tags.name = userData.name;
-            if (userData.role) tags.role = userData.role;
-        }
-
-        // محاولة تحديث الـ Tags مع إعادة المحاولة في حال الفشل
-        const maxRetries = 2;
-        for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 await OneSignalInstance.User.addTags(tags);
-                console.log('✅ User tags updated');
-                break; // نجاح - الخروج من الحلقة
+                console.log('✅ OneSignal: User tags updated');
             } catch (tagError: any) {
-                // تجاهل خطأ 409 Conflict - يحدث أحياناً عند تبديل المستخدمين
-                if (tagError?.message?.includes('409') ||
-                    tagError?.toString()?.includes('Conflict')) {
-                    if (attempt < maxRetries) {
-                        console.log(`ℹ️ Tag update conflict, retrying... (${attempt + 1}/${maxRetries})`);
-                        await delay(300 * (attempt + 1)); // تأخير تصاعدي
-                    } else {
-                        console.warn('⚠️ Tag update failed after retries (non-blocking)');
-                    }
-                } else {
-                    // أي خطأ آخر - نسجله ونستمر
-                    console.warn('⚠️ Failed to update tags:', tagError);
-                    break;
+                // تجاهل أخطاء 409 - غير مؤثرة
+                if (!tagError?.toString()?.includes('409')) {
+                    console.warn('⚠️ OneSignal: Tag update failed (non-blocking):', tagError);
                 }
             }
         }
 
-    } catch (error) {
-        console.warn('Failed to login/sync user to OneSignal:', error);
+        // حفظ حالة المزامنة
+        setSyncedUser(userId, currentTagsHash);
+        console.log('✅ OneSignal: User synced:', userId);
+
+    } catch (error: any) {
+        // تجاهل أخطاء 409 Conflict تماماً
+        if (error?.toString()?.includes('409') || error?.toString()?.includes('Conflict')) {
+            console.log('ℹ️ OneSignal: Conflict ignored (user switch in progress)');
+            return;
+        }
+        console.warn('⚠️ OneSignal: Login failed (non-blocking):', error);
     }
 }
 
@@ -225,11 +297,47 @@ export async function logoutUser(): Promise<void> {
     if (!isInitialized || !OneSignalInstance) return;
 
     try {
+        clearSyncedUser();
         await OneSignalInstance.logout();
+        console.log('✅ OneSignal: User logged out');
     } catch (error) {
-        console.warn('Failed to logout from OneSignal:', error);
+        console.warn('⚠️ OneSignal: Logout failed (non-blocking):', error);
     }
 }
+
+// ============================================================================
+// NOTIFICATION PERMISSION
+// ============================================================================
+
+/**
+ * طلب إذن الإشعارات من المستخدم
+ */
+export async function requestNotificationPermission(): Promise<boolean> {
+    if (!isInitialized || !OneSignalInstance) {
+        console.warn('⚠️ OneSignal not initialized');
+        return false;
+    }
+
+    try {
+        const permission = await OneSignalInstance.Notifications.permission;
+
+        if (permission) {
+            console.log('ℹ️ Notifications already permitted');
+            return true;
+        }
+
+        await OneSignalInstance.Slidedown.promptPush();
+        const newPermission = await OneSignalInstance.Notifications.permission;
+        return newPermission;
+    } catch (error) {
+        console.warn('⚠️ Failed to request notification permission:', error);
+        return false;
+    }
+}
+
+// ============================================================================
+// TAGS MANAGEMENT
+// ============================================================================
 
 /**
  * إضافة Tag للمستخدم
@@ -240,7 +348,7 @@ export async function addUserTag(key: string, value: string): Promise<void> {
     try {
         await OneSignalInstance.User.addTag(key, value);
     } catch (error) {
-        console.warn('Failed to add tag:', error);
+        console.warn('⚠️ Failed to add tag:', error);
     }
 }
 
@@ -253,9 +361,13 @@ export async function removeUserTag(key: string): Promise<void> {
     try {
         await OneSignalInstance.User.removeTag(key);
     } catch (error) {
-        console.warn('Failed to remove tag:', error);
+        console.warn('⚠️ Failed to remove tag:', error);
     }
 }
+
+// ============================================================================
+// TEACHER SUBSCRIPTION
+// ============================================================================
 
 /**
  * تسجيل اشتراك المستخدم في مدرس
@@ -270,6 +382,10 @@ export async function subscribeToTeacher(teacherId: string): Promise<void> {
 export async function unsubscribeFromTeacher(teacherId: string): Promise<void> {
     await removeUserTag(`teacher_${teacherId}`);
 }
+
+// ============================================================================
+// STATUS
+// ============================================================================
 
 /**
  * الحصول على حالة الإشعارات

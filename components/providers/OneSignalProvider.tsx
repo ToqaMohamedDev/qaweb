@@ -178,11 +178,8 @@ export function OneSignalProvider({
         try {
             const { loginUser } = await import('@/lib/onesignal');
             await loginUser(userId, userData);
-
-
-            console.log('✅ OneSignal: User synced:', userId);
         } catch (err) {
-            console.warn('Failed to sync user with OneSignal:', err);
+            console.warn('⚠️ OneSignal Provider: Sync failed:', err);
         }
     }, [isInitialized]);
 
@@ -193,12 +190,10 @@ export function OneSignalProvider({
         if (!isInitialized) return;
 
         try {
-            const { logoutUser, removeUserTag } = await import('@/lib/onesignal');
-            await removeUserTag('user_id');
+            const { logoutUser } = await import('@/lib/onesignal');
             await logoutUser();
-            console.log('✅ OneSignal: User logged out');
         } catch (err) {
-            console.warn('Failed to logout from OneSignal:', err);
+            console.warn('⚠️ OneSignal Provider: Logout failed:', err);
         }
     }, [isInitialized]);
 
