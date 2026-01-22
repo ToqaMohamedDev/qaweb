@@ -227,6 +227,7 @@ export async function loginUser(userId: string, userData?: {
     email?: string;
     name?: string;
     role?: 'student' | 'teacher' | 'admin';
+    stage_id?: string;
 }): Promise<void> {
     if (!isInitialized || !OneSignalInstance) {
         console.warn('⚠️ OneSignal not initialized, skipping login');
@@ -239,6 +240,7 @@ export async function loginUser(userId: string, userData?: {
         if (userData?.email) tags.email = userData.email;
         if (userData?.name) tags.name = userData.name;
         if (userData?.role) tags.role = userData.role;
+        if (userData?.stage_id) tags.stage_id = userData.stage_id;
 
         const currentTagsHash = simpleHash(tags);
         const lastSynced = getLastSyncedUser();

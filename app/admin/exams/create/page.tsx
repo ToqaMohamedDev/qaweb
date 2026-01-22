@@ -14,14 +14,14 @@ import { useUIStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
 import { useStagesAPI, useSubjectsAPI, useCreateExamAPI, useUpdateExamAPI } from "@/lib/queries/adminQueries";
 import { LoadingSpinner } from "@/components/shared";
-import { useEffect as useEffectReact, useState as useStateReact, useCallback } from "react";
+import { questionTypeLabels as sharedQuestionTypeLabels } from "@/lib/utils/questionUtils";
 
 // Custom hook to fetch single exam via API
 function useExamAPI(examId: string | null) {
-    const [data, setData] = useStateReact<any>(null);
-    const [isLoading, setIsLoading] = useStateReact(false);
+    const [data, setData] = useState<Record<string, unknown> | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    useEffectReact(() => {
+    useEffect(() => {
         if (!examId) return;
 
         setIsLoading(true);
@@ -267,14 +267,7 @@ const createEmptyQuestion = (type: QuestionType = 'mcq'): Question => ({
 
 const createEmptyVerse = (): PoetryVerse => ({ id: `v-${createId()}`, firstHalf: '', secondHalf: '' });
 
-const subsectionTypeLabels: Record<QuestionType, { ar: string; en: string }> = {
-    mcq: { ar: 'أسئلة اختيار من متعدد', en: 'Multiple Choice Questions' },
-    true_false: { ar: 'أسئلة صح وخطأ', en: 'True/False Questions' },
-    essay: { ar: 'أسئلة المقالية', en: 'Essay Questions' },
-    parsing: { ar: 'أسئلة الإعراب', en: 'Parsing Questions' },
-    fill_blank: { ar: 'أسئلة أكمل الفراغ', en: 'Fill in the Blank Questions' },
-    extraction: { ar: 'أسئلة الاستخراج', en: 'Extraction Questions' },
-};
+const subsectionTypeLabels = sharedQuestionTypeLabels;
 
 const createEmptySubsection = (type: QuestionType): QuestionSubsection => ({
     id: `sub-${createId()}`,

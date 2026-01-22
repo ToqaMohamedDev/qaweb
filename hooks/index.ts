@@ -72,6 +72,10 @@ export type { UseFormValidationOptions, UseFormValidationReturn } from './useFor
 export { useAdminTable } from './useAdminTable';
 export type { UseAdminTableOptions, UseAdminTableReturn } from './useAdminTable';
 
+// Exam Create Hook
+export { useExamCreate } from './useExamCreate';
+export type { UseExamCreateReturn } from './useExamCreate';
+
 // Re-export types
 export type { UseAuthReturn } from './useAuth';
 export type { AsyncState } from './useAsync';

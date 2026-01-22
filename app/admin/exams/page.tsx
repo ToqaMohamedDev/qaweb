@@ -245,9 +245,24 @@ export default function ExamsManagement() {
                     examId: exam.id,
                     updates: { is_published: newStatus },
                 });
+
+                // 🔔 إرسال إشعار عند النشر
+                if (newStatus) {
+                    fetch('/api/notifications/comprehensive-exam-published', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            examId: exam.id,
+                            examTitle: exam.exam_title,
+                            stageId: exam.stage_id,
+                            // لا نملك اسم المرحلة هنا لكن الـ API يمكنه التعامل مع ذلك
+                        }),
+                    }).catch(err => console.error('Notification error:', err));
+                }
+
                 addToast({
                     type: "success",
-                    message: newStatus ? "تم نشر الامتحان بنجاح" : "تم إلغاء نشر الامتحان",
+                    message: newStatus ? "تم نشر الامتحان وإرسال الإشعارات" : "تم إلغاء نشر الامتحان",
                 });
             } catch {
                 addToast({ type: "error", message: "حدث خطأ أثناء تحديث حالة النشر" });

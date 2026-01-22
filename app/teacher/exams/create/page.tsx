@@ -24,6 +24,7 @@ import { useUIStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
 import { useExam, useCreateExam, useUpdateExam, useStages, useSubjects } from "@/lib/queries";
 import { LoadingSpinner } from "@/components/shared";
+import { questionTypeLabels as sharedQuestionTypeLabels } from "@/lib/utils/questionUtils";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuthStore, selectIsApprovedTeacher } from "@/lib/stores/useAuthStore";
@@ -271,14 +272,7 @@ const createEmptyQuestion = (type: QuestionType = 'mcq'): Question => ({
 
 const createEmptyVerse = (): PoetryVerse => ({ id: `v-${createId()}`, firstHalf: '', secondHalf: '' });
 
-const subsectionTypeLabels: Record<QuestionType, { ar: string; en: string }> = {
-    mcq: { ar: 'أسئلة اختيار من متعدد', en: 'Multiple Choice Questions' },
-    true_false: { ar: 'أسئلة صح وخطأ', en: 'True/False Questions' },
-    essay: { ar: 'أسئلة المقالية', en: 'Essay Questions' },
-    parsing: { ar: 'أسئلة الإعراب', en: 'Parsing Questions' },
-    fill_blank: { ar: 'أسئلة أكمل الفراغ', en: 'Fill in the Blank Questions' },
-    extraction: { ar: 'أسئلة الاستخراج', en: 'Extraction Questions' },
-};
+const subsectionTypeLabels = sharedQuestionTypeLabels;
 
 const createEmptySubsection = (type: QuestionType): QuestionSubsection => ({
     id: `sub-${createId()}`,

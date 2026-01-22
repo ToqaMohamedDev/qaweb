@@ -315,3 +315,156 @@ export async function notifyAll(params: {
 
     return result !== null;
 }
+
+// ============================================================================
+// PLATFORM NOTIFICATIONS (إشعارات الموقع - مختلفة عن إشعارات المدرس)
+// ============================================================================
+
+/**
+ * إرسال إشعار امتحان شامل جديد (من الموقع - وليس من مدرس)
+ * يختلف عن notifyNewExam لأنه يستهدف جميع الطلاب أو مرحلة معينة
+ */
+export async function notifyNewComprehensiveExam(params: {
+    examId: string;
+    examTitle: string;
+    stageId?: string;
+    stageName?: string;
+}): Promise<boolean> {
+    const { examId, examTitle, stageId, stageName } = params;
+
+    // إذا كان الامتحان لمرحلة معينة، نستهدفها فقط
+    const filters: OneSignal.Filter[] = stageId
+        ? [{ field: 'tag', key: 'stage_id', value: stageId }]
+        : [{ field: 'tag', key: 'role', value: 'student' }];
+
+    const stageText = stageName ? ` (${stageName})` : '';
+
+    const result = await sendNotificationWithFilters({
+        filters,
+        headings: {
+            ar: '📚 امتحان شامل جديد!',
+            en: '📚 New Comprehensive Exam!',
+        },
+        contents: {
+            ar: `تم نشر امتحان شامل جديد: ${examTitle}${stageText}`,
+            en: `A new comprehensive exam is available: ${examTitle}${stageText}`,
+        },
+        url: `/exam/${examId}`,
+        data: {
+            type: 'comprehensive_exam',
+            source: 'platform',
+            examId,
+            stageId,
+        },
+    });
+
+    return result !== null;
+}
+
+/**
+ * إرسال إشعار بنك أسئلة جديد
+ */
+export async function notifyNewQuestionBank(params: {
+    lessonId: string;
+    lessonTitle: string;
+    stageId?: string;
+    stageName?: string;
+    subjectName?: string;
+}): Promise<boolean> {
+    const { lessonId, lessonTitle, stageId, stageName, subjectName } = params;
+
+    const filters: OneSignal.Filter[] = stageId
+        ? [{ field: 'tag', key: 'stage_id', value: stageId }]
+        : [{ field: 'tag', key: 'role', value: 'student' }];
+
+    const subjectText = subjectName ? ` - ${subjectName}` : '';
+    const stageText = stageName ? ` (${stageName})` : '';
+
+    const result = await sendNotificationWithFilters({
+        filters,
+        headings: {
+            ar: '❓ أسئلة جديدة متاحة!',
+            en: '❓ New Questions Available!',
+        },
+        contents: {
+            ar: `تم إضافة أسئلة جديدة لـ: ${lessonTitle}${subjectText}${stageText}`,
+            en: `New questions added for: ${lessonTitle}${subjectText}${stageText}`,
+        },
+        url: `/lessons/${lessonId}/questions`,
+        data: {
+            type: 'question_bank',
+            source: 'platform',
+            lessonId,
+            stageId,
+        },
+    });
+
+    return result !== null;
+}
+
+/**
+ * إرسال إشعار لمرحلة تعليمية معينة
+ */
+export async function notifyStage(params: {
+    stageId: string;
+    title: string;
+    message: string;
+    url?: string;
+    data?: Record<string, unknown>;
+}): Promise<boolean> {
+    const { stageId, title, message, url, data } = params;
+
+    const result = await sendNotificationWithFilters({
+        filters: [{ field: 'tag', key: 'stage_id', value: stageId }],
+        headings: { ar: title, en: title },
+        contents: { ar: message, en: message },
+        url,
+        data: { ...data, stageId },
+    });
+
+    return result !== null;
+}
+
+/**
+ * إرسال إشعار لجميع الطلاب
+ */
+export async function notifyStudents(params: {
+    title: string;
+    message: string;
+    url?: string;
+    data?: Record<string, unknown>;
+}): Promise<boolean> {
+    const { title, message, url, data } = params;
+
+    const result = await sendNotificationWithFilters({
+        filters: [{ field: 'tag', key: 'role', value: 'student' }],
+        headings: { ar: title, en: title },
+        contents: { ar: message, en: message },
+        url,
+        data: { ...data, target: 'students' },
+    });
+
+    return result !== null;
+}
+
+/**
+ * إرسال إشعار لجميع المدرسين
+ */
+export async function notifyTeachers(params: {
+    title: string;
+    message: string;
+    url?: string;
+    data?: Record<string, unknown>;
+}): Promise<boolean> {
+    const { title, message, url, data } = params;
+
+    const result = await sendNotificationWithFilters({
+        filters: [{ field: 'tag', key: 'role', value: 'teacher' }],
+        headings: { ar: title, en: title },
+        contents: { ar: message, en: message },
+        url,
+        data: { ...data, target: 'teachers' },
+    });
+
+    return result !== null;
+}

@@ -53,8 +53,9 @@ interface UserData {
     email?: string;
     name?: string;
     role?: 'student' | 'teacher' | 'admin';
+    stage_id?: string;
 }
-
+// ... (existing code)
 const defaultStatus: NotificationStatus = {
     isSupported: false,
     isPermitted: false,
@@ -271,6 +272,7 @@ export function OneSignalProvider({
                         email: user.email,
                         name: profile?.name ?? undefined,
                         role: profile?.role as 'student' | 'teacher' | 'admin',
+                        stage_id: profile?.stage_id ?? undefined,
                     });
                 }
             } catch (err) {
