@@ -86,20 +86,7 @@ export async function GET(request: NextRequest) {
 
         let query = adminClient
             .from('testimonials')
-            .select(`
-                *,
-                user:user_id (
-                    id,
-                    name,
-                    email,
-                    avatar_url,
-                    role
-                ),
-                reviewer:reviewed_by (
-                    id,
-                    name
-                )
-            `)
+            .select('*')
             .order('created_at', { ascending: false })
             .limit(limit);
 
@@ -107,15 +94,48 @@ export async function GET(request: NextRequest) {
             query = query.eq('status', status);
         }
 
-        const { data, error, count } = await query;
+        const { data: testimonials, error, count } = await query;
 
         if (error) {
-            console.error('[Admin Testimonials API] Error:', error.message);
+            console.error('[Admin Testimonials API] Error fetching testimonials:', error.message);
             return NextResponse.json(
                 { error: error.message },
                 { status: 500 }
             );
         }
+
+        // Fetch user profiles separately
+        const userIds = testimonials?.map(t => t.user_id).filter(Boolean) || [];
+        const reviewerIds = testimonials?.map(t => t.reviewed_by).filter(Boolean) || [];
+        const allIds = [...new Set([...userIds, ...reviewerIds])];
+
+        interface ProfileData {
+            id: string;
+            name: string | null;
+            email: string | null;
+            avatar_url: string | null;
+            role: string | null;
+        }
+
+        let profiles: ProfileData[] = [];
+        if (allIds.length > 0) {
+            const { data: profilesData } = await adminClient
+                .from('profiles')
+                .select('id, name, email, avatar_url, role')
+                .in('id', allIds);
+            profiles = profilesData || [];
+        }
+
+        // Map profiles to testimonials
+        const data = testimonials?.map(testimonial => {
+            const user = profiles.find(p => p.id === testimonial.user_id);
+            const reviewer = profiles.find(p => p.id === testimonial.reviewed_by);
+            return {
+                ...testimonial,
+                user,
+                reviewer
+            };
+        });
 
         return NextResponse.json({ data, count, success: true });
 

@@ -351,7 +351,7 @@
     "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 3, \"live\": 4, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 11, \"updates\": 1060, \"hot_updates\": 611}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-23T08:59:42.395744+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 42.86}"
+    "details": "{\"rows\": {\"dead\": 11, \"live\": 4, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 11, \"updates\": 1068, \"hot_updates\": 615}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-23T08:59:42.395744+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 73.33}"
   },
   {
     "section": "02_TABLE_META",
@@ -369,7 +369,7 @@
     "section": "02_TABLE_META",
     "table_name": "visitor_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 42, \"live\": 10, \"estimated\": 30}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 130, \"inserts\": 125, \"updates\": 295, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T19:55:08.265352+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 80.77}"
+    "details": "{\"rows\": {\"dead\": 42, \"live\": 11, \"estimated\": 30}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 130, \"inserts\": 126, \"updates\": 295, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T19:55:08.265352+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 79.25}"
   },
   {
     "section": "05_COLUMN",
@@ -2475,13 +2475,13 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 43, \"is_unused\": false, \"tuples_read\": 43, \"tuples_fetched\": 43}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 44, \"is_unused\": false, \"tuples_read\": 44, \"tuples_fetched\": 44}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 817, \"is_unused\": false, \"tuples_read\": 817, \"tuples_fetched\": 817}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 819, \"is_unused\": false, \"tuples_read\": 819, \"tuples_fetched\": 819}}"
   },
   {
     "section": "11_INDEX",
@@ -2523,13 +2523,13 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1645, \"is_unused\": false, \"tuples_read\": 34545, \"tuples_fetched\": 42}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1651, \"is_unused\": false, \"tuples_read\": 34671, \"tuples_fetched\": 42}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_subject_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 763, \"is_unused\": false, \"tuples_read\": 64092, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 766, \"is_unused\": false, \"tuples_read\": 64344, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2685,7 +2685,7 @@
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1702, \"is_unused\": false, \"tuples_read\": 1702, \"tuples_fetched\": 1702}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1708, \"is_unused\": false, \"tuples_read\": 1708, \"tuples_fetched\": 1708}}"
   },
   {
     "section": "11_INDEX",
@@ -2775,7 +2775,7 @@
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_status",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 7, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2853,7 +2853,7 @@
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "idx_visitor_devices_visitor",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 347, \"is_unused\": false, \"tuples_read\": 399, \"tuples_fetched\": 234}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 348, \"is_unused\": false, \"tuples_read\": 399, \"tuples_fetched\": 234}}"
   },
   {
     "section": "11_INDEX",
@@ -4539,13 +4539,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 559, \"read\": 2, \"hit_ratio\": 99.64}, \"index_blocks\": {\"hit\": 1835, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 565, \"read\": 2, \"hit_ratio\": 99.65}, \"index_blocks\": {\"hit\": 1843, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1220, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2080, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1225, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2091, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4557,7 +4557,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4156, \"read\": 9, \"hit_ratio\": 99.78}, \"index_blocks\": {\"hit\": 5154, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 4183, \"read\": 9, \"hit_ratio\": 99.79}, \"index_blocks\": {\"hit\": 5179, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4575,13 +4575,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notifications",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 9235, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 9283, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 12248, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 8689, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 12520, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 8761, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4599,7 +4599,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2104, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 4132, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2112, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 4150, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4635,13 +4635,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "testimonials",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 344, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 353, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 5676, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2723, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5719, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2744, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4659,7 +4659,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "visitor_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2860, \"read\": 5, \"hit_ratio\": 99.83}, \"index_blocks\": {\"hit\": 3292, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2864, \"read\": 5, \"hit_ratio\": 99.83}, \"index_blocks\": {\"hit\": 3299, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "05_COLUMN",
@@ -5073,12 +5073,12 @@
     "section": "29_REPLICATION_SLOT",
     "table_name": "supabase_realtime_messages_replication_slot_v2_71_4",
     "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 228434, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/110098D8\", \"catalog_xmin\": \"9098\", \"safe_wal_size\": 4311575304, \"confirmed_flush_lsn\": \"2/11009911\"}"
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 228434, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/14001810\", \"catalog_xmin\": \"9108\", \"safe_wal_size\": 4294834800, \"confirmed_flush_lsn\": \"2/15000001\"}"
   },
   {
     "section": "29_REPLICATION_SLOT",
     "table_name": "supabase_realtime_replication_slot_v2_71_4",
     "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 228829, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/110294C0\", \"catalog_xmin\": \"9099\", \"safe_wal_size\": 4311575304, \"confirmed_flush_lsn\": \"2/110294F8\"}"
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 229244, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/15020558\", \"catalog_xmin\": \"9109\", \"safe_wal_size\": 4311612016, \"confirmed_flush_lsn\": \"2/15020590\"}"
   }
 ]
