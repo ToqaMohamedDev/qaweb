@@ -50,7 +50,19 @@ export async function GET() {
             .order('order_index', { ascending: true });
 
         // 4. Get user stats (مع فلترة حسب المرحلة الدراسية)
-        const userStageId = profile?.educational_stage_id || null;
+        // لو المستخدم ما حددش مرحلة، نستخدم الصف الثالث الثانوي كـ default
+        let userStageId = profile?.educational_stage_id || null;
+
+        if (!userStageId && stages && stages.length > 0) {
+            // Find default stage (الصف الثالث الثانوي)
+            const defaultStage = stages.find((s: any) =>
+                s.name?.includes('ثالث') && s.name?.includes('ثانوي')
+            );
+            if (defaultStage) {
+                userStageId = defaultStage.id;
+            }
+        }
+
         const stats = await getUserStats(supabase, user.id, userStageId);
 
         // 5. Get recent activity
@@ -132,30 +144,62 @@ export async function PATCH(request: NextRequest) {
 
 /**
  * دالة مساعدة لحساب إحصائيات الامتحانات
+ * بتحسب عدد الامتحانات الفريدة (مش المحاولات)
  */
 function calculateExamStats(attempts: any[]) {
     if (!attempts || attempts.length === 0) {
         return { taken: 0, passed: 0, averageScore: 0, totalScore: 0 };
     }
 
-    const taken = attempts.length;
-    const passed = attempts.filter(
-        (e) => (e.status === 'completed' || e.status === 'graded') &&
-            e.total_score && e.max_score &&
-            (e.total_score / e.max_score) >= 0.6
-    ).length;
+    // Group attempts by exam_id to count unique exams
+    const examGroups = new Map<string, any[]>();
+    attempts.forEach(attempt => {
+        const examId = attempt.exam_id;
+        if (!examGroups.has(examId)) {
+            examGroups.set(examId, []);
+        }
+        examGroups.get(examId)!.push(attempt);
+    });
 
-    let totalScore = 0;
-    let averageScore = 0;
+    // Count unique exams taken
+    const taken = examGroups.size;
 
-    const completedAttempts = attempts.filter(e => e.total_score != null && e.max_score != null && e.max_score > 0);
-    if (completedAttempts.length > 0) {
-        totalScore = completedAttempts.reduce((acc, e) => acc + (e.total_score || 0), 0);
-        const avgScores = completedAttempts.map(e => (e.total_score / e.max_score) * 100);
-        averageScore = Math.round(avgScores.reduce((a, b) => a + b, 0) / avgScores.length);
-    }
+    // For each exam, check if the best attempt is passed
+    let passed = 0;
+    let totalScoreSum = 0;
+    let completedExamScores: number[] = [];
 
-    return { taken, passed, averageScore, totalScore };
+    examGroups.forEach((examAttempts) => {
+        // Get the best/latest completed attempt for this exam
+        const completedAttempts = examAttempts.filter(
+            (e) => (e.status === 'completed' || e.status === 'graded') &&
+                e.total_score != null && e.max_score != null && e.max_score > 0
+        );
+
+        if (completedAttempts.length > 0) {
+            // Get the best score for this exam
+            const bestAttempt = completedAttempts.reduce((best, current) => {
+                const bestScore = best.total_score / best.max_score;
+                const currentScore = current.total_score / current.max_score;
+                return currentScore > bestScore ? current : best;
+            });
+
+            const scorePercent = (bestAttempt.total_score / bestAttempt.max_score);
+            completedExamScores.push(scorePercent * 100);
+            totalScoreSum += bestAttempt.total_score;
+
+            // Check if passed (>= 60%)
+            if (scorePercent >= 0.6) {
+                passed++;
+            }
+        }
+    });
+
+    const averageScore = completedExamScores.length > 0
+        ? Math.round(completedExamScores.reduce((a, b) => a + b, 0) / completedExamScores.length)
+        : 0;
+
+    return { taken, passed, averageScore, totalScore: totalScoreSum };
 }
 
 /**
