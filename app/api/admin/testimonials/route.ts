@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
             .from('testimonials')
             .select(`
                 *,
-                profiles:user_id (
+                user:user_id (
                     id,
                     name,
                     email,

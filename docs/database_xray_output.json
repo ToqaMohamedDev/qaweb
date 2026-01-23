@@ -213,7 +213,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -291,7 +291,7 @@
     "section": "02_TABLE_META",
     "table_name": "profiles",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 8, \"live\": 4, \"estimated\": 9}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"176 kB\", \"total_bytes\": 180224}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 4, \"updates\": 14, \"hot_updates\": 10}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 66.67}"
+    "details": "{\"rows\": {\"dead\": 11, \"live\": 4, \"estimated\": 9}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"176 kB\", \"total_bytes\": 180224}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 4, \"updates\": 21, \"hot_updates\": 13}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 73.33}"
   },
   {
     "section": "02_TABLE_META",
@@ -345,13 +345,13 @@
     "section": "02_TABLE_META",
     "table_name": "testimonials",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 0, \"live\": 0, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"32 kB\", \"table_size\": \"0 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"40 kB\", \"total_bytes\": 40960}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 0, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"آراء الطلاب - Student testimonials with admin approval workflow\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": null}"
+    "details": "{\"rows\": {\"dead\": 0, \"live\": 1, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"64 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"80 kB\", \"total_bytes\": 81920}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 1, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"آراء الطلاب - Student testimonials with admin approval workflow\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 0.00}"
   },
   {
     "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 4, \"live\": 3, \"estimated\": 3}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 10, \"updates\": 1010, \"hot_updates\": 609}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T23:08:16.715958+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 57.14}"
+    "details": "{\"rows\": {\"dead\": 3, \"live\": 4, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 11, \"updates\": 1060, \"hot_updates\": 611}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-23T08:59:42.395744+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 42.86}"
   },
   {
     "section": "02_TABLE_META",
@@ -369,7 +369,7 @@
     "section": "02_TABLE_META",
     "table_name": "visitor_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 36, \"live\": 2, \"estimated\": 30}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 130, \"inserts\": 117, \"updates\": 289, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T19:55:08.265352+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 94.74}"
+    "details": "{\"rows\": {\"dead\": 42, \"live\": 10, \"estimated\": 30}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"40 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"128 kB\", \"total_bytes\": 131072}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 130, \"inserts\": 125, \"updates\": 295, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-22T19:55:08.265352+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 80.77}"
   },
   {
     "section": "05_COLUMN",
@@ -495,7 +495,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "user_id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": -0.6000, \"avg_width_bytes\": 16, \"distinct_values\": -0.75, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{d3ca9f51-b068-409a-9db0-21d17f830c58}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -639,7 +639,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "device_type",
-    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{desktop}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"device_type\", \"data_type\": \"USER-DEFINED\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'unknown'::device_type\", \"identity\": null, \"nullable\": true, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{desktop}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -783,7 +783,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "os_name",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 6, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{macOS}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 6, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{macOS}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -921,7 +921,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "os_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 8, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{10.15.7}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": -0.2000, \"avg_width_bytes\": 7, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{10.15.7}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1053,7 +1053,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "browser",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 7, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.8000, \"avg_width_bytes\": 7, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{Chrome}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1371,7 +1371,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "browser_version",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 7, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{144.0.0}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.8000, \"avg_width_bytes\": 7, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{144.0.0}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1497,7 +1497,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "ip_address",
-    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 19, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{::1}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"inet\", \"data_type\": \"inet\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 13, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{41.43.232.24,::1}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1737,7 +1737,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "user_devices",
     "name": "user_devices_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 3, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 4, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1851,7 +1851,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "user_agent",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.5000, \"avg_width_bytes\": 118, \"distinct_values\": -0.67, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.8000, \"avg_width_bytes\": 122, \"distinct_values\": -0.75, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -2055,7 +2055,7 @@
     "section": "09_FK_INCOMING",
     "table_name": "profiles",
     "name": "user_devices_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"], \"row_count\": 3}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to user_devices\", \"cascade_risk\": \"HIGH\"}}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"user_devices\", \"columns\": [\"user_id\"], \"row_count\": 4}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to user_devices\", \"cascade_risk\": \"HIGH\"}}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -2457,13 +2457,13 @@
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_created_by",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 217, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 243, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_stage",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_stage ON public.comprehensive_exams USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 186, \"is_unused\": false, \"tuples_read\": 454, \"tuples_fetched\": 4}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_stage ON public.comprehensive_exams USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 296, \"is_unused\": false, \"tuples_read\": 525, \"tuples_fetched\": 59}}"
   },
   {
     "section": "11_INDEX",
@@ -2475,13 +2475,13 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 4, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 4}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 43, \"is_unused\": false, \"tuples_read\": 43, \"tuples_fetched\": 43}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 780, \"is_unused\": false, \"tuples_read\": 780, \"tuples_fetched\": 780}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 817, \"is_unused\": false, \"tuples_read\": 817, \"tuples_fetched\": 817}}"
   },
   {
     "section": "11_INDEX",
@@ -2523,19 +2523,19 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1411, \"is_unused\": false, \"tuples_read\": 29631, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1645, \"is_unused\": false, \"tuples_read\": 34545, \"tuples_fetched\": 42}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_subject_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 689, \"is_unused\": false, \"tuples_read\": 57876, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 763, \"is_unused\": false, \"tuples_read\": 64092, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "lessons_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 15, \"is_unused\": false, \"tuples_read\": 114, \"tuples_fetched\": 114}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 17, \"is_unused\": false, \"tuples_read\": 116, \"tuples_fetched\": 116}}"
   },
   {
     "section": "11_INDEX",
@@ -2619,7 +2619,7 @@
     "section": "11_INDEX",
     "table_name": "profiles",
     "name": "profiles_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 7, \"is_unused\": false, \"tuples_read\": 4, \"tuples_fetched\": 3}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 15, \"tuples_fetched\": 10}}"
   },
   {
     "section": "11_INDEX",
@@ -2637,7 +2637,7 @@
     "section": "11_INDEX",
     "table_name": "question_banks",
     "name": "idx_question_banks_lesson_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 13, \"tuples_fetched\": 13}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 16, \"is_unused\": false, \"tuples_read\": 13, \"tuples_fetched\": 13}}"
   },
   {
     "section": "11_INDEX",
@@ -2685,7 +2685,7 @@
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1558, \"is_unused\": false, \"tuples_read\": 1558, \"tuples_fetched\": 1558}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1702, \"is_unused\": false, \"tuples_read\": 1702, \"tuples_fetched\": 1702}}"
   },
   {
     "section": "11_INDEX",
@@ -2697,13 +2697,13 @@
     "section": "11_INDEX",
     "table_name": "teacher_exam_attempts",
     "name": "idx_teacher_exam_attempts_exam",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_exam ON public.teacher_exam_attempts USING btree (exam_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 7, \"is_unused\": false, \"tuples_read\": 2, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_exam ON public.teacher_exam_attempts USING btree (exam_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 44, \"is_unused\": false, \"tuples_read\": 113, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "teacher_exam_attempts",
     "name": "idx_teacher_exam_attempts_student",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_student ON public.teacher_exam_attempts USING btree (student_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 34, \"is_unused\": false, \"tuples_read\": 51, \"tuples_fetched\": 4}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_exam_attempts_student ON public.teacher_exam_attempts USING btree (student_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 104, \"is_unused\": false, \"tuples_read\": 142, \"tuples_fetched\": 4}}"
   },
   {
     "section": "11_INDEX",
@@ -2739,7 +2739,7 @@
     "section": "11_INDEX",
     "table_name": "teacher_ratings",
     "name": "teacher_ratings_user_id_teacher_id_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"teacher_id\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_ratings_user_id_teacher_id_key ON public.teacher_ratings USING btree (user_id, teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 20, \"is_unused\": false, \"tuples_read\": 18, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"teacher_id\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_ratings_user_id_teacher_id_key ON public.teacher_ratings USING btree (user_id, teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 22, \"is_unused\": false, \"tuples_read\": 22, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2751,7 +2751,7 @@
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "idx_teacher_subscriptions_user",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 67, \"is_unused\": false, \"tuples_read\": 946, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 95, \"is_unused\": false, \"tuples_read\": 1170, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2769,25 +2769,25 @@
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_created_at",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_created_at ON public.testimonials USING btree (created_at DESC)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_created_at ON public.testimonials USING btree (created_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_status",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_user_id",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_user_id ON public.testimonials USING btree (user_id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_user_id ON public.testimonials USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "testimonials_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX testimonials_pkey ON public.testimonials USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX testimonials_pkey ON public.testimonials USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2847,19 +2847,19 @@
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "idx_visitor_devices_last_seen",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_last_seen ON public.visitor_devices USING btree (last_seen_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 17, \"is_unused\": false, \"tuples_read\": 280, \"tuples_fetched\": 224}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_last_seen ON public.visitor_devices USING btree (last_seen_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 19, \"is_unused\": false, \"tuples_read\": 285, \"tuples_fetched\": 228}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "idx_visitor_devices_visitor",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 333, \"is_unused\": false, \"tuples_read\": 389, \"tuples_fetched\": 228}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_visitor_devices_visitor ON public.visitor_devices USING btree (visitor_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 347, \"is_unused\": false, \"tuples_read\": 399, \"tuples_fetched\": 234}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "visitor_devices",
     "name": "visitor_devices_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX visitor_devices_pkey ON public.visitor_devices USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 230, \"is_unused\": false, \"tuples_read\": 646, \"tuples_fetched\": 358}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX visitor_devices_pkey ON public.visitor_devices USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 236, \"is_unused\": false, \"tuples_read\": 656, \"tuples_fetched\": 364}}"
   },
   {
     "section": "05_COLUMN",
@@ -2925,7 +2925,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "first_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": -1.0000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": -0.2000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -3362,8 +3362,26 @@
   {
     "section": "12_RLS_POLICY",
     "table_name": "testimonials",
+    "name": "Admins can delete testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"DELETE\", \"applies_to\": [\"DELETE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Admins can update all testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
     "name": "Admins can update any testimonial",
     "details": "{\"roles\": [\"public\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"is_admin()\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Admins can view all testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
   },
   {
     "section": "12_RLS_POLICY",
@@ -3386,13 +3404,37 @@
   {
     "section": "12_RLS_POLICY",
     "table_name": "testimonials",
+    "name": "Users can insert their own testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"INSERT\", \"applies_to\": [\"INSERT\"], \"permissive\": true, \"using_expression\": null, \"with_check_expression\": \"(auth.uid() = user_id)\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
     "name": "Users can update own pending testimonials",
     "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"((auth.uid() = user_id) AND (status = 'pending'::text))\", \"with_check_expression\": \"(auth.uid() = user_id)\"}"
   },
   {
     "section": "12_RLS_POLICY",
     "table_name": "testimonials",
+    "name": "Users can update their own pending testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"((auth.uid() = user_id) AND (status = 'pending'::text))\", \"with_check_expression\": \"((auth.uid() = user_id) AND (status = 'pending'::text))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can view approved testimonials",
+    "details": "{\"roles\": [\"public\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(status = 'approved'::text)\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
     "name": "Users can view own testimonials",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(auth.uid() = user_id)\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "testimonials",
+    "name": "Users can view their own testimonials",
     "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(auth.uid() = user_id)\", \"with_check_expression\": null}"
   },
   {
@@ -3501,7 +3543,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "last_seen_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": -0.5000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": -0.8000, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -3621,7 +3663,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "login_count",
-    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 0.4000, \"avg_width_bytes\": 4, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -3765,7 +3807,7 @@
     "section": "05_COLUMN",
     "table_name": "user_devices",
     "name": "is_current_device",
-    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"false\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 1, \"distinct_values\": -0.33, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{t}\"}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"false\", \"identity\": null, \"nullable\": true, \"position\": 15, \"generated\": null, \"statistics\": {\"correlation\": 0.8000, \"avg_width_bytes\": 1, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{t}\"}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -4118,8 +4160,20 @@
   {
     "section": "16_TABLE_PRIVILEGE",
     "table_name": "testimonials",
+    "name": "authenticated",
+    "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"privileges\": [\"INSERT\", \"SELECT\", \"UPDATE\"], \"with_grant_option\": false}"
+  },
+  {
+    "section": "16_TABLE_PRIVILEGE",
+    "table_name": "testimonials",
     "name": "postgres",
     "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"INSERT\", \"REFERENCES\", \"SELECT\", \"TRIGGER\", \"TRUNCATE\", \"UPDATE\"], \"with_grant_option\": true}"
+  },
+  {
+    "section": "16_TABLE_PRIVILEGE",
+    "table_name": "testimonials",
+    "name": "service_role",
+    "details": "{\"grantee\": \"service_role\", \"grantor\": \"postgres\", \"privileges\": [\"DELETE\", \"INSERT\", \"REFERENCES\", \"SELECT\", \"TRIGGER\", \"TRUNCATE\", \"UPDATE\"], \"with_grant_option\": false}"
   },
   {
     "section": "16_TABLE_PRIVILEGE",
@@ -4479,19 +4533,19 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 431, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 863, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 462, \"read\": 2, \"hit_ratio\": 99.57}, \"index_blocks\": {\"hit\": 1407, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 559, \"read\": 2, \"hit_ratio\": 99.64}, \"index_blocks\": {\"hit\": 1835, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1040, \"read\": 1, \"hit_ratio\": 99.90}, \"index_blocks\": {\"hit\": 1858, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1220, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2080, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4503,7 +4557,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 3642, \"read\": 9, \"hit_ratio\": 99.75}, \"index_blocks\": {\"hit\": 4480, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 4156, \"read\": 9, \"hit_ratio\": 99.78}, \"index_blocks\": {\"hit\": 5154, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4521,19 +4575,19 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notifications",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 7597, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 9235, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 10345, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 7270, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 12248, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 8689, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "question_banks",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 14, \"read\": 1, \"hit_ratio\": 93.33}, \"index_blocks\": {\"hit\": 78, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 14, \"read\": 1, \"hit_ratio\": 93.33}, \"index_blocks\": {\"hit\": 92, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4545,7 +4599,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1914, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 3784, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2104, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 4132, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4557,37 +4611,37 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 12, \"read\": 1, \"hit_ratio\": 92.31}, \"index_blocks\": {\"hit\": 99, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 58, \"read\": 1, \"hit_ratio\": 98.31}, \"index_blocks\": {\"hit\": 323, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 271, \"read\": 1, \"hit_ratio\": 99.63}, \"index_blocks\": {\"hit\": 686, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 371, \"read\": 1, \"hit_ratio\": 99.73}, \"index_blocks\": {\"hit\": 1198, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_ratings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 17, \"read\": 1, \"hit_ratio\": 94.44}, \"index_blocks\": {\"hit\": 57, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 19, \"read\": 1, \"hit_ratio\": 95.00}, \"index_blocks\": {\"hit\": 63, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_subscriptions",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 99, \"read\": 1, \"hit_ratio\": 99.00}, \"index_blocks\": {\"hit\": 310, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 113, \"read\": 1, \"hit_ratio\": 99.12}, \"index_blocks\": {\"hit\": 418, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "testimonials",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 52, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 344, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 5265, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2471, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5676, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2723, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4599,13 +4653,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_lesson_progress",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 93, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 237, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "visitor_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2768, \"read\": 5, \"hit_ratio\": 99.82}, \"index_blocks\": {\"hit\": 3178, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2860, \"read\": 5, \"hit_ratio\": 99.83}, \"index_blocks\": {\"hit\": 3292, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "05_COLUMN",
@@ -4743,7 +4797,7 @@
     "section": "20_SECURITY_AUDIT",
     "table_name": "testimonials",
     "name": "security_status",
-    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 6}, \"grants\": {\"role_count\": 1, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
+    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 13}, \"grants\": {\"role_count\": 3, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
   },
   {
     "section": "20_SECURITY_AUDIT",
@@ -4839,7 +4893,7 @@
     "section": "25_ALL_PUBLICATIONS",
     "table_name": "supabase_realtime_messages_publication",
     "name": "configuration",
-    "details": "{\"oid\": \"28229\", \"owner\": \"supabase_admin\", \"delete\": true, \"insert\": true, \"tables\": [{\"table\": \"messages_2026_01_19\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_20\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_21\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_22\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_23\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_24\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_25\", \"schema\": \"realtime\"}], \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 7}"
+    "details": "{\"oid\": \"28229\", \"owner\": \"supabase_admin\", \"delete\": true, \"insert\": true, \"tables\": [{\"table\": \"messages_2026_01_20\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_21\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_22\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_23\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_24\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_25\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_26\", \"schema\": \"realtime\"}], \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 7}"
   },
   {
     "section": "05_COLUMN",
@@ -4953,7 +5007,7 @@
     "section": "27_DATABASE_CONFIG",
     "table_name": "postgres",
     "name": "settings",
-    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 19, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15559827}"
+    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 15, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15625363}"
   },
   {
     "section": "05_COLUMN",
@@ -5019,12 +5073,12 @@
     "section": "29_REPLICATION_SLOT",
     "table_name": "supabase_realtime_messages_replication_slot_v2_71_4",
     "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 197084, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/BD000028\", \"catalog_xmin\": \"8890\", \"safe_wal_size\": 4311744416, \"confirmed_flush_lsn\": \"1/BD000061\"}"
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 228434, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/110098D8\", \"catalog_xmin\": \"9098\", \"safe_wal_size\": 4311575304, \"confirmed_flush_lsn\": \"2/11009911\"}"
   },
   {
     "section": "29_REPLICATION_SLOT",
     "table_name": "supabase_realtime_replication_slot_v2_71_4",
     "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 197174, \"wal_status\": \"reserved\", \"restart_lsn\": \"1/BD000028\", \"catalog_xmin\": \"8890\", \"safe_wal_size\": 4311744416, \"confirmed_flush_lsn\": \"1/BD000060\"}"
+    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 228829, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/110294C0\", \"catalog_xmin\": \"9099\", \"safe_wal_size\": 4311575304, \"confirmed_flush_lsn\": \"2/110294F8\"}"
   }
 ]
