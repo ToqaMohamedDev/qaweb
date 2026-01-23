@@ -160,6 +160,7 @@ export default function NotificationsPage() {
             const now = new Date().toISOString();
 
             if (selectedNotification) {
+                // Update existing notification
                 const { error } = await supabase
                     .from("notifications")
                     .update({
@@ -175,18 +176,44 @@ export default function NotificationsPage() {
                 if (error) throw error;
                 addToast({ type: 'success', message: 'تم تحديث الإشعار بنجاح' });
             } else {
-                const { error } = await supabase
-                    .from("notifications")
-                    .insert({
-                        title: formData.title,
-                        message: formData.message,
-                        target_role: formData.target_role,
-                        status: formData.status,
-                        sent_at: formData.status === "sent" ? now : null,
-                        scheduled_for: formData.scheduled_for || null
+                // Create new notification
+                if (formData.status === 'sent') {
+                    // Send immediately using the API
+                    const response = await fetch('/api/admin/notifications/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: formData.title,
+                            message: formData.message,
+                            target_role: formData.target_role,
+                            send_immediately: true,
+                        }),
                     });
-                if (error) throw error;
-                addToast({ type: 'success', message: 'تم إنشاء الإشعار بنجاح' });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to send notification');
+                    }
+
+                    addToast({ 
+                        type: 'success', 
+                        message: `تم إرسال الإشعار إلى ${result.notified} مستخدم` 
+                    });
+                } else {
+                    // Save as draft/pending
+                    const { error } = await supabase
+                        .from("notifications")
+                        .insert({
+                            title: formData.title,
+                            message: formData.message,
+                            target_role: formData.target_role,
+                            status: formData.status,
+                            scheduled_for: formData.scheduled_for || null
+                        });
+                    if (error) throw error;
+                    addToast({ type: 'success', message: 'تم حفظ الإشعار بنجاح' });
+                }
             }
 
             await fetchData();
@@ -221,8 +248,27 @@ export default function NotificationsPage() {
 
     const handleSend = async (notification: Notification) => {
         try {
+            // Use the new send API endpoint
+            const response = await fetch('/api/admin/notifications/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: notification.title,
+                    message: notification.message,
+                    target_role: notification.target_role || 'all',
+                    send_immediately: true,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to send notification');
+            }
+
+            // Update the original notification status
             const supabase = createClient();
-            const { error } = await supabase
+            await supabase
                 .from("notifications")
                 .update({
                     status: "sent",
@@ -230,11 +276,11 @@ export default function NotificationsPage() {
                     updated_at: new Date().toISOString()
                 })
                 .eq("id", notification.id);
-            if (error) throw error;
+
             await fetchData();
             addToast({
                 type: 'success',
-                message: `تم إرسال "${notification.title}" إلى ${userCounts[notification.target_role || 'all']} مستخدم`
+                message: `تم إرسال "${notification.title}" إلى ${result.notified} مستخدم`
             });
         } catch (err: any) {
             addToast({ type: 'error', message: err.message || 'حدث خطأ' });

@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Star, Sparkles } from 'lucide-react';
-import { containerVariants, itemVariants } from '@/lib/animations';
+import { itemVariants } from '@/lib/animations';
 
 // =============================================
 // Types
@@ -48,9 +48,14 @@ export function TestimonialsSection() {
             const res = await fetch('/api/testimonials?limit=6');
             if (res.ok) {
                 const result = await res.json();
+                console.log('[TestimonialsSection] API Response:', result);
+                console.log('[TestimonialsSection] Testimonials data:', result.data);
                 setTestimonials(result.data || []);
+            } else {
+                console.error('[TestimonialsSection] API Error:', res.status, res.statusText);
             }
-        } catch {
+        } catch (error) {
+            console.error('[TestimonialsSection] Fetch Error:', error);
             setTestimonials([]);
         } finally {
             setIsLoading(false);
@@ -61,8 +66,13 @@ export function TestimonialsSection() {
         fetchTestimonials();
     }, [fetchTestimonials]);
 
+    // Debug logging
+    console.log('[TestimonialsSection] Render - isLoading:', isLoading, 'testimonials count:', testimonials.length);
+    console.log('[TestimonialsSection] Testimonials:', testimonials);
+
     // Don't render section if no testimonials and not loading
     if (!isLoading && testimonials.length === 0) {
+        console.log('[TestimonialsSection] Not rendering - no testimonials');
         return null;
     }
 
@@ -85,16 +95,25 @@ export function TestimonialsSection() {
                     </h2>
                 </motion.div>
 
+                {/* Debug Info */}
+                {isLoading && (
+                    <div className="text-center text-gray-600 dark:text-gray-400">
+                        جاري التحميل...
+                    </div>
+                )}
+                
+                {!isLoading && testimonials.length === 0 && (
+                    <div className="text-center text-gray-600 dark:text-gray-400">
+                        لا توجد آراء حالياً
+                    </div>
+                )}
+
                 {/* Testimonials Grid */}
-                <motion.div
-                    className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                >
-                    {testimonials.slice(0, 3).map((testimonial, index) => (
+                {!isLoading && testimonials.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+                        {testimonials.slice(0, 3).map((testimonial) => (
                         <motion.div
-                            key={index}
+                            key={testimonial.id}
                             variants={itemVariants}
                             className="group"
                         >
@@ -147,7 +166,8 @@ export function TestimonialsSection() {
                             </div>
                         </motion.div>
                     ))}
-                </motion.div>
+                    </div>
+                )}
             </div>
         </section>
     );
