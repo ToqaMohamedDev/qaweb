@@ -123,9 +123,12 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl);
     }
 
-    // 5. ROLE-BASED PROTECTION (only for admin/teacher routes)
+    // 5. ROLE-BASED PROTECTION (only for admin/teacher dashboard routes)
     // =================================================
-    if (user && (pathname.startsWith('/admin') || pathname.startsWith('/teacher'))) {
+    // NOTE: /teachers (plural) is PUBLIC - only /teacher (singular) is for teacher dashboard
+    const isTeacherDashboard = pathname.startsWith('/teacher') && !pathname.startsWith('/teachers');
+    
+    if (user && (pathname.startsWith('/admin') || isTeacherDashboard)) {
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -137,8 +140,8 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/', request.url));
         }
 
-        // Teacher Protection
-        if (pathname.startsWith('/teacher') &&
+        // Teacher Dashboard Protection (not /teachers which is public)
+        if (isTeacherDashboard &&
             profile?.role !== 'teacher' &&
             profile?.role !== 'admin') {
             return NextResponse.redirect(new URL('/', request.url));
