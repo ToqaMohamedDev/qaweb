@@ -163,6 +163,73 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read, created_at DESC);
 
 -- =============================================
+-- HELPER FUNCTION: Mark single notification as read
+-- =============================================
+
+-- Drop function if exists
+DROP FUNCTION IF EXISTS mark_notification_read(UUID);
+
+-- Create function to mark a single notification as read
+CREATE OR REPLACE FUNCTION mark_notification_read(p_notification_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    UPDATE notifications
+    SET is_read = true, updated_at = NOW()
+    WHERE id = p_notification_id
+    AND user_id = auth.uid();
+    
+    RETURN FOUND;
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION mark_notification_read(UUID) TO authenticated;
+
+-- =============================================
+-- HELPER FUNCTION: Mark multiple notifications as read (bulk)
+-- =============================================
+
+-- Drop function if exists
+DROP FUNCTION IF EXISTS mark_notifications_read_bulk(UUID[], BOOLEAN);
+
+-- Create function to mark multiple notifications as read
+CREATE OR REPLACE FUNCTION mark_notifications_read_bulk(
+    p_notification_ids UUID[] DEFAULT NULL,
+    p_mark_all BOOLEAN DEFAULT FALSE
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    affected_count INTEGER;
+BEGIN
+    IF p_mark_all THEN
+        -- Mark all user's notifications as read
+        UPDATE notifications
+        SET is_read = true, updated_at = NOW()
+        WHERE user_id = auth.uid()
+        AND is_read = false;
+    ELSE
+        -- Mark specific notifications as read
+        UPDATE notifications
+        SET is_read = true, updated_at = NOW()
+        WHERE id = ANY(p_notification_ids)
+        AND user_id = auth.uid();
+    END IF;
+    
+    GET DIAGNOSTICS affected_count = ROW_COUNT;
+    RETURN affected_count;
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION mark_notifications_read_bulk(UUID[], BOOLEAN) TO authenticated;
+
+-- =============================================
 -- HELPER FUNCTION: Get unread notification count
 -- =============================================
 

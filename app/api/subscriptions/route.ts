@@ -34,11 +34,57 @@ async function createSupabaseServerClient() {
     );
 }
 
+// Service role client for bypassing RLS when needed
+function createSupabaseAdminClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            cookies: {
+                getAll() { return []; },
+                setAll() { },
+            },
+        }
+    );
+}
+
+// Ensure user profile exists in profiles table
+async function ensureProfileExists(userId: string, userEmail: string | undefined) {
+    const adminClient = createSupabaseAdminClient();
+    
+    // Check if profile exists
+    const { data: existingProfile } = await adminClient
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+    
+    if (!existingProfile) {
+        // Create profile with default student role
+        const { error: createError } = await adminClient
+            .from('profiles')
+            .insert({
+                id: userId,
+                email: userEmail || '',
+                role: 'student',
+                role_selected: false,
+                name: userEmail?.split('@')[0] || 'مستخدم جديد',
+            });
+        
+        if (createError) {
+            console.error('Error creating profile:', createError);
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 // =============================================
 // GET - Fetch user's subscriptions
 // =============================================
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const supabase = await createSupabaseServerClient();
 
@@ -111,8 +157,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Ensure user profile exists (fixes FK constraint for new users)
+        const profileExists = await ensureProfileExists(user.id, user.email);
+        if (!profileExists) {
+            return NextResponse.json(
+                { success: false, error: 'فشل في إنشاء الملف الشخصي' },
+                { status: 500 }
+            );
+        }
+
+        // Use admin client for subscription operations to bypass RLS issues
+        const adminClient = createSupabaseAdminClient();
+
         // Check if already subscribed
-        const { data: existing } = await supabase
+        const { data: existing } = await adminClient
             .from('teacher_subscriptions')
             .select('id')
             .eq('user_id', user.id)
@@ -121,7 +179,7 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
             // Already subscribed, return current count
-            const { count } = await supabase
+            const { count } = await adminClient
                 .from('teacher_subscriptions')
                 .select('*', { count: 'exact', head: true })
                 .eq('teacher_id', teacherId);
@@ -134,7 +192,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Subscribe
-        const { error: insertError } = await supabase
+        const { error: insertError } = await adminClient
             .from('teacher_subscriptions')
             .insert({
                 user_id: user.id,
@@ -150,7 +208,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get new count
-        const { count } = await supabase
+        const { count } = await adminClient
             .from('teacher_subscriptions')
             .select('*', { count: 'exact', head: true })
             .eq('teacher_id', teacherId);
@@ -198,8 +256,11 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
+        // Use admin client for subscription operations
+        const adminClient = createSupabaseAdminClient();
+
         // Unsubscribe
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await adminClient
             .from('teacher_subscriptions')
             .delete()
             .eq('user_id', user.id)
@@ -214,7 +275,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Get new count
-        const { count } = await supabase
+        const { count } = await adminClient
             .from('teacher_subscriptions')
             .select('*', { count: 'exact', head: true })
             .eq('teacher_id', teacherId);

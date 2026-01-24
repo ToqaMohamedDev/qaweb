@@ -285,13 +285,13 @@
     "section": "02_TABLE_META",
     "table_name": "notifications",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 0, \"live\": 0, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"24 kB\", \"table_size\": \"0 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"32 kB\", \"total_bytes\": 32768}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 0, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": null}"
+    "details": "{\"rows\": {\"dead\": 1, \"live\": 9, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"144 kB\", \"total_bytes\": 147456}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 9, \"updates\": 1, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 10.00}"
   },
   {
     "section": "02_TABLE_META",
     "table_name": "profiles",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 11, \"live\": 4, \"estimated\": 9}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"176 kB\", \"total_bytes\": 180224}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 4, \"updates\": 21, \"hot_updates\": 13}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 73.33}"
+    "details": "{\"rows\": {\"dead\": 13, \"live\": 4, \"estimated\": 9}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"128 kB\", \"table_size\": \"16 kB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"176 kB\", \"total_bytes\": 180224}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 4, \"updates\": 23, \"hot_updates\": 15}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 76.47}"
   },
   {
     "section": "02_TABLE_META",
@@ -339,7 +339,7 @@
     "section": "02_TABLE_META",
     "table_name": "teacher_subscriptions",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 1, \"live\": 1, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"64 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"0 bytes\", \"total_size\": \"72 kB\", \"total_bytes\": 73728}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 1, \"inserts\": 2, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 50.00}"
+    "details": "{\"rows\": {\"dead\": 4, \"live\": 1, \"estimated\": -1}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"64 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"0 bytes\", \"total_size\": \"72 kB\", \"total_bytes\": 73728}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 2, \"inserts\": 5, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": null}, \"rls_enabled\": true, \"bloat_percentage\": 80.00}"
   },
   {
     "section": "02_TABLE_META",
@@ -351,7 +351,7 @@
     "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 23, \"live\": 4, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 11, \"updates\": 1092, \"hot_updates\": 627}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-23T08:59:42.395744+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 85.19}"
+    "details": "{\"rows\": {\"dead\": 27, \"live\": 4, \"estimated\": 4}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"96 kB\", \"total_bytes\": 98304}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 9, \"inserts\": 11, \"updates\": 1106, \"hot_updates\": 631}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-23T08:59:42.395744+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 87.10}"
   },
   {
     "section": "02_TABLE_META",
@@ -1623,13 +1623,13 @@
     "section": "08_FK_OUTGOING",
     "table_name": "notifications",
     "name": "notifications_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"created_by\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 9, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
     "table_name": "notifications",
     "name": "notifications_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 0, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"notifications\", \"columns\": [\"user_id\"]}, \"target\": {\"table\": \"profiles\", \"columns\": [\"id\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 9, \"target_rows\": 4}, \"relationship_type\": \"MANY_TO_ONE\"}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -1989,13 +1989,13 @@
     "section": "09_FK_INCOMING",
     "table_name": "profiles",
     "name": "notifications_created_by_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"notifications\", \"columns\": [\"created_by\"], \"row_count\": 0}, \"impact_analysis\": {\"warning\": null, \"cascade_risk\": \"MEDIUM\"}}"
+    "details": "{\"rules\": {\"on_delete\": \"SET NULL\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"notifications\", \"columns\": [\"created_by\"], \"row_count\": 9}, \"impact_analysis\": {\"warning\": null, \"cascade_risk\": \"MEDIUM\"}}"
   },
   {
     "section": "09_FK_INCOMING",
     "table_name": "profiles",
     "name": "notifications_user_id_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"notifications\", \"columns\": [\"user_id\"], \"row_count\": 0}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to notifications\", \"cascade_risk\": \"HIGH\"}}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"id\"], \"referenced_by\": {\"table\": \"notifications\", \"columns\": [\"user_id\"], \"row_count\": 9}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to notifications\", \"cascade_risk\": \"HIGH\"}}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -2457,7 +2457,7 @@
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_created_by",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 243, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 248, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2475,13 +2475,13 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 44, \"is_unused\": false, \"tuples_read\": 44, \"tuples_fetched\": 44}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 47, \"is_unused\": false, \"tuples_read\": 47, \"tuples_fetched\": 47}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 845, \"is_unused\": false, \"tuples_read\": 845, \"tuples_fetched\": 845}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 864, \"is_unused\": false, \"tuples_read\": 864, \"tuples_fetched\": 864}}"
   },
   {
     "section": "11_INDEX",
@@ -2523,19 +2523,19 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1711, \"is_unused\": false, \"tuples_read\": 35931, \"tuples_fetched\": 42}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_id ON public.lessons USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1755, \"is_unused\": false, \"tuples_read\": 36855, \"tuples_fetched\": 42}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_subject_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 788, \"is_unused\": false, \"tuples_read\": 66192, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_subject_id ON public.lessons USING btree (subject_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 809, \"is_unused\": false, \"tuples_read\": 67956, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "lessons_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 17, \"is_unused\": false, \"tuples_read\": 116, \"tuples_fetched\": 116}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 21, \"is_unused\": false, \"tuples_read\": 120, \"tuples_fetched\": 120}}"
   },
   {
     "section": "11_INDEX",
@@ -2558,20 +2558,50 @@
   {
     "section": "11_INDEX",
     "table_name": "notifications",
+    "name": "idx_notifications_created_at",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_created_at ON public.notifications USING btree (created_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 52, \"is_unused\": false, \"tuples_read\": 388, \"tuples_fetched\": 387}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "notifications",
+    "name": "idx_notifications_is_read",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_is_read ON public.notifications USING btree (is_read)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "notifications",
     "name": "idx_notifications_status",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_status ON public.notifications USING btree (status)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_status ON public.notifications USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "notifications",
+    "name": "idx_notifications_target_role",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_target_role ON public.notifications USING btree (target_role)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "notifications",
     "name": "idx_notifications_user",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_user ON public.notifications USING btree (user_id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_user ON public.notifications USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "notifications",
+    "name": "idx_notifications_user_id",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_user_id ON public.notifications USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "notifications",
+    "name": "idx_notifications_user_read",
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_notifications_user_read ON public.notifications USING btree (user_id, is_read, created_at DESC)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 98, \"is_unused\": false, \"tuples_read\": 24, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "notifications",
     "name": "notifications_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 1, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 2, \"is_unused\": false, \"tuples_read\": 1, \"tuples_fetched\": 1}}"
   },
   {
     "section": "11_INDEX",
@@ -2637,7 +2667,7 @@
     "section": "11_INDEX",
     "table_name": "question_banks",
     "name": "idx_question_banks_lesson_id",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 16, \"is_unused\": false, \"tuples_read\": 13, \"tuples_fetched\": 13}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_question_banks_lesson_id ON public.question_banks USING btree (lesson_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 20, \"is_unused\": false, \"tuples_read\": 13, \"tuples_fetched\": 13}}"
   },
   {
     "section": "11_INDEX",
@@ -2685,7 +2715,7 @@
     "section": "11_INDEX",
     "table_name": "subjects",
     "name": "subjects_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1760, \"is_unused\": false, \"tuples_read\": 1760, \"tuples_fetched\": 1760}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subjects_slug_key ON public.subjects USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1804, \"is_unused\": false, \"tuples_read\": 1804, \"tuples_fetched\": 1804}}"
   },
   {
     "section": "11_INDEX",
@@ -2745,13 +2775,13 @@
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "idx_teacher_subscriptions_teacher",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_teacher ON public.teacher_subscriptions USING btree (teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 48, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_teacher ON public.teacher_subscriptions USING btree (teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 10, \"is_unused\": false, \"tuples_read\": 106, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "idx_teacher_subscriptions_user",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 95, \"is_unused\": false, \"tuples_read\": 1170, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_teacher_subscriptions_user ON public.teacher_subscriptions USING btree (user_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 100, \"is_unused\": false, \"tuples_read\": 1186, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -2763,7 +2793,7 @@
     "section": "11_INDEX",
     "table_name": "teacher_subscriptions",
     "name": "teacher_subscriptions_user_id_teacher_id_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"teacher_id\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_subscriptions_user_id_teacher_id_key ON public.teacher_subscriptions USING btree (user_id, teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 22, \"is_unused\": false, \"tuples_read\": 20, \"tuples_fetched\": 19}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"teacher_id\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX teacher_subscriptions_user_id_teacher_id_key ON public.teacher_subscriptions USING btree (user_id, teacher_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 26, \"is_unused\": false, \"tuples_read\": 23, \"tuples_fetched\": 20}}"
   },
   {
     "section": "11_INDEX",
@@ -2775,7 +2805,7 @@
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_status",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 46, \"is_unused\": false, \"tuples_read\": 38, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 68, \"is_unused\": false, \"tuples_read\": 60, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3100,6 +3130,54 @@
     "table_name": "notification_preferences",
     "name": "notification_prefs_user_all",
     "details": "{\"roles\": [\"public\"], \"command\": \"ALL\", \"applies_to\": [\"SELECT\", \"INSERT\", \"UPDATE\", \"DELETE\"], \"permissive\": true, \"using_expression\": \"(user_id = auth.uid())\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Admins can delete notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"DELETE\", \"applies_to\": [\"DELETE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Admins can insert notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"INSERT\", \"applies_to\": [\"INSERT\"], \"permissive\": true, \"using_expression\": null, \"with_check_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Admins can update all notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Admins can view all notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role))))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "System can insert notifications",
+    "details": "{\"roles\": [\"service_role\"], \"command\": \"INSERT\", \"applies_to\": [\"INSERT\"], \"permissive\": true, \"using_expression\": null, \"with_check_expression\": \"true\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Users can update their own notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"UPDATE\", \"applies_to\": [\"UPDATE\"], \"permissive\": true, \"using_expression\": \"(auth.uid() = user_id)\", \"with_check_expression\": \"(auth.uid() = user_id)\"}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Users can view role-targeted notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"((user_id IS NULL) AND (((target_role)::text = 'all'::text) OR (((target_role)::text = 'students'::text) AND (EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'student'::user_role))))) OR (((target_role)::text = 'teachers'::text) AND (EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'teacher'::user_role))))) OR (((target_role)::text = 'admins'::text) AND (EXISTS ( SELECT 1\\n   FROM profiles\\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::user_role)))))))\", \"with_check_expression\": null}"
+  },
+  {
+    "section": "12_RLS_POLICY",
+    "table_name": "notifications",
+    "name": "Users can view their own notifications",
+    "details": "{\"roles\": [\"authenticated\"], \"command\": \"SELECT\", \"applies_to\": [\"SELECT\"], \"permissive\": true, \"using_expression\": \"(auth.uid() = user_id)\", \"with_check_expression\": null}"
   },
   {
     "section": "12_RLS_POLICY",
@@ -3687,7 +3765,7 @@
     "section": "14_FUNCTION",
     "table_name": "get_unread_notification_count",
     "name": "signature",
-    "details": "{\"oid\": \"39841\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"sql\", \"security\": \"INVOKER\", \"arguments\": \"\", \"is_window\": false, \"volatility\": \"STABLE\", \"description\": null, \"return_type\": \"integer\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
+    "details": "{\"oid\": \"62717\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"DEFINER\", \"arguments\": \"\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"integer\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
   },
   {
     "section": "14_FUNCTION",
@@ -3730,6 +3808,24 @@
     "table_name": "is_admin",
     "name": "signature",
     "details": "{\"oid\": \"41141\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"sql\", \"security\": \"DEFINER\", \"arguments\": \"\", \"is_window\": false, \"volatility\": \"STABLE\", \"description\": null, \"return_type\": \"boolean\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
+  },
+  {
+    "section": "14_FUNCTION",
+    "table_name": "mark_all_notifications_read",
+    "name": "signature",
+    "details": "{\"oid\": \"62718\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"DEFINER\", \"arguments\": \"\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"void\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
+  },
+  {
+    "section": "14_FUNCTION",
+    "table_name": "mark_notification_read",
+    "name": "signature",
+    "details": "{\"oid\": \"62715\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"DEFINER\", \"arguments\": \"p_notification_id uuid\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"boolean\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
+  },
+  {
+    "section": "14_FUNCTION",
+    "table_name": "mark_notifications_read_bulk",
+    "name": "signature",
+    "details": "{\"oid\": \"62716\", \"cost\": 100, \"owner\": \"postgres\", \"strict\": false, \"language\": \"plpgsql\", \"security\": \"DEFINER\", \"arguments\": \"p_notification_ids uuid[] DEFAULT NULL::uuid[], p_mark_all boolean DEFAULT false\", \"is_window\": false, \"volatility\": \"VOLATILE\", \"description\": null, \"return_type\": \"integer\", \"is_aggregate\": false, \"is_procedure\": false, \"estimated_rows\": null, \"parallel_safety\": \"UNSAFE\"}"
   },
   {
     "section": "14_FUNCTION",
@@ -4399,6 +4495,60 @@
   },
   {
     "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_all_notifications_read",
+    "name": "PUBLIC",
+    "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"mark_all_notifications_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_all_notifications_read",
+    "name": "authenticated",
+    "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"function\": \"mark_all_notifications_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_all_notifications_read",
+    "name": "postgres",
+    "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"function\": \"mark_all_notifications_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": true}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notification_read",
+    "name": "PUBLIC",
+    "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"mark_notification_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notification_read",
+    "name": "authenticated",
+    "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"function\": \"mark_notification_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notification_read",
+    "name": "postgres",
+    "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"function\": \"mark_notification_read\", \"privilege\": \"EXECUTE\", \"with_grant_option\": true}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notifications_read_bulk",
+    "name": "PUBLIC",
+    "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"mark_notifications_read_bulk\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notifications_read_bulk",
+    "name": "authenticated",
+    "details": "{\"grantee\": \"authenticated\", \"grantor\": \"postgres\", \"function\": \"mark_notifications_read_bulk\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
+    "table_name": "mark_notifications_read_bulk",
+    "name": "postgres",
+    "details": "{\"grantee\": \"postgres\", \"grantor\": \"postgres\", \"function\": \"mark_notifications_read_bulk\", \"privilege\": \"EXECUTE\", \"with_grant_option\": true}"
+  },
+  {
+    "section": "17_FUNCTION_PRIVILEGE",
     "table_name": "prevent_role_change",
     "name": "PUBLIC",
     "details": "{\"grantee\": \"PUBLIC\", \"grantor\": \"postgres\", \"function\": \"prevent_role_change\", \"privilege\": \"EXECUTE\", \"with_grant_option\": false}"
@@ -4539,13 +4689,13 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 573, \"read\": 2, \"hit_ratio\": 99.65}, \"index_blocks\": {\"hit\": 1859, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 579, \"read\": 2, \"hit_ratio\": 99.66}, \"index_blocks\": {\"hit\": 1888, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1259, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2141, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1283, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 2187, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4557,7 +4707,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4281, \"read\": 9, \"hit_ratio\": 99.79}, \"index_blocks\": {\"hit\": 5313, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 4370, \"read\": 9, \"hit_ratio\": 99.79}, \"index_blocks\": {\"hit\": 5458, \"read\": 7}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4575,19 +4725,19 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notifications",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 9961, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 141, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 10712, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 13564, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 9137, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 14556, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 9529, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "question_banks",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 14, \"read\": 1, \"hit_ratio\": 93.33}, \"index_blocks\": {\"hit\": 92, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 14, \"read\": 1, \"hit_ratio\": 93.33}, \"index_blocks\": {\"hit\": 110, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4599,7 +4749,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 2164, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 4241, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2215, \"read\": 1, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 4351, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4617,7 +4767,7 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 379, \"read\": 1, \"hit_ratio\": 99.74}, \"index_blocks\": {\"hit\": 1242, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 384, \"read\": 1, \"hit_ratio\": 99.74}, \"index_blocks\": {\"hit\": 1257, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4629,19 +4779,19 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_subscriptions",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 113, \"read\": 1, \"hit_ratio\": 99.12}, \"index_blocks\": {\"hit\": 418, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 133, \"read\": 1, \"hit_ratio\": 99.25}, \"index_blocks\": {\"hit\": 481, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "testimonials",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 56, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 474, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 78, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 544, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 5851, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2810, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5942, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 2867, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
@@ -4737,7 +4887,7 @@
     "section": "20_SECURITY_AUDIT",
     "table_name": "notifications",
     "name": "security_status",
-    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 4}, \"grants\": {\"role_count\": 3, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
+    "details": "{\"rls\": {\"forced\": false, \"enabled\": true, \"policy_count\": 12}, \"grants\": {\"role_count\": 3, \"has_public_access\": false}, \"recommendations\": \"✅ Security configured\"}"
   },
   {
     "section": "20_SECURITY_AUDIT",
@@ -4893,7 +5043,7 @@
     "section": "25_ALL_PUBLICATIONS",
     "table_name": "supabase_realtime_messages_publication",
     "name": "configuration",
-    "details": "{\"oid\": \"28229\", \"owner\": \"supabase_admin\", \"delete\": true, \"insert\": true, \"tables\": [{\"table\": \"messages_2026_01_20\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_21\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_22\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_23\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_24\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_25\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_26\", \"schema\": \"realtime\"}], \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 7}"
+    "details": "{\"oid\": \"28229\", \"owner\": \"supabase_admin\", \"delete\": true, \"insert\": true, \"tables\": [{\"table\": \"messages_2026_01_21\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_22\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_23\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_24\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_25\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_26\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_27\", \"schema\": \"realtime\"}], \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 7}"
   },
   {
     "section": "05_COLUMN",
@@ -4923,7 +5073,7 @@
     "section": "26_FUNCTION_SOURCE",
     "table_name": "get_unread_notification_count",
     "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"sql\", \"signature\": \"get_unread_notification_count()\", \"return_type\": \"integer\", \"source_length\": 107, \"source_preview\": \"\\n    SELECT COUNT(*)::INTEGER \\n    FROM notifications \\n    WHERE user_id = auth.uid() AND is_read = FALSE;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_unread_notification_count()\\n RETURNS integer\\n LANGUAGE sql\\n STABLE\\nAS $function$\\n    SELECT COUNT(*)::INTEGER \\n    FROM notifications \\n    WHERE user_id = auth.uid() AND is_read = FALSE;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
+    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"get_unread_notification_count()\", \"return_type\": \"integer\", \"source_length\": 804, \"source_preview\": \"\\nDECLARE\\n    unread_count INTEGER;\\n    user_role TEXT;\\nBEGIN\\n    -- Get user role\\n    SELECT role::text INTO user_role\\n    FROM profiles\\n    WHERE id = auth.uid();\\n\\n    -- Count unread notifications (both direct and role-targeted)\\n    -- Map plural target_role to singular user_role\\n    SELECT COUNT(*) INTO unread_count\\n    FROM notifications\\n    WHERE is_read = false\\n    AND (\\n        user_id = auth.uid()\\n        OR (\\n            user_id IS NULL \\n            AND (\\n                target_role::text = 'all' \\n                OR (target_role::text = 'students' AND user_role = 'student')\\n                OR (target_role::text = 'teachers' AND user_role = 'teacher')\\n                OR (target_role::text = 'admins' AND user_role = 'admin')\\n            )\\n        )\\n    );\\n\\n    RETURN unread_count;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_unread_notification_count()\\n RETURNS integer\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    unread_count INTEGER;\\n    user_role TEXT;\\nBEGIN\\n    -- Get user role\\n    SELECT role::text INTO user_role\\n    FROM profiles\\n    WHERE id = auth.uid();\\n\\n    -- Count unread notifications (both direct and role-targeted)\\n    -- Map plural target_role to singular user_role\\n    SELECT COUNT(*) INTO unread_count\\n    FROM notifications\\n    WHERE is_read = false\\n    AND (\\n        user_id = auth.uid()\\n        OR (\\n            user_id IS NULL \\n            AND (\\n                target_role::text = 'all' \\n                OR (target_role::text = 'students' AND user_role = 'student')\\n                OR (target_role::text = 'teachers' AND user_role = 'teacher')\\n                OR (target_role::text = 'admins' AND user_role = 'admin')\\n            )\\n        )\\n    );\\n\\n    RETURN unread_count;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
   },
   {
     "section": "26_FUNCTION_SOURCE",
@@ -4969,6 +5119,24 @@
   },
   {
     "section": "26_FUNCTION_SOURCE",
+    "table_name": "mark_all_notifications_read",
+    "name": "source_code",
+    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_all_notifications_read()\", \"return_type\": \"void\", \"source_length\": 136, \"source_preview\": \"\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE user_id = auth.uid()\\n    AND is_read = false;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_all_notifications_read()\\n RETURNS void\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE user_id = auth.uid()\\n    AND is_read = false;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
+  },
+  {
+    "section": "26_FUNCTION_SOURCE",
+    "table_name": "mark_notification_read",
+    "name": "source_code",
+    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_notification_read(p_notification_id uuid)\", \"return_type\": \"boolean\", \"source_length\": 166, \"source_preview\": \"\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE id = p_notification_id\\n    AND user_id = auth.uid();\\n    \\n    RETURN FOUND;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_notification_read(p_notification_id uuid)\\n RETURNS boolean\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE id = p_notification_id\\n    AND user_id = auth.uid();\\n    \\n    RETURN FOUND;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
+  },
+  {
+    "section": "26_FUNCTION_SOURCE",
+    "table_name": "mark_notifications_read_bulk",
+    "name": "source_code",
+    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_notifications_read_bulk(p_notification_ids uuid[] DEFAULT NULL::uuid[], p_mark_all boolean DEFAULT false)\", \"return_type\": \"integer\", \"source_length\": 561, \"source_preview\": \"\\nDECLARE\\n    affected_count INTEGER;\\nBEGIN\\n    IF p_mark_all THEN\\n        -- Mark all user's notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE user_id = auth.uid()\\n        AND is_read = false;\\n    ELSE\\n        -- Mark specific notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE id = ANY(p_notification_ids)\\n        AND user_id = auth.uid();\\n    END IF;\\n    \\n    GET DIAGNOSTICS affected_count = ROW_COUNT;\\n    RETURN affected_count;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_notifications_read_bulk(p_notification_ids uuid[] DEFAULT NULL::uuid[], p_mark_all boolean DEFAULT false)\\n RETURNS integer\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    affected_count INTEGER;\\nBEGIN\\n    IF p_mark_all THEN\\n        -- Mark all user's notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE user_id = auth.uid()\\n        AND is_read = false;\\n    ELSE\\n        -- Mark specific notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE id = ANY(p_notification_ids)\\n        AND user_id = auth.uid();\\n    END IF;\\n    \\n    GET DIAGNOSTICS affected_count = ROW_COUNT;\\n    RETURN affected_count;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::uuid[]\", \"false\"]}"
+  },
+  {
+    "section": "26_FUNCTION_SOURCE",
     "table_name": "prevent_role_change",
     "name": "source_code",
     "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"prevent_role_change()\", \"return_type\": \"trigger\", \"source_length\": 350, \"source_preview\": \"\\nBEGIN\\n    -- Allow role change during onboarding\\n    IF OLD.role_selected = FALSE THEN\\n        RETURN NEW;\\n    END IF;\\n    \\n    -- Prevent role change for regular users after selection\\n    IF OLD.role <> NEW.role AND get_user_role() <> 'admin' THEN\\n        RAISE EXCEPTION 'You are not allowed to change role';\\n    END IF;\\n    \\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.prevent_role_change()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    -- Allow role change during onboarding\\n    IF OLD.role_selected = FALSE THEN\\n        RETURN NEW;\\n    END IF;\\n    \\n    -- Prevent role change for regular users after selection\\n    IF OLD.role <> NEW.role AND get_user_role() <> 'admin' THEN\\n        RAISE EXCEPTION 'You are not allowed to change role';\\n    END IF;\\n    \\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
@@ -5007,7 +5175,7 @@
     "section": "27_DATABASE_CONFIG",
     "table_name": "postgres",
     "name": "settings",
-    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 18, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15625363}"
+    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 10, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 15797395}"
   },
   {
     "section": "05_COLUMN",
@@ -5068,17 +5236,5 @@
     "table_name": "profiles",
     "name": "educational_stage_id",
     "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 29, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": \"المرحلة الدراسية للمستخدم - User educational stage reference\"}"
-  },
-  {
-    "section": "29_REPLICATION_SLOT",
-    "table_name": "supabase_realtime_messages_replication_slot_v2_71_4",
-    "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"pgoutput\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 238510, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/31000078\", \"catalog_xmin\": \"9158\", \"safe_wal_size\": 4311737360, \"confirmed_flush_lsn\": \"2/310000B1\"}"
-  },
-  {
-    "section": "29_REPLICATION_SLOT",
-    "table_name": "supabase_realtime_replication_slot_v2_71_4",
-    "name": "configuration",
-    "details": "{\"xmin\": null, \"active\": true, \"plugin\": \"wal2json\", \"database\": \"postgres\", \"slot_type\": \"logical\", \"temporary\": true, \"active_pid\": 238511, \"wal_status\": \"reserved\", \"restart_lsn\": \"2/31000078\", \"catalog_xmin\": \"9158\", \"safe_wal_size\": 4311737360, \"confirmed_flush_lsn\": \"2/31001BF0\"}"
   }
 ]
