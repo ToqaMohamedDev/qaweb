@@ -153,6 +153,15 @@ export default function ExamsManagement() {
     // Filters State
     const [selectedStage, setSelectedStage] = useState<string>("");
     const [selectedSubject, setSelectedSubject] = useState<string>("");
+    const [selectedSemester, setSelectedSemester] = useState<string>("");
+
+    // Semester options
+    const SEMESTER_OPTIONS = [
+        { value: "", label: "كل الفصول" },
+        { value: "first", label: "الترم الأول" },
+        { value: "second", label: "الترم الثاني" },
+        { value: "full_year", label: "سنة كاملة" },
+    ];
 
     // Auxiliary Data (API-based for Vercel compatibility)
     const { data: stages = [] } = useStagesAPI();
@@ -165,7 +174,8 @@ export default function ExamsManagement() {
     const exams = allExams.filter((exam: any) => {
         const matchStage = !selectedStage || exam.stage_id === selectedStage;
         const matchSubject = !selectedSubject || exam.subject_id === selectedSubject;
-        return matchStage && matchSubject;
+        const matchSemester = !selectedSemester || exam.semester === selectedSemester;
+        return matchStage && matchSubject && matchSemester;
     });
 
     const deleteExamMutation = useDeleteExamAPI();
@@ -218,10 +228,11 @@ export default function ExamsManagement() {
         () =>
             !!(selectedStage ||
                 selectedSubject ||
+                selectedSemester ||
                 filterLanguage !== "all" ||
                 filterStatus !== "all" ||
                 searchQuery),
-        [selectedStage, selectedSubject, filterLanguage, filterStatus, searchQuery]
+        [selectedStage, selectedSubject, selectedSemester, filterLanguage, filterStatus, searchQuery]
     );
 
 
@@ -285,6 +296,7 @@ export default function ExamsManagement() {
     const clearFilters = useCallback(() => {
         setSelectedStage("");
         setSelectedSubject("");
+        setSelectedSemester("");
         setFilterLanguage("all");
         setFilterStatus("all");
         setSearchQuery("");
@@ -334,6 +346,9 @@ export default function ExamsManagement() {
                     onStageChange={setSelectedStage}
                     selectedSubject={selectedSubject}
                     onSubjectChange={setSelectedSubject}
+                    selectedSemester={selectedSemester}
+                    onSemesterChange={setSelectedSemester}
+                    semesterOptions={SEMESTER_OPTIONS}
                     filterLanguage={filterLanguage}
                     onLanguageChange={setFilterLanguage}
                     filterStatus={filterStatus}
@@ -431,6 +446,9 @@ interface ExamsFiltersProps {
     onStageChange: (value: string) => void;
     selectedSubject: string;
     onSubjectChange: (value: string) => void;
+    selectedSemester: string;
+    onSemesterChange: (value: string) => void;
+    semesterOptions: { value: string; label: string }[];
     filterLanguage: Language;
     onLanguageChange: (value: Language) => void;
     filterStatus: StatusFilter;
@@ -448,6 +466,9 @@ function ExamsFilters({
     onStageChange,
     selectedSubject,
     onSubjectChange,
+    selectedSemester,
+    onSemesterChange,
+    semesterOptions,
     filterLanguage,
     onLanguageChange,
     filterStatus,
@@ -475,7 +496,7 @@ function ExamsFilters({
             </div>
 
             {/* Filter Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <select
                     value={selectedStage}
                     onChange={(e) => onStageChange(e.target.value)}
@@ -520,6 +541,18 @@ function ExamsFilters({
                     className={selectClassName}
                 >
                     {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={selectedSemester}
+                    onChange={(e) => onSemesterChange(e.target.value)}
+                    className={selectClassName}
+                >
+                    {semesterOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                             {opt.label}
                         </option>

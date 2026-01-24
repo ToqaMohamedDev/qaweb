@@ -22,6 +22,7 @@ import {
     Sun,
     Monitor,
     User,
+    Calendar,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { AdminPageHeader } from "@/components/admin/shared";
@@ -55,11 +56,17 @@ interface AppearanceSettings {
     primaryColor: string;
 }
 
+interface SemesterSettings {
+    showFirstSemester: boolean;
+    showSecondSemester: boolean;
+}
+
 interface SettingsData {
     general: GeneralSettings;
     auth: AuthSettings;
     email: EmailSettings;
     appearance: AppearanceSettings;
+    semester: SemesterSettings;
 }
 
 interface DbStats {
@@ -68,7 +75,7 @@ interface DbStats {
     size: string;
 }
 
-type SettingsTab = "general" | "appearance" | "auth" | "email" | "database";
+type SettingsTab = "general" | "appearance" | "auth" | "email" | "database" | "semester";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Constants
@@ -96,10 +103,15 @@ const DEFAULT_SETTINGS: SettingsData = {
         theme: "system",
         primaryColor: "#8B5CF6",
     },
+    semester: {
+        showFirstSemester: true,
+        showSecondSemester: true,
+    },
 };
 
 const TABS = [
     { id: "general" as SettingsTab, label: "عام", icon: Settings },
+    { id: "semester" as SettingsTab, label: "الفصول الدراسية", icon: Calendar },
     { id: "appearance" as SettingsTab, label: "المظهر", icon: Palette },
     { id: "auth" as SettingsTab, label: "المصادقة", icon: Shield },
     { id: "email" as SettingsTab, label: "البريد", icon: Mail },
@@ -159,38 +171,41 @@ export default function SettingsPage() {
         setError(null);
 
         try {
-            // Use API route for fetching settings
-            const res = await fetch('/api/admin/query?table=site_settings&select=*&limit=100');
-            const result = await res.json();
-
-            if (!res.ok) {
-                if (result.error?.includes('42P01')) {
-                    // Table doesn't exist, use localStorage
-                    setUseLocalStorage(true);
-                    const stored = localStorage.getItem("admin_settings");
-                    if (stored) setSettings(JSON.parse(stored));
-                } else {
-                    throw new Error(result.error);
-                }
-            } else if (result.data && result.data.length > 0) {
-                const settingsObj = { ...DEFAULT_SETTINGS };
-                result.data.forEach((row: any) => {
-                    if (row.key in settingsObj) {
-                        (settingsObj as any)[row.key] = row.value;
-                    }
-                });
-                setSettings(settingsObj);
-            } else {
-                // No settings found, use localStorage
-                setUseLocalStorage(true);
-                const stored = localStorage.getItem("admin_settings");
-                if (stored) setSettings(JSON.parse(stored));
+            // Load general settings from localStorage
+            setUseLocalStorage(true);
+            const stored = localStorage.getItem("admin_settings");
+            let settingsObj = { ...DEFAULT_SETTINGS };
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                settingsObj = { ...settingsObj, ...parsed };
             }
+
+            // Fetch semester settings from app_settings table
+            try {
+                const supabase = createClient();
+                const { data: appSettings, error: appError } = await supabase
+                    .from('app_settings')
+                    .select('*')
+                    .eq('id', 'global')
+                    .single();
+
+                if (!appError && appSettings) {
+                    settingsObj.semester = {
+                        showFirstSemester: appSettings.show_first_semester ?? true,
+                        showSecondSemester: appSettings.show_second_semester ?? true,
+                    };
+                }
+            } catch {
+                // If app_settings doesn't exist yet, use defaults
+            }
+
+            setSettings(settingsObj);
 
             // Fetch DB stats
             await fetchDbStats();
-        } catch (err: any) {
-            setError(err.message || "حدث خطأ في جلب الإعدادات");
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "حدث خطأ في جلب الإعدادات";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -225,27 +240,34 @@ export default function SettingsPage() {
     const handleSave = useCallback(async () => {
         setSaving(true);
         try {
-            if (useLocalStorage) {
-                localStorage.setItem("admin_settings", JSON.stringify(settings));
-            } else {
-                const supabase = createClient();
-                for (const [key, value] of Object.entries(settings)) {
-                    await supabase
-                        .from("site_settings")
-                        .upsert(
-                            { key, value, updated_at: new Date().toISOString() },
-                            { onConflict: "key" }
-                        );
-                }
+            // Save general settings to localStorage
+            const { semester, ...otherSettings } = settings;
+            localStorage.setItem("admin_settings", JSON.stringify(otherSettings));
+
+            // Save semester settings to app_settings table
+            const supabase = createClient();
+            const { error } = await supabase
+                .from('app_settings')
+                .upsert({
+                    id: 'global',
+                    show_first_semester: semester.showFirstSemester,
+                    show_second_semester: semester.showSecondSemester,
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (error) {
+                throw error;
             }
+
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
-        } catch (err: any) {
-            alert("خطأ: " + err.message);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "حدث خطأ غير معروف";
+            alert("خطأ: " + errorMessage);
         } finally {
             setSaving(false);
         }
-    }, [settings, useLocalStorage]);
+    }, [settings]);
 
     const handleChange = useCallback(
         <K extends keyof SettingsData>(
@@ -311,6 +333,9 @@ export default function SettingsPage() {
                 <div className="flex-1 bg-white dark:bg-[#1c1c24] rounded-2xl border border-gray-200/60 dark:border-gray-800 p-6">
                     {activeTab === "general" && (
                         <GeneralTab settings={settings.general} onChange={handleChange} />
+                    )}
+                    {activeTab === "semester" && (
+                        <SemesterTab settings={settings.semester} onChange={handleChange} />
                     )}
                     {activeTab === "appearance" && (
                         <AppearanceTab settings={settings.appearance} onChange={handleChange} />
@@ -572,6 +597,66 @@ function EmailTab({ settings, onChange }: EmailTabProps) {
                     <strong>ملاحظة:</strong> يتم إرسال البريد عبر Supabase Auth. لتخصيص قوالب
                     البريد، انتقل إلى لوحة تحكم Supabase.
                 </p>
+            </div>
+        </div>
+    );
+}
+
+interface SemesterTabProps {
+    settings: SemesterSettings;
+    onChange: <K extends keyof SettingsData>(category: K, key: keyof SettingsData[K], value: boolean) => void;
+}
+
+function SemesterTab({ settings, onChange }: SemesterTabProps) {
+    return (
+        <div className="space-y-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                إعدادات الفصول الدراسية
+            </h3>
+
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 mb-6">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                    <strong>ملاحظة:</strong> المحتوى المحدد كـ &quot;سنة كاملة&quot; يظهر دائماً للطلاب بغض النظر عن هذه الإعدادات.
+                    هذه الإعدادات تتحكم فقط في عرض محتوى الترم الأول والترم الثاني.
+                </p>
+            </div>
+
+            <ToggleItem
+                icon={Calendar}
+                label="عرض محتوى الترم الأول"
+                description="السماح للطلاب برؤية الدروس والامتحانات المحددة كترم أول"
+                enabled={settings.showFirstSemester}
+                onChange={(v) => onChange("semester", "showFirstSemester", v)}
+            />
+
+            <ToggleItem
+                icon={Calendar}
+                label="عرض محتوى الترم الثاني"
+                description="السماح للطلاب برؤية الدروس والامتحانات المحددة كترم ثاني"
+                enabled={settings.showSecondSemester}
+                onChange={(v) => onChange("semester", "showSecondSemester", v)}
+            />
+
+            <div className="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                <p className="font-medium text-gray-900 dark:text-white mb-2">الحالة الحالية</p>
+                <div className="space-y-2 text-sm">
+                    <p>
+                        <span className="text-gray-500">الترم الأول:</span>{" "}
+                        <span className={settings.showFirstSemester ? "text-green-500 font-medium" : "text-red-500 font-medium"}>
+                            {settings.showFirstSemester ? "ظاهر ✓" : "مخفي ✗"}
+                        </span>
+                    </p>
+                    <p>
+                        <span className="text-gray-500">الترم الثاني:</span>{" "}
+                        <span className={settings.showSecondSemester ? "text-green-500 font-medium" : "text-red-500 font-medium"}>
+                            {settings.showSecondSemester ? "ظاهر ✓" : "مخفي ✗"}
+                        </span>
+                    </p>
+                    <p>
+                        <span className="text-gray-500">سنة كاملة:</span>{" "}
+                        <span className="text-green-500 font-medium">ظاهر دائماً ✓</span>
+                    </p>
+                </div>
             </div>
         </div>
     );

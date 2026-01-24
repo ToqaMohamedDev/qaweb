@@ -322,6 +322,14 @@ export default function CreateExamPage() {
     const [gradingMode, setGradingMode] = useState<'auto' | 'manual'>('auto');
     const [usageScope, setUsageScope] = useState<'public' | 'private' | 'subscribers'>('public');
     const [branchTags, setBranchTags] = useState<string[]>([]);
+    const [selectedSemester, setSelectedSemester] = useState<'first' | 'second' | 'full_year'>('full_year');
+
+    // Semester options
+    const semesterOptions = [
+        { value: 'first', label: 'الترم الأول', labelEn: 'First Semester' },
+        { value: 'second', label: 'الترم الثاني', labelEn: 'Second Semester' },
+        { value: 'full_year', label: 'سنة كاملة', labelEn: 'Full Year' },
+    ];
 
     // Sections
     const [sections, setSections] = useState<QuestionSection[]>([createEmptySection()]);
@@ -338,6 +346,7 @@ export default function CreateExamPage() {
 
             if (fetchedExam.stage_id) setSelectedStage(String(fetchedExam.stage_id));
             if (fetchedExam.subject_id) setSelectedSubject(String(fetchedExam.subject_id));
+            if (fetchedExam.semester) setSelectedSemester(fetchedExam.semester as 'first' | 'second' | 'full_year');
 
             // Set language based on exam type
             if (fetchedExam.language === 'english') setLang('en');
@@ -526,6 +535,7 @@ export default function CreateExamPage() {
             exam_title: examTitleAr || examTitleEn,
             stage_id: selectedStage || undefined,
             subject_id: selectedSubject || undefined,
+            semester: selectedSemester,
             duration_minutes: duration,
             total_marks: totalScore,
             usage_scope: usageScope,
@@ -672,7 +682,20 @@ export default function CreateExamPage() {
                 </div>
 
                 {/* Advanced Settings */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            📅 الفصل الدراسي
+                        </label>
+                        <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value as any)}
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                            {semesterOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                    {lang === 'ar' ? opt.label : opt.labelEn}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             🎯 نطاق الاستخدام

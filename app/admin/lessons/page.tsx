@@ -31,7 +31,16 @@ export default function LessonsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSubject, setSelectedSubject] = useState<string>("all");
     const [selectedStage, setSelectedStage] = useState<string>("all");
+    const [selectedSemester, setSelectedSemester] = useState<string>("all");
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Semester options
+    const semesterOptions = [
+        { value: "all", label: "جميع الفصول" },
+        { value: "first", label: "الترم الأول" },
+        { value: "second", label: "الترم الثاني" },
+        { value: "full_year", label: "سنة كاملة" },
+    ];
 
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +56,8 @@ export default function LessonsPage() {
     const lessons = allLessons.filter((lesson: any) => {
         const matchStage = selectedStage === "all" || lesson.stage_id === selectedStage;
         const matchSubject = selectedSubject === "all" || lesson.subject_id === selectedSubject;
-        return matchStage && matchSubject;
+        const matchSemester = selectedSemester === "all" || lesson.semester === selectedSemester;
+        return matchStage && matchSubject && matchSemester;
     });
 
     // Mutations
@@ -74,7 +84,7 @@ export default function LessonsPage() {
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedSubject, selectedStage]);
+    }, [searchQuery, selectedSubject, selectedStage, selectedSemester]);
 
     // Handle Save
     const handleSave = async (e: React.FormEvent) => {
@@ -91,6 +101,7 @@ export default function LessonsPage() {
                     image_url: currentLesson.image_url,
                     subject_id: currentLesson.subject_id,
                     stage_id: currentLesson.stage_id,
+                    semester: currentLesson.semester ?? 'full_year',
                     is_published: currentLesson.is_published ?? false,
                     order_index: currentLesson.order_index ?? 0
                 });
@@ -103,6 +114,7 @@ export default function LessonsPage() {
                     image_url: currentLesson.image_url,
                     subject_id: currentLesson.subject_id,
                     stage_id: currentLesson.stage_id,
+                    semester: currentLesson.semester ?? 'full_year',
                     is_published: currentLesson.is_published ?? false,
                     order_index: currentLesson.order_index ?? lessons.length
                 });
@@ -208,6 +220,12 @@ export default function LessonsPage() {
                     </select>
                     <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
+                <div className="relative min-w-[160px]">
+                    <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} className="w-full px-4 py-4 rounded-2xl border-0 ring-1 ring-gray-200 dark:ring-gray-700 bg-white dark:bg-[#1c1c24] focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer text-gray-900 dark:text-white">
+                        {semesterOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
             </div>
 
             {/* Content */}
@@ -255,6 +273,11 @@ export default function LessonsPage() {
                                                 {lesson.subjects.name}
                                             </span>
                                         )}
+                                        {lesson.semester && lesson.semester !== 'full_year' && (
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${lesson.semester === 'first' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'}`}>
+                                                {lesson.semester === 'first' ? 'ترم أول' : 'ترم ثاني'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                                         <Link href={`/admin/question-bank?lesson=${lesson.id}`} className="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium"><MessageSquare className="h-3 w-3" /><span>الأسئلة</span></Link>
@@ -296,7 +319,7 @@ export default function LessonsPage() {
                                 </div>
                             </div>
                             <form onSubmit={handleSave} className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold mb-2">المرحلة <span className="text-red-500">*</span></label>
                                         <select required value={currentLesson?.stage_id || ""} onChange={(e) => setCurrentLesson(prev => ({ ...prev, stage_id: e.target.value }))} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 outline-none">
@@ -309,6 +332,14 @@ export default function LessonsPage() {
                                         <select required value={currentLesson?.subject_id || ""} onChange={(e) => setCurrentLesson(prev => ({ ...prev, subject_id: e.target.value }))} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 outline-none">
                                             <option value="">اختر المادة</option>
                                             {subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-2">الفصل الدراسي</label>
+                                        <select value={currentLesson?.semester || "full_year"} onChange={(e) => setCurrentLesson(prev => ({ ...prev, semester: e.target.value as any }))} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 outline-none">
+                                            <option value="first">الترم الأول</option>
+                                            <option value="second">الترم الثاني</option>
+                                            <option value="full_year">سنة كاملة</option>
                                         </select>
                                     </div>
                                 </div>

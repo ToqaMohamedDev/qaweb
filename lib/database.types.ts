@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          show_first_semester: boolean
+          show_second_semester: boolean
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          show_first_semester?: boolean
+          show_second_semester?: boolean
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          show_first_semester?: boolean
+          show_second_semester?: boolean
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       chat_messages: {
         Row: {
           chat_id: string
@@ -132,6 +164,7 @@ export type Database = {
           lesson_id: string | null
           passing_score: number | null
           sections: Json | null
+          semester: Database["public"]["Enums"]["semester_type"] | null
           stage_id: string | null
           stage_name: string | null
           subject_id: string | null
@@ -156,6 +189,7 @@ export type Database = {
           lesson_id?: string | null
           passing_score?: number | null
           sections?: Json | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           stage_name?: string | null
           subject_id?: string | null
@@ -180,6 +214,7 @@ export type Database = {
           lesson_id?: string | null
           passing_score?: number | null
           sections?: Json | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           stage_name?: string | null
           subject_id?: string | null
@@ -426,6 +461,7 @@ export type Database = {
           is_published: boolean | null
           likes_count: number | null
           order_index: number | null
+          semester: Database["public"]["Enums"]["semester_type"] | null
           stage_id: string | null
           subject_id: string
           title: string
@@ -443,6 +479,7 @@ export type Database = {
           is_published?: boolean | null
           likes_count?: number | null
           order_index?: number | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           subject_id: string
           title: string
@@ -460,6 +497,7 @@ export type Database = {
           is_published?: boolean | null
           likes_count?: number | null
           order_index?: number | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           subject_id?: string
           title?: string
@@ -912,6 +950,7 @@ export type Database = {
           language: string
           passing_score: number | null
           sections: Json | null
+          semester: Database["public"]["Enums"]["semester_type"] | null
           stage_id: string | null
           stage_name: string | null
           subject_id: string | null
@@ -935,6 +974,7 @@ export type Database = {
           language?: string
           passing_score?: number | null
           sections?: Json | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           stage_name?: string | null
           subject_id?: string | null
@@ -958,6 +998,7 @@ export type Database = {
           language?: string
           passing_score?: number | null
           sections?: Json | null
+          semester?: Database["public"]["Enums"]["semester_type"] | null
           stage_id?: string | null
           stage_name?: string | null
           subject_id?: string | null
@@ -1293,6 +1334,7 @@ export type Database = {
       sender_type: "user" | "admin" | "system"
       support_chat_status: "open" | "closed" | "pending"
       user_role: "student" | "teacher" | "admin"
+      semester_type: "first" | "second" | "full_year"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1435,6 +1477,7 @@ export const Constants = {
       sender_type: ["user", "admin", "system"],
       support_chat_status: ["open", "closed", "pending"],
       user_role: ["student", "teacher", "admin"],
+      semester_type: ["first", "second", "full_year"],
     },
   },
 } as const
@@ -1446,6 +1489,7 @@ export type ExamType = Database['public']['Enums']['exam_type'];
 export type SenderType = Database['public']['Enums']['sender_type'];
 export type NotificationStatus = Database['public']['Enums']['notification_status'];
 export type NotificationTargetRole = Database['public']['Enums']['notification_target_role'];
+export type SemesterType = Database['public']['Enums']['semester_type'];
 
 // Table types
 export type Profile = Tables<'profiles'>;
