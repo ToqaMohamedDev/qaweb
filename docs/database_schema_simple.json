@@ -1,0 +1,1252 @@
+{
+  "app_settings": [
+    {
+      "name": "id",
+      "type": "text"
+    },
+    {
+      "name": "show_first_semester",
+      "type": "bool"
+    },
+    {
+      "name": "show_second_semester",
+      "type": "bool"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_by",
+      "type": "uuid"
+    }
+  ],
+  "chat_messages": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "chat_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sender_id",
+      "type": "uuid"
+    },
+    {
+      "name": "sender_type",
+      "type": "sender_type"
+    },
+    {
+      "name": "message",
+      "type": "text"
+    },
+    {
+      "name": "is_ai_response",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "comprehensive_exam_attempts": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "exam_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "answers",
+      "type": "jsonb"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "total_score",
+      "type": "int4"
+    },
+    {
+      "name": "max_score",
+      "type": "int4"
+    },
+    {
+      "name": "started_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "comprehensive_exams": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "exam_title",
+      "type": "text"
+    },
+    {
+      "name": "exam_description",
+      "type": "text"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "stage_name",
+      "type": "text"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "subject_name",
+      "type": "text"
+    },
+    {
+      "name": "lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "type",
+      "type": "text"
+    },
+    {
+      "name": "language",
+      "type": "text"
+    },
+    {
+      "name": "blocks",
+      "type": "jsonb"
+    },
+    {
+      "name": "sections",
+      "type": "jsonb"
+    },
+    {
+      "name": "branch_tags",
+      "type": "_text"
+    },
+    {
+      "name": "total_marks",
+      "type": "int4"
+    },
+    {
+      "name": "passing_score",
+      "type": "int4"
+    },
+    {
+      "name": "duration_minutes",
+      "type": "int4"
+    },
+    {
+      "name": "grading_mode",
+      "type": "text"
+    },
+    {
+      "name": "usage_scope",
+      "type": "text"
+    },
+    {
+      "name": "is_published",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "semester",
+      "type": "semester_type"
+    }
+  ],
+  "educational_stages": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "image_url",
+      "type": "text"
+    },
+    {
+      "name": "order_index",
+      "type": "int4"
+    },
+    {
+      "name": "is_active",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "lesson_questions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "text",
+      "type": "jsonb"
+    },
+    {
+      "name": "type",
+      "type": "text"
+    },
+    {
+      "name": "options",
+      "type": "jsonb"
+    },
+    {
+      "name": "correct_option_id",
+      "type": "text"
+    },
+    {
+      "name": "correct_answer",
+      "type": "jsonb"
+    },
+    {
+      "name": "explanation",
+      "type": "jsonb"
+    },
+    {
+      "name": "hint",
+      "type": "jsonb"
+    },
+    {
+      "name": "media",
+      "type": "jsonb"
+    },
+    {
+      "name": "difficulty",
+      "type": "text"
+    },
+    {
+      "name": "points",
+      "type": "int4"
+    },
+    {
+      "name": "order_index",
+      "type": "int4"
+    },
+    {
+      "name": "is_active",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "group_id",
+      "type": "text"
+    },
+    {
+      "name": "section_title",
+      "type": "jsonb"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb"
+    }
+  ],
+  "lessons": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "content",
+      "type": "text"
+    },
+    {
+      "name": "image_url",
+      "type": "text"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "order_index",
+      "type": "int4"
+    },
+    {
+      "name": "is_published",
+      "type": "bool"
+    },
+    {
+      "name": "is_free",
+      "type": "bool"
+    },
+    {
+      "name": "views_count",
+      "type": "int4"
+    },
+    {
+      "name": "likes_count",
+      "type": "int4"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "semester",
+      "type": "semester_type"
+    }
+  ],
+  "messages": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "from_user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "from_name",
+      "type": "text"
+    },
+    {
+      "name": "from_email",
+      "type": "text"
+    },
+    {
+      "name": "subject",
+      "type": "text"
+    },
+    {
+      "name": "message",
+      "type": "text"
+    },
+    {
+      "name": "is_read",
+      "type": "bool"
+    },
+    {
+      "name": "is_replied",
+      "type": "bool"
+    },
+    {
+      "name": "is_starred",
+      "type": "bool"
+    },
+    {
+      "name": "is_archived",
+      "type": "bool"
+    },
+    {
+      "name": "replied_by",
+      "type": "uuid"
+    },
+    {
+      "name": "replied_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "reply_text",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "notification_preferences": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "email_notifications",
+      "type": "bool"
+    },
+    {
+      "name": "push_notifications",
+      "type": "bool"
+    },
+    {
+      "name": "exam_reminders",
+      "type": "bool"
+    },
+    {
+      "name": "new_content_alerts",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "notifications": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "title",
+      "type": "text"
+    },
+    {
+      "name": "message",
+      "type": "text"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "target_role",
+      "type": "notification_target_role"
+    },
+    {
+      "name": "status",
+      "type": "notification_status"
+    },
+    {
+      "name": "is_read",
+      "type": "bool"
+    },
+    {
+      "name": "scheduled_for",
+      "type": "timestamptz"
+    },
+    {
+      "name": "sent_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "profiles": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "email",
+      "type": "text"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "avatar_url",
+      "type": "text"
+    },
+    {
+      "name": "role",
+      "type": "user_role"
+    },
+    {
+      "name": "role_selected",
+      "type": "bool"
+    },
+    {
+      "name": "bio",
+      "type": "text"
+    },
+    {
+      "name": "phone",
+      "type": "text"
+    },
+    {
+      "name": "is_teacher_approved",
+      "type": "bool"
+    },
+    {
+      "name": "subscriber_count",
+      "type": "int4"
+    },
+    {
+      "name": "rating_average",
+      "type": "numeric"
+    },
+    {
+      "name": "rating_count",
+      "type": "int4"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "is_verified",
+      "type": "bool"
+    },
+    {
+      "name": "cover_image_url",
+      "type": "text"
+    },
+    {
+      "name": "specialization",
+      "type": "text"
+    },
+    {
+      "name": "teacher_title",
+      "type": "text"
+    },
+    {
+      "name": "years_of_experience",
+      "type": "int4"
+    },
+    {
+      "name": "education",
+      "type": "text"
+    },
+    {
+      "name": "website",
+      "type": "text"
+    },
+    {
+      "name": "teaching_style",
+      "type": "text"
+    },
+    {
+      "name": "subjects",
+      "type": "_text"
+    },
+    {
+      "name": "stages",
+      "type": "_text"
+    },
+    {
+      "name": "is_teacher_profile_public",
+      "type": "bool"
+    },
+    {
+      "name": "social_links",
+      "type": "jsonb"
+    },
+    {
+      "name": "total_views",
+      "type": "int4"
+    },
+    {
+      "name": "exam_count",
+      "type": "int4"
+    },
+    {
+      "name": "educational_stage_id",
+      "type": "uuid"
+    }
+  ],
+  "question_banks": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "title",
+      "type": "jsonb"
+    },
+    {
+      "name": "description",
+      "type": "jsonb"
+    },
+    {
+      "name": "content_type",
+      "type": "text"
+    },
+    {
+      "name": "content_data",
+      "type": "jsonb"
+    },
+    {
+      "name": "questions",
+      "type": "jsonb"
+    },
+    {
+      "name": "total_questions",
+      "type": "int4"
+    },
+    {
+      "name": "total_points",
+      "type": "int4"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "is_active",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "semester",
+      "type": "semester_type"
+    }
+  ],
+  "site_settings": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "key",
+      "type": "text"
+    },
+    {
+      "name": "value",
+      "type": "jsonb"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "subject_stages": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "is_active",
+      "type": "bool"
+    },
+    {
+      "name": "order_index",
+      "type": "int4"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "subjects": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "image_url",
+      "type": "text"
+    },
+    {
+      "name": "icon",
+      "type": "text"
+    },
+    {
+      "name": "color",
+      "type": "text"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "order_index",
+      "type": "int4"
+    },
+    {
+      "name": "is_active",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "language",
+      "type": "text"
+    }
+  ],
+  "support_chats": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "subject",
+      "type": "text"
+    },
+    {
+      "name": "assigned_to",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "teacher_exam_attempts": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "exam_id",
+      "type": "uuid"
+    },
+    {
+      "name": "student_id",
+      "type": "uuid"
+    },
+    {
+      "name": "answers",
+      "type": "jsonb"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "total_score",
+      "type": "int4"
+    },
+    {
+      "name": "max_score",
+      "type": "int4"
+    },
+    {
+      "name": "started_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "teacher_exams": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "exam_title",
+      "type": "text"
+    },
+    {
+      "name": "exam_description",
+      "type": "text"
+    },
+    {
+      "name": "stage_id",
+      "type": "uuid"
+    },
+    {
+      "name": "stage_name",
+      "type": "text"
+    },
+    {
+      "name": "subject_id",
+      "type": "uuid"
+    },
+    {
+      "name": "subject_name",
+      "type": "text"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid"
+    },
+    {
+      "name": "type",
+      "type": "text"
+    },
+    {
+      "name": "language",
+      "type": "text"
+    },
+    {
+      "name": "blocks",
+      "type": "jsonb"
+    },
+    {
+      "name": "sections",
+      "type": "jsonb"
+    },
+    {
+      "name": "total_marks",
+      "type": "int4"
+    },
+    {
+      "name": "passing_score",
+      "type": "int4"
+    },
+    {
+      "name": "duration_minutes",
+      "type": "int4"
+    },
+    {
+      "name": "is_published",
+      "type": "bool"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "is_time_limited",
+      "type": "bool"
+    },
+    {
+      "name": "available_from",
+      "type": "timestamptz"
+    },
+    {
+      "name": "available_until",
+      "type": "timestamptz"
+    },
+    {
+      "name": "semester",
+      "type": "semester_type"
+    }
+  ],
+  "teacher_ratings": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "teacher_id",
+      "type": "uuid"
+    },
+    {
+      "name": "rating",
+      "type": "int4"
+    },
+    {
+      "name": "review",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "teacher_subscriptions": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "teacher_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "content",
+      "type": "text"
+    },
+    {
+      "name": "rating",
+      "type": "int4"
+    },
+    {
+      "name": "status",
+      "type": "text"
+    },
+    {
+      "name": "admin_notes",
+      "type": "text"
+    },
+    {
+      "name": "reviewed_by",
+      "type": "uuid"
+    },
+    {
+      "name": "reviewed_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "user_devices": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "device_type",
+      "type": "device_type"
+    },
+    {
+      "name": "os_name",
+      "type": "text"
+    },
+    {
+      "name": "os_version",
+      "type": "text"
+    },
+    {
+      "name": "browser",
+      "type": "text"
+    },
+    {
+      "name": "browser_version",
+      "type": "text"
+    },
+    {
+      "name": "ip_address",
+      "type": "inet"
+    },
+    {
+      "name": "user_agent",
+      "type": "text"
+    },
+    {
+      "name": "country",
+      "type": "text"
+    },
+    {
+      "name": "city",
+      "type": "text"
+    },
+    {
+      "name": "first_seen_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "last_seen_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "login_count",
+      "type": "int4"
+    },
+    {
+      "name": "is_current_device",
+      "type": "bool"
+    }
+  ],
+  "user_lesson_likes": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "user_lesson_progress": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "lesson_id",
+      "type": "uuid"
+    },
+    {
+      "name": "progress_percentage",
+      "type": "int4"
+    },
+    {
+      "name": "is_completed",
+      "type": "bool"
+    },
+    {
+      "name": "last_position",
+      "type": "int4"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamptz"
+    }
+  ],
+  "visitor_devices": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "visitor_id",
+      "type": "text"
+    },
+    {
+      "name": "device_type",
+      "type": "device_type"
+    },
+    {
+      "name": "os_name",
+      "type": "text"
+    },
+    {
+      "name": "os_version",
+      "type": "text"
+    },
+    {
+      "name": "browser",
+      "type": "text"
+    },
+    {
+      "name": "browser_version",
+      "type": "text"
+    },
+    {
+      "name": "ip_address",
+      "type": "inet"
+    },
+    {
+      "name": "user_agent",
+      "type": "text"
+    },
+    {
+      "name": "page_url",
+      "type": "text"
+    },
+    {
+      "name": "referrer",
+      "type": "text"
+    },
+    {
+      "name": "country",
+      "type": "text"
+    },
+    {
+      "name": "city",
+      "type": "text"
+    },
+    {
+      "name": "first_seen_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "last_seen_at",
+      "type": "timestamptz"
+    }
+  ]
+}

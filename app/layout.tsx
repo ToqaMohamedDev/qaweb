@@ -7,10 +7,9 @@ import "./globals.css";
 
 const clientBootstrapScript = `
   (() => {
-    const storedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldUseDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
-    document.documentElement.classList[shouldUseDark ? 'add' : 'remove']('dark');
+    // Force dark mode only
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
   })();
 `;
 
@@ -40,6 +39,7 @@ export default function RootLayout({
       dir="rtl"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
+      className="dark"
     >
       <head>
         {/* Preconnect to external origins for faster loading */}

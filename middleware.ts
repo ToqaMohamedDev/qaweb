@@ -123,17 +123,35 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl);
     }
 
-    // 5. ROLE-BASED PROTECTION (only for admin/teacher dashboard routes)
+    // 5. ONBOARDING CHECK - Redirect new users to complete their profile
     // =================================================
-    // NOTE: /teachers (plural) is PUBLIC - only /teacher (singular) is for teacher dashboard
-    const isTeacherDashboard = pathname.startsWith('/teacher') && !pathname.startsWith('/teachers');
-    
-    if (user && (pathname.startsWith('/admin') || isTeacherDashboard)) {
+    // Skip onboarding check for onboarding page itself and API routes
+    const skipOnboardingCheck = pathname === '/onboarding' ||
+        pathname.startsWith('/api/') ||
+        pathname === '/login' ||
+        pathname === '/signup';
+
+    if (user && !skipOnboardingCheck) {
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, role_selected, educational_stage_id')
             .eq('id', user.id)
             .single();
+
+        // If user hasn't completed onboarding, redirect to onboarding
+        // Check: role_selected is false (educational_stage_id is now optional)
+        if (!profile?.role_selected) {
+            const response = NextResponse.redirect(new URL('/onboarding', request.url));
+            supabaseResponse.cookies.getAll().forEach(cookie => {
+                response.cookies.set(cookie.name, cookie.value);
+            });
+            return response;
+        }
+
+        // 6. ROLE-BASED PROTECTION (only for admin/teacher dashboard routes)
+        // =================================================
+        // NOTE: /teachers (plural) is PUBLIC - only /teacher (singular) is for teacher dashboard
+        const isTeacherDashboard = pathname.startsWith('/teacher') && !pathname.startsWith('/teachers');
 
         // Admin Protection
         if (pathname.startsWith('/admin') && profile?.role !== 'admin') {

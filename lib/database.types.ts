@@ -706,6 +706,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          educational_stage_id: string | null
           email: string
           id: string
           is_teacher_approved: boolean | null
@@ -722,6 +723,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          educational_stage_id?: string | null
           email: string
           id: string
           is_teacher_approved?: boolean | null
@@ -738,6 +740,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          educational_stage_id?: string | null
           email?: string
           id?: string
           is_teacher_approved?: boolean | null
@@ -750,7 +753,15 @@ export type Database = {
           subscriber_count?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_educational_stage_id_fkey"
+            columns: ["educational_stage_id"]
+            isOneToOne: false
+            referencedRelation: "educational_stages"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       site_settings: {
         Row: {

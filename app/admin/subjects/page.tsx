@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Pencil, Trash2, X, Save, BookOpen, Sparkles, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, X, Save, BookOpen, Sparkles, Loader2, Check, GraduationCap, Languages } from "lucide-react";
 import { GridSkeleton, StatsCardSkeleton } from "@/components/ui/Skeleton";
-import { useSubjectsAPI, useCreateSubjectAPI, useUpdateSubjectAPI, useDeleteSubjectAPI } from "@/lib/queries/adminQueries";
+import { useSubjectsAPI, useCreateSubjectAPI, useUpdateSubjectAPI, useDeleteSubjectAPI, useStagesAPI, useSubjectStagesAPI, useUpdateSubjectStagesAPI } from "@/lib/queries/adminQueries";
 import { useUIStore } from "@/lib/stores";
-import { ConfirmDialog } from "@/components/shared"; // Keeping if needed else removed
 import { DeleteConfirmModal } from "@/components/admin";
 import { Database } from "@/lib/database.types";
 
 type Subject = Database["public"]["Tables"]["subjects"]["Row"];
+type Stage = Database["public"]["Tables"]["educational_stages"]["Row"];
 
 // Animation variants
 const containerVariants = {
@@ -36,19 +36,52 @@ export default function SubjectsPage() {
     const { addToast } = useUIStore();
 
     // Queries & Mutations (API-based for Vercel compatibility)
-    const { data: subjects = [], isLoading: isQueryLoading } = useSubjectsAPI();
+    const { data: subjects = [], isLoading: isQueryLoading, refetch: refetchSubjects } = useSubjectsAPI();
+    const { data: stages = [], isLoading: isStagesLoading } = useStagesAPI();
     const createMutation = useCreateSubjectAPI();
     const updateMutation = useUpdateSubjectAPI();
     const deleteMutation = useDeleteSubjectAPI();
+    const updateStagesMutation = useUpdateSubjectStagesAPI();
 
-    const isLoading = isQueryLoading;
-    const isSaving = createMutation.isPending || updateMutation.isPending;
+    const isLoading = isQueryLoading || isStagesLoading;
+    const isSaving = createMutation.isPending || updateMutation.isPending || updateStagesMutation.isPending;
 
     // Local State
     const [searchQuery, setSearchQuery] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentSubject, setCurrentSubject] = useState<Partial<Subject> | null>(null);
+    const [selectedStageIds, setSelectedStageIds] = useState<string[]>([]);
+    const [selectedLanguage, setSelectedLanguage] = useState<'ar' | 'en'>('ar');
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; subjectId: string | null; subjectName: string }>({ isOpen: false, subjectId: null, subjectName: "" });
+
+    // جلب المراحل المرتبطة بالمادة عند فتح Modal التعديل
+    const { data: subjectStages = [], isLoading: isLoadingSubjectStages, isFetching: isFetchingSubjectStages } = useSubjectStagesAPI(currentSubject?.id);
+
+    // مسح المراحل وتحديد اللغة فوراً عند تغيير المادة المحددة
+    useEffect(() => {
+        // تفريغ المراحل فوراً عند فتح modal جديد
+        setSelectedStageIds([]);
+        // تحديد اللغة من المادة الحالية أو العربية كافتراضي
+        setSelectedLanguage((currentSubject as any)?.language || 'ar');
+    }, [currentSubject?.id]);
+
+    // تحديث المراحل المختارة بعد تحميل البيانات الجديدة
+    useEffect(() => {
+        if (currentSubject?.id && !isLoadingSubjectStages && !isFetchingSubjectStages && subjectStages.length > 0) {
+            // عند تعديل مادة موجودة، نستخدم المراحل المرتبطة بها بعد التحميل
+            const stageIds = subjectStages.map(ss => ss.stage_id);
+            setSelectedStageIds(stageIds);
+        }
+    }, [currentSubject?.id, subjectStages, isLoadingSubjectStages, isFetchingSubjectStages]);
+
+    // Toggle stage selection
+    const toggleStageSelection = (stageId: string) => {
+        setSelectedStageIds(prev => 
+            prev.includes(stageId) 
+                ? prev.filter(id => id !== stageId)
+                : [...prev, stageId]
+        );
+    };
 
     // Filter Logic
     const filteredSubjects = subjects.filter(subject =>
@@ -69,7 +102,10 @@ export default function SubjectsPage() {
         if (!currentSubject?.name || !currentSubject?.slug) return;
 
         try {
+            let subjectId = currentSubject.id;
+            
             if (currentSubject.id) {
+                // تحديث المادة
                 await updateMutation.mutateAsync({
                     id: currentSubject.id,
                     name: currentSubject.name,
@@ -77,24 +113,39 @@ export default function SubjectsPage() {
                     image_url: currentSubject.image_url,
                     slug: currentSubject.slug,
                     is_active: currentSubject.is_active ?? true,
-                    order_index: currentSubject.order_index ?? 0
-                });
-                addToast({ type: 'success', message: 'تم تحديث المادة بنجاح' });
+                    order_index: currentSubject.order_index ?? 0,
+                    language: selectedLanguage
+                } as any);
             } else {
-                await createMutation.mutateAsync({
+                // إنشاء مادة جديدة
+                const newSubject = await createMutation.mutateAsync({
                     name: currentSubject.name,
                     description: currentSubject.description,
                     image_url: currentSubject.image_url,
                     slug: currentSubject.slug,
                     is_active: currentSubject.is_active ?? true,
-                    order_index: currentSubject.order_index ?? subjects.length
-                });
-                addToast({ type: 'success', message: 'تم إنشاء المادة بنجاح' });
+                    order_index: currentSubject.order_index ?? subjects.length,
+                    language: selectedLanguage
+                } as any);
+                subjectId = newSubject?.id;
             }
+
+            // تحديث ربط المراحل بالمادة (حتى لو فارغة لحذف الربط القديم)
+            if (subjectId) {
+                await updateStagesMutation.mutateAsync({
+                    subjectId,
+                    stageIds: selectedStageIds
+                });
+            }
+
+            addToast({ type: 'success', message: currentSubject.id ? 'تم تحديث المادة بنجاح' : 'تم إنشاء المادة بنجاح' });
             setIsModalOpen(false);
             setCurrentSubject(null);
-        } catch (error: any) {
-            addToast({ type: 'error', message: error.message || 'حدث خطأ أثناء الحفظ' });
+            setSelectedStageIds([]);
+            refetchSubjects();
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'حدث خطأ أثناء الحفظ';
+            addToast({ type: 'error', message: errorMessage });
         }
     };
 
@@ -213,30 +264,116 @@ export default function SubjectsPage() {
                 </motion.div>
             )}
 
-            {/* Modal */}
+            {/* Modal - تصميم مدمج */}
             <AnimatePresence>
                 {isModalOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-lg bg-white dark:bg-[#1c1c24] rounded-3xl shadow-2xl overflow-hidden">
-                            <div className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 px-6 py-8">
-                                <div className="flex items-center justify-between relative z-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm"><BookOpen className="h-6 w-6 text-white" /></div>
-                                        <div><h3 className="font-bold text-xl text-white">{currentSubject?.id ? "تعديل المادة" : "إضافة مادة جديدة"}</h3><p className="text-white/70 text-sm">{currentSubject?.id ? "تعديل بيانات المادة" : "أضف مادة جديدة"}</p></div>
-                                    </div>
-                                    <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-xl bg-white/20 hover:bg-white/30 text-white"><X className="h-5 w-5" /></button>
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-md bg-white dark:bg-[#1c1c24] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                            {/* Header مصغر */}
+                            <div className="bg-emerald-500 px-4 py-3 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-2">
+                                    <BookOpen className="h-5 w-5 text-white" />
+                                    <h3 className="font-bold text-white">{currentSubject?.id ? "تعديل المادة" : "إضافة مادة"}</h3>
                                 </div>
+                                <button onClick={() => setIsModalOpen(false)} className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white"><X className="h-4 w-4" /></button>
                             </div>
-                            <form onSubmit={handleSave} className="p-6 space-y-5">
-                                <div><label className="block text-sm font-semibold mb-2">اسم المادة <span className="text-red-500">*</span></label><input type="text" required value={currentSubject?.name || ""} onChange={e => { const name = e.target.value; setCurrentSubject(prev => ({ ...prev, name, slug: prev?.slug || generateSlug(name) })); }} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none" placeholder="مثال: اللغة العربية" /></div>
-                                <div><label className="block text-sm font-semibold mb-2">Slug (الرابط) <span className="text-red-500">*</span></label><input type="text" required value={currentSubject?.slug || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, slug: e.target.value }))} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none font-mono text-sm" placeholder="arabic" dir="ltr" /></div>
-                                <div><label className="block text-sm font-semibold mb-2">الوصف</label><textarea value={currentSubject?.description || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, description: e.target.value }))} rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none resize-none" placeholder="وصف مختصر..." /></div>
-                                <div><label className="block text-sm font-semibold mb-2">رابط الصورة</label><input type="text" value={currentSubject?.image_url || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, image_url: e.target.value }))} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none text-sm" placeholder="/images/subjects/..." dir="ltr" /></div>
-                                <div className="flex items-center gap-3"><input type="checkbox" id="is_active" checked={currentSubject?.is_active ?? true} onChange={e => setCurrentSubject(prev => ({ ...prev, is_active: e.target.checked }))} className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><label htmlFor="is_active" className="text-sm font-medium">المادة نشطة (ظاهرة للمستخدمين)</label></div>
-                                <div className="flex items-center gap-3 pt-4">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 font-semibold hover:bg-gray-200">إلغاء</button>
-                                    <button type="submit" disabled={isSaving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 text-white font-semibold hover:to-emerald-700 disabled:opacity-50">
-                                        {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}<span>{currentSubject?.id ? "حفظ التغييرات" : "إضافة المادة"}</span>
+                            
+                            {/* Form مع scroll */}
+                            <form onSubmit={handleSave} className="p-4 space-y-3 overflow-y-auto flex-1">
+                                {/* صف الاسم و Slug */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 block">اسم المادة *</label>
+                                        <input type="text" required value={currentSubject?.name || ""} onChange={e => { const name = e.target.value; setCurrentSubject(prev => ({ ...prev, name, slug: prev?.slug || generateSlug(name) })); }} className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none text-sm" placeholder="اللغة العربية" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 block">Slug *</label>
+                                        <input type="text" required value={currentSubject?.slug || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, slug: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none text-sm font-mono" placeholder="arabic" dir="ltr" />
+                                    </div>
+                                </div>
+                                
+                                {/* الوصف */}
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 block">الوصف</label>
+                                    <textarea value={currentSubject?.description || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, description: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none resize-none text-sm" placeholder="وصف مختصر..." />
+                                </div>
+                                
+                                {/* صورة + نشط */}
+                                <div className="flex gap-3 items-end">
+                                    <div className="flex-1">
+                                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 block">رابط الصورة</label>
+                                        <input type="text" value={currentSubject?.image_url || ""} onChange={e => setCurrentSubject(prev => ({ ...prev, image_url: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-500 outline-none text-sm" placeholder="/images/..." dir="ltr" />
+                                    </div>
+                                    <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer shrink-0">
+                                        <input type="checkbox" checked={currentSubject?.is_active ?? true} onChange={e => setCurrentSubject(prev => ({ ...prev, is_active: e.target.checked }))} className="w-4 h-4 rounded text-emerald-600" />
+                                        <span className="text-xs font-medium">نشط</span>
+                                    </label>
+                                </div>
+                                
+                                {/* اختيار اللغة */}
+                                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                            <Languages className="w-3.5 h-3.5" /> لغة المحتوى
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedLanguage('ar')}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                                                selectedLanguage === 'ar'
+                                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            {selectedLanguage === 'ar' && <Check className="w-4 h-4" />}
+                                            عربي (RTL)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedLanguage('en')}
+                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                                                selectedLanguage === 'en'
+                                                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            {selectedLanguage === 'en' && <Check className="w-4 h-4" />}
+                                            English (LTR)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* المراحل - مدمجة */}
+                                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                            <GraduationCap className="w-3.5 h-3.5" /> المراحل الدراسية
+                                        </span>
+                                        {selectedStageIds.length > 0 && <span className="text-xs text-emerald-600 dark:text-emerald-400">{selectedStageIds.length} مختارة</span>}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {stages.map(stage => (
+                                            <button key={stage.id} type="button" onClick={() => toggleStageSelection(stage.id)}
+                                                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                                                    selectedStageIds.includes(stage.id)
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                }`}>
+                                                {selectedStageIds.includes(stage.id) && <Check className="w-3 h-3 inline ml-1" />}
+                                                {stage.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* أزرار */}
+                                <div className="flex gap-2 pt-2">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700">إلغاء</button>
+                                    <button type="submit" disabled={isSaving} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">
+                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                        <span>{currentSubject?.id ? "حفظ" : "إضافة"}</span>
                                     </button>
                                 </div>
                             </form>

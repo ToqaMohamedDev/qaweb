@@ -571,3 +571,84 @@ export function useDeleteQuestionBankAPI(): UseMutationResult {
 
     return { mutateAsync, isPending, error };
 }
+
+// ==========================================
+// Subject-Stages Hooks (Many-to-Many Relationship)
+// ==========================================
+
+interface SubjectStage {
+    id: string;
+    subject_id: string;
+    stage_id: string;
+    is_active: boolean;
+    order_index: number;
+    created_at: string;
+}
+
+export function useSubjectStagesAPI(subjectId?: string): UseQueryResult<SubjectStage> {
+    const [data, setData] = useState<SubjectStage[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const refetch = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/admin/subject-stages${subjectId ? `?subject_id=${subjectId}` : ''}`);
+            const result = await response.json();
+            
+            if (result.error) {
+                setError(result.error);
+                setData([]);
+            } else {
+                setData(result.data || []);
+            }
+        } catch (err) {
+            setError('Failed to fetch subject stages');
+            setData([]);
+        }
+        
+        setIsLoading(false);
+    }, [subjectId]);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { data, isLoading, error, refetch };
+}
+
+export function useUpdateSubjectStagesAPI(): UseMutationResult {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: { subjectId: string; stageIds: string[] }) => {
+        setIsPending(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/admin/subject-stages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(input),
+            });
+            
+            const result = await response.json();
+            
+            if (result.error) {
+                setError(result.error);
+                throw new Error(result.error);
+            }
+            
+            setIsPending(false);
+            return result.data;
+        } catch (err: any) {
+            setIsPending(false);
+            setError(err.message || 'Failed to update subject stages');
+            throw err;
+        }
+    };
+
+    return { mutateAsync, isPending, error };
+}

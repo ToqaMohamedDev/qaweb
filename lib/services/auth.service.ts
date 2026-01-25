@@ -16,6 +16,7 @@ export interface SignUpData {
     password: string;
     name: string;
     role?: UserRole;
+    educationalStageId?: string;
 }
 
 export interface SignInData {
@@ -30,7 +31,7 @@ export interface SignInData {
 /**
  * Sign up with email and password
  */
-export async function signUpWithEmail({ email, password, name, role = 'student' }: SignUpData) {
+export async function signUpWithEmail({ email, password, name, role = 'student', educationalStageId }: SignUpData) {
     const supabase = getSupabaseClient();
 
     const { data, error } = await supabase.auth.signUp({
@@ -40,7 +41,9 @@ export async function signUpWithEmail({ email, password, name, role = 'student' 
             data: {
                 name,
                 role,
-                role_selected: true,
+                educational_stage_id: educationalStageId,
+                // role_selected = true إذا تم اختيار المرحلة، false إذا لم يتم اختيارها
+                role_selected: !!educationalStageId,
             },
         },
     });

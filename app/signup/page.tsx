@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, User, UserPlus } from "lucide-react";
+import { Mail, User, UserPlus, School } from "lucide-react";
 import { Input, Button } from "@/components";
-import { signUpWithEmail, signInWithGoogle } from "@/lib/supabase";
+import { signUpWithEmail, signInWithGoogle, createClient } from "@/lib/supabase";
 import type { UserRole } from "@/lib/database.types";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { useFormValidation, rules } from "@/hooks/useFormValidation";
@@ -35,6 +34,7 @@ interface SignUpFormData {
     password: string;
     confirmPassword: string;
     role: UserRole;
+    educationalStageId: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -60,12 +60,14 @@ export default function SignUpPage() {
             password: "",
             confirmPassword: "",
             role: "student" as UserRole,
+            educationalStageId: "",
         },
         validators: {
             name: [rules.required('name'), rules.minLength(2, 'الاسم')],
             email: [rules.required('email'), rules.email()],
             password: [rules.required('password'), rules.password(6)],
             confirmPassword: [rules.required('confirmPassword'), rules.match('password', 'password')],
+            educationalStageId: [(value: string) => !value ? 'يرجى اختيار المرحلة الدراسية' : ''],
         },
     });
 
@@ -76,6 +78,34 @@ export default function SignUpPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [stages, setStages] = useState<Array<{id: string; name: string}>>([]);
+    const [isLoadingStages, setIsLoadingStages] = useState(true);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // EFFECTS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // جلب المراحل الدراسية
+    useEffect(() => {
+        const fetchStages = async () => {
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase
+                    .from('educational_stages')
+                    .select('id, name')
+                    .order('order_index', { ascending: true });
+                
+                if (!error && data) {
+                    setStages(data);
+                }
+            } catch (err) {
+                console.error('Error fetching stages:', err);
+            } finally {
+                setIsLoadingStages(false);
+            }
+        };
+        fetchStages();
+    }, []);
 
     // ═══════════════════════════════════════════════════════════════════════
     // HANDLERS
@@ -92,16 +122,36 @@ export default function SignUpPage() {
         setSuccess("");
 
         try {
-            await signUpWithEmail({
+            const signupResult = await signUpWithEmail({
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
-                role: formData.role
+                role: formData.role,
+                educationalStageId: formData.educationalStageId
             });
+
+            // حفظ البيانات في جدول profiles مباشرة
+            if (signupResult?.user?.id) {
+                const profileResponse = await fetch('/api/auth/signup-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: signupResult.user.id,
+                        email: formData.email,
+                        name: formData.name,
+                        role: formData.role,
+                        educationalStageId: formData.educationalStageId
+                    })
+                });
+
+                if (!profileResponse.ok) {
+                    console.error('Failed to create profile');
+                }
+            }
 
             await refreshUser();
 
-            // توجيه المستخدم حسب الدور
+            // توجيه المستخدم للصفحة الرئيسية (البيانات مكتملة)
             if (formData.role === 'teacher') {
                 router.push('/teacher');
             } else {
@@ -215,25 +265,43 @@ export default function SignUpPage() {
                             onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
                             autoComplete="new-password"
                         />
-                    </div>
 
-                    {/* Terms Checkbox */}
-                    <div className="flex items-start gap-2">
-                        <input
-                            type="checkbox"
-                            id="terms"
-                            className="mt-1 w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-2 focus:ring-primary-500/20 focus:ring-offset-0 transition-all"
-                        />
-                        <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer leading-relaxed">
-                            {authMessages.signup.terms}{" "}
-                            <Link href="/terms" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-                                {authMessages.signup.termsLink}
-                            </Link>{" "}
-                            {" و "}
-                            <Link href="/privacy" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-                                {authMessages.signup.privacyLink}
-                            </Link>
-                        </label>
+                        {/* Educational Stage Select */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                المرحلة الدراسية <span className="text-red-500">*</span>
+                            </label>
+                            {isLoadingStages ? (
+                                <div className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+                                    جاري التحميل...
+                                </div>
+                            ) : (
+                                <div className="relative">
+                                    <School className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
+                                    <select
+                                        value={formData.educationalStageId}
+                                        onChange={(e) => setFieldValue('educationalStageId', e.target.value)}
+                                        className={`w-full pr-12 pl-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border transition-all text-gray-900 dark:text-white appearance-none cursor-pointer ${
+                                            errors.educationalStageId
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                                                : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20'
+                                        }`}
+                                    >
+                                        <option value="">اختر المرحلة الدراسية</option>
+                                        {stages.map((stage) => (
+                                            <option key={stage.id} value={stage.id}>
+                                                {stage.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                            {errors.educationalStageId && (
+                                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {errors.educationalStageId}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Submit Button */}

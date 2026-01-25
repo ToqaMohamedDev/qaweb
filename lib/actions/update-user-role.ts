@@ -1,7 +1,8 @@
 'use server';
 
 /**
- * Update User Role - Simple Direct Approach
+ * Update User Role & Profile - Simple Direct Approach
+ * Also saves educational stage for students
  */
 
 export async function updateUserRoleAction(params: {
@@ -10,8 +11,9 @@ export async function updateUserRoleAction(params: {
     email: string;
     name?: string;
     avatarUrl?: string;
+    educationalStageId?: string;
 }) {
-    const { userId, role, email, name, avatarUrl } = params;
+    const { userId, role, email, name, avatarUrl, educationalStageId } = params;
 
     try {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -40,6 +42,7 @@ export async function updateUserRoleAction(params: {
                 role_selected: true,
                 is_teacher_approved: false,
                 avatar_url: avatarUrl,
+                educational_stage_id: educationalStageId || null,
                 updated_at: new Date().toISOString()
             })
         });
