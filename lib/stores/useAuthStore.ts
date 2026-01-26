@@ -112,7 +112,28 @@ export const useAuthStore = create<AuthState>()(
 
                 try {
                     await supabase.auth.signOut();
-                    set({ ...initialState });
+                    
+                    // مسح localStorage بالكامل للتأكد من تسجيل الخروج على الموبايل
+                    if (typeof window !== 'undefined') {
+                        // مسح بيانات المصادقة المخزنة
+                        localStorage.removeItem('auth-storage');
+                        localStorage.removeItem('sb-auth-token');
+                        
+                        // مسح أي بيانات Supabase أخرى
+                        const keysToRemove: string[] = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+                                keysToRemove.push(key);
+                            }
+                        }
+                        keysToRemove.forEach(key => localStorage.removeItem(key));
+                        
+                        // مسح sessionStorage أيضاً
+                        sessionStorage.clear();
+                    }
+                    
+                    set({ ...initialState, isLoading: false });
                 } catch (error) {
                     set({
                         error: error instanceof Error ? error.message : 'فشل تسجيل الخروج',

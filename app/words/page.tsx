@@ -18,9 +18,12 @@ import {
     Loader2,
     CheckCircle,
     Star,
+    BookmarkPlus,
+    BookmarkCheck,
 } from "lucide-react";
 
 import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/hooks/useAuth";
 import { Footer } from "@/components/Footer";
 
 // Types
@@ -90,12 +93,14 @@ const difficultyLabels = {
 };
 
 export default function WordsPage() {
+    const { user } = useAuth();
     const [languages, setLanguages] = useState<SupportedLanguage[]>([]);
     const [words, setWords] = useState<WordBankEntry[]>([]);
     const [selectedLanguage, setSelectedLanguage] = useState<string>("en");
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [highlightedWords, setHighlightedWords] = useState<Set<string>>(new Set());
+    const [pendingToggle, setPendingToggle] = useState<string | null>(null);
 
     // Fetch languages
     const fetchLanguages = useCallback(async () => {
@@ -143,6 +148,60 @@ export default function WordsPage() {
             console.error("Error fetching highlights:", error);
         }
     }, [selectedLanguage]);
+
+    // Toggle word highlight/save
+    const toggleHighlight = useCallback(async (word: WordBankEntry) => {
+        if (!user) {
+            // إعادة توجيه لتسجيل الدخول
+            window.location.href = "/login?redirect=/words";
+            return;
+        }
+
+        setPendingToggle(word.id);
+        
+        // Optimistic update
+        setHighlightedWords(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(word.id)) {
+                newSet.delete(word.id);
+            } else {
+                newSet.add(word.id);
+            }
+            return newSet;
+        });
+
+        try {
+            const res = await fetch("/api/words/highlight", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    language_code: word.language_code,
+                    page_id: "word_bank",
+                    word_id: word.id,
+                }),
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                // Revert on failure
+                setHighlightedWords(prev => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(word.id)) {
+                        newSet.delete(word.id);
+                    } else {
+                        newSet.add(word.id);
+                    }
+                    return newSet;
+                });
+            }
+        } catch (error) {
+            console.error("Error toggling highlight:", error);
+            // Revert on error
+            fetchHighlights();
+        } finally {
+            setPendingToggle(null);
+        }
+    }, [user, fetchHighlights]);
 
     useEffect(() => {
         fetchLanguages();
@@ -406,23 +465,45 @@ export default function WordsPage() {
 
                                         {/* Footer */}
                                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
-                                            {/* Difficulty */}
-                                            {word.difficulty_level && (
-                                                <span
-                                                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                                        difficultyColors[word.difficulty_level]
-                                                    }`}
-                                                >
-                                                    {difficultyLabels[word.difficulty_level]}
-                                                </span>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {/* Difficulty */}
+                                                {word.difficulty_level && (
+                                                    <span
+                                                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                                            difficultyColors[word.difficulty_level]
+                                                        }`}
+                                                    >
+                                                        {difficultyLabels[word.difficulty_level]}
+                                                    </span>
+                                                )}
 
-                                            {/* Category */}
-                                            {word.category_slug && (
-                                                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                                                    {word.category_slug}
-                                                </span>
-                                            )}
+                                                {/* Category */}
+                                                {word.category_slug && (
+                                                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                                        {word.category_slug}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Save/Bookmark Button */}
+                                            <button
+                                                onClick={() => toggleHighlight(word)}
+                                                disabled={pendingToggle === word.id}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                                    highlightedWords.has(word.id)
+                                                        ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
+                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                                                } disabled:opacity-50`}
+                                            >
+                                                {pendingToggle === word.id ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : highlightedWords.has(word.id) ? (
+                                                    <BookmarkCheck className="w-4 h-4" />
+                                                ) : (
+                                                    <BookmarkPlus className="w-4 h-4" />
+                                                )}
+                                                <span>{highlightedWords.has(word.id) ? "محفوظة" : "حفظ"}</span>
+                                            </button>
                                         </div>
                                     </motion.div>
                                 ))}

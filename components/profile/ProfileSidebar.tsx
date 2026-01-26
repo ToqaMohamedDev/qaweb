@@ -22,6 +22,7 @@ import {
     FileText,
     Heart,
     MessageSquare,
+    BookmarkCheck,
 } from 'lucide-react';
 import { Avatar } from '@/components/common';
 import type { UserProfile } from '@/lib/types';
@@ -219,6 +220,20 @@ export function ProfileSidebar({
                                         <Heart className="h-4 w-4 text-pink-600 dark:text-pink-400" />
                                     </div>
                                     <span className="text-gray-700 dark:text-gray-300">اشتراكاتي</span>
+                                </div>
+                                <ChevronLeft className="h-4 w-4 text-gray-400 group-hover:-translate-x-1 transition-transform" />
+                            </Link>
+
+                            {/* My Words */}
+                            <Link
+                                href="/profile/my-words"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-sm font-medium group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                                        <BookmarkCheck className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                    </div>
+                                    <span className="text-gray-700 dark:text-gray-300">كلماتي المحفوظة</span>
                                 </div>
                                 <ChevronLeft className="h-4 w-4 text-gray-400 group-hover:-translate-x-1 transition-transform" />
                             </Link>
