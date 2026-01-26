@@ -104,7 +104,7 @@ export default function TeachersPage() {
 
     return (
         <div
-            className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] transition-colors duration-300 overflow-x-hidden"
+            className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a0a] dark:to-[#0f0f0f] transition-colors duration-300 overflow-x-hidden"
             dir="rtl"
         >
             <Navbar />
@@ -122,7 +122,7 @@ export default function TeachersPage() {
                 <main className={`flex-1 w-full min-w-0 transition-all duration-300 ease-out ${sidebarOpen ? 'md:mr-64' : 'md:mr-[72px]'}`}>
 
                     {/* Search Bar with Subject Filter */}
-                    <div className="sticky top-16 z-30 bg-white/95 dark:bg-[#0f0f0f]/98 backdrop-blur-xl border-b border-gray-100/80 dark:border-[#272727]/60">
+                    <div className="sticky top-16 z-30 bg-white/90 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/80 dark:border-[#1f1f1f] shadow-sm">
                         <div className="px-3 sm:px-6 py-3 sm:py-4">
                             <div className="flex items-center gap-3 max-w-3xl mx-auto">
                                 {/* Subject Filter Dropdown */}
@@ -173,7 +173,7 @@ export default function TeachersPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                                 <motion.span
-                                    className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-100/80 dark:bg-[#1a1a1a]/80 rounded-lg text-xs sm:text-sm text-gray-700 dark:text-[#ccc] font-medium"
+                                    className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white dark:bg-[#1a1a1a] rounded-xl text-xs sm:text-sm text-gray-700 dark:text-gray-200 font-semibold border border-gray-200 dark:border-[#2a2a2a] shadow-sm"
                                     key={filteredTeachers.length}
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
@@ -184,7 +184,7 @@ export default function TeachersPage() {
 
                                 {featuredTeachers.length > 0 && (
                                     <motion.span
-                                        className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-500/10 dark:to-orange-500/10 rounded-lg text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 font-medium"
+                                        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl text-xs sm:text-sm text-amber-700 dark:text-amber-300 font-semibold border border-amber-200/50 dark:border-amber-500/30"
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         transition={{ delay: 0.1 }}

@@ -374,7 +374,7 @@ export type Database = {
           },
         ]
       }
-      lesson_questions: {
+      quiz_questions: {
         Row: {
           correct_answer: Json | null
           correct_option_id: string | null
@@ -385,7 +385,10 @@ export type Database = {
           hint: Json | null
           id: string
           is_active: boolean | null
-          lesson_id: string
+          lesson_id: string | null
+          category: string | null
+          subject_id: string | null
+          stage_id: string | null
           media: Json | null
           options: Json | null
           order_index: number | null
@@ -404,7 +407,10 @@ export type Database = {
           hint?: Json | null
           id?: string
           is_active?: boolean | null
-          lesson_id: string
+          lesson_id?: string | null
+          category?: string | null
+          subject_id?: string | null
+          stage_id?: string | null
           media?: Json | null
           options?: Json | null
           order_index?: number | null
@@ -423,7 +429,10 @@ export type Database = {
           hint?: Json | null
           id?: string
           is_active?: boolean | null
-          lesson_id?: string
+          lesson_id?: string | null
+          category?: string | null
+          subject_id?: string | null
+          stage_id?: string | null
           media?: Json | null
           options?: Json | null
           order_index?: number | null
@@ -434,14 +443,98 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "lesson_questions_created_by_fkey"
+            foreignKeyName: "quiz_questions_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "lesson_questions_lesson_id_fkey"
+            foreignKeyName: "quiz_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_questions: {
+        Row: {
+          correct_answer: Json | null
+          correct_option_id: string | null
+          created_at: string | null
+          created_by: string | null
+          difficulty: string | null
+          explanation: Json | null
+          hint: Json | null
+          id: string
+          is_active: boolean | null
+          lesson_id: string | null
+          category: string | null
+          subject_id: string | null
+          stage_id: string | null
+          media: Json | null
+          options: Json | null
+          order_index: number | null
+          points: number | null
+          text: Json | null
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          correct_answer?: Json | null
+          correct_option_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          difficulty?: string | null
+          explanation?: Json | null
+          hint?: Json | null
+          id?: string
+          is_active?: boolean | null
+          lesson_id?: string | null
+          category?: string | null
+          subject_id?: string | null
+          stage_id?: string | null
+          media?: Json | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          text?: Json | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          correct_answer?: Json | null
+          correct_option_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          difficulty?: string | null
+          explanation?: Json | null
+          hint?: Json | null
+          id?: string
+          is_active?: boolean | null
+          lesson_id?: string | null
+          category?: string | null
+          subject_id?: string | null
+          stage_id?: string | null
+          media?: Json | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          text?: Json | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_questions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
@@ -701,6 +794,53 @@ export type Database = {
           },
         ]
       }
+      page_words: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          language_code: string
+          page_id: string
+          updated_at: string | null
+          word_context: string | null
+          word_id: string
+          word_position: number | null
+          word_text: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          language_code: string
+          page_id: string
+          updated_at?: string | null
+          word_context?: string | null
+          word_id: string
+          word_position?: number | null
+          word_text: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          language_code?: string
+          page_id?: string
+          updated_at?: string | null
+          word_context?: string | null
+          word_id?: string
+          word_position?: number | null
+          word_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_words_language_code_fkey"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "supported_languages"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -887,6 +1027,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supported_languages: {
+        Row: {
+          code: string
+          created_at: string | null
+          flag_emoji: string | null
+          is_active: boolean | null
+          name_ar: string | null
+          name_en: string
+          name_native: string
+          sort_order: number | null
+          text_direction: string
+          tts_locale: string | null
+          tts_voice_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          flag_emoji?: string | null
+          is_active?: boolean | null
+          name_ar?: string | null
+          name_en: string
+          name_native: string
+          sort_order?: number | null
+          text_direction?: string
+          tts_locale?: string | null
+          tts_voice_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          flag_emoji?: string | null
+          is_active?: boolean | null
+          name_ar?: string | null
+          name_en?: string
+          name_native?: string
+          sort_order?: number | null
+          text_direction?: string
+          tts_locale?: string | null
+          tts_voice_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       teacher_exam_attempts: {
         Row: {
@@ -1507,7 +1692,8 @@ export type Profile = Tables<'profiles'>;
 export type EducationalStage = Tables<'educational_stages'>;
 export type Subject = Tables<'subjects'>;
 export type Lesson = Tables<'lessons'>;
-export type LessonQuestion = Tables<'lesson_questions'>;
+export type QuizQuestion = Tables<'quiz_questions'>;
+export type LessonQuestion = Tables<'lesson_questions'>; // Alias for backward compatibility
 export type ComprehensiveExam = Tables<'comprehensive_exams'>;
 export type TeacherExam = Tables<'teacher_exams'>;
 export type ComprehensiveExamAttempt = Tables<'comprehensive_exam_attempts'>;

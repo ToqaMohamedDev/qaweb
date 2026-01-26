@@ -9,6 +9,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 import {
     ArrowRight,
     Loader2,
@@ -274,17 +275,17 @@ export default function TeacherPage() {
     const [exams, setExams] = useState<TeacherExam[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<"exams" | "about">("exams");
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+    // Use same auth hook as teachers page
+    const { user } = useAuth();
 
     // Unified subscription hook - يستخدم نفس النظام في كل الصفحات
     const {
         isSubscribed: checkIsSubscribed,
         toggle: toggleSubscription,
         subscribingTo,
-    } = useSubscriptions(currentUserId);
+    } = useSubscriptions(user?.id || null);
 
     // Check if subscribed to this specific teacher
     const isSubscribed = checkIsSubscribed(teacherId);
@@ -361,7 +362,7 @@ export default function TeacherPage() {
 
     // Unified subscribe handler using the centralized hook
     const handleSubscribe = useCallback(async () => {
-        if (!currentUserId) {
+        if (!user?.id) {
             window.location.href = "/login";
             return;
         }
@@ -376,24 +377,7 @@ export default function TeacherPage() {
                 subscriberCount: result.newCount!,
             } : null);
         }
-    }, [currentUserId, teacherId, toggleSubscription, teacher]);
-
-    const handleToggleNotifications = async () => {
-        if (!currentUserId || !isSubscribed) return;
-
-        // TODO: Enable after adding notifications_enabled column to teacher_subscriptions
-        // const supabase = createClient();
-        // const newValue = !notificationsEnabled;
-        // await supabase
-        //     .from("teacher_subscriptions")
-        //     .update({ notifications_enabled: newValue })
-        //     .eq("user_id", currentUserId)
-        //     .eq("teacher_id", teacherId);
-        // setNotificationsEnabled(newValue);
-
-        // For now, just toggle local state
-        setNotificationsEnabled(!notificationsEnabled);
-    };
+    }, [user?.id, teacherId, toggleSubscription, teacher]);
 
     // ═══════════════════════════════════════════════════════════════════════
     // RENDER
@@ -403,12 +387,12 @@ export default function TeacherPage() {
     if (error || !teacher)
         return <TeacherProfileError message={error || "الملف الشخصي غير موجود"} />;
 
-    const isOwnProfile = currentUserId === teacherId;
+    const isOwnProfile = user?.id === teacherId;
     const hasSocials = teacher.phone || teacher.whatsapp || teacher.website || Object.values(teacher.socialLinks || {}).some((v) => v);
 
     return (
         <div
-            className="min-h-screen bg-gray-50 dark:bg-[#0a0f1a]"
+            className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0f1a] dark:to-[#0f172a]"
             dir="rtl"
         >
             <Navbar />
@@ -446,7 +430,7 @@ export default function TeacherPage() {
                     </div>
 
                     {/* Profile Info - Compact Layout */}
-                    <div className="relative px-4 sm:px-6 py-4 bg-white/80 dark:bg-transparent backdrop-blur-sm">
+                    <div className="relative px-4 sm:px-6 py-4 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800">
                         <div className="flex gap-4">
                             {/* Avatar - أصغر وعلى الجانب - Clickable */}
                             <div className="shrink-0 -mt-12">
@@ -662,7 +646,7 @@ export default function TeacherPage() {
                     teacherName={teacher.name}
                     initialRating={teacher.stats.rating}
                     initialRatingCount={teacher.ratingCount}
-                    currentUserId={currentUserId}
+                    currentUserId={user?.id || null}
                     isOwnProfile={isOwnProfile}
                     onRatingChange={(newAverage, newCount) => {
                         setTeacher(prev => prev ? {

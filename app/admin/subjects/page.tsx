@@ -55,7 +55,7 @@ export default function SubjectsPage() {
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; subjectId: string | null; subjectName: string }>({ isOpen: false, subjectId: null, subjectName: "" });
 
     // جلب المراحل المرتبطة بالمادة عند فتح Modal التعديل
-    const { data: subjectStages = [], isLoading: isLoadingSubjectStages, isFetching: isFetchingSubjectStages } = useSubjectStagesAPI(currentSubject?.id);
+    const { data: subjectStages = [], isLoading: isLoadingSubjectStages } = useSubjectStagesAPI(currentSubject?.id);
 
     // مسح المراحل وتحديد اللغة فوراً عند تغيير المادة المحددة
     useEffect(() => {
@@ -67,12 +67,12 @@ export default function SubjectsPage() {
 
     // تحديث المراحل المختارة بعد تحميل البيانات الجديدة
     useEffect(() => {
-        if (currentSubject?.id && !isLoadingSubjectStages && !isFetchingSubjectStages && subjectStages.length > 0) {
+        if (currentSubject?.id && !isLoadingSubjectStages && subjectStages.length > 0) {
             // عند تعديل مادة موجودة، نستخدم المراحل المرتبطة بها بعد التحميل
             const stageIds = subjectStages.map(ss => ss.stage_id);
             setSelectedStageIds(stageIds);
         }
-    }, [currentSubject?.id, subjectStages, isLoadingSubjectStages, isFetchingSubjectStages]);
+    }, [currentSubject?.id, subjectStages, isLoadingSubjectStages]);
 
     // Toggle stage selection
     const toggleStageSelection = (stageId: string) => {

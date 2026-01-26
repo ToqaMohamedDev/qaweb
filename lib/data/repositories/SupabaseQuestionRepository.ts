@@ -47,7 +47,7 @@ export type QuestionRepositoryError =
  * يوفر جميع عمليات CRUD والاستعلامات للأسئلة
  */
 export class SupabaseQuestionRepository {
-    private readonly tableName = 'lesson_questions';
+    private readonly tableName = 'quiz_questions';
 
     // ─── CRUD Operations ───
 

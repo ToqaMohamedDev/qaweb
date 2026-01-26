@@ -20,7 +20,7 @@ type Stage = Tables['educational_stages']['Row'];
 type Subject = Tables['subjects']['Row'];
 type Lesson = Tables['lessons']['Row'];
 type Exam = Tables['comprehensive_exams']['Row'];
-type Question = Tables['lesson_questions']['Row'];
+type Question = Tables['quiz_questions']['Row'];
 type QuestionBank = Tables['question_banks']['Row'];
 type Profile = Tables['profiles']['Row'];
 
@@ -625,7 +625,7 @@ export function useQuestions(options?: UseQuestionsOptions): UseQueryResult<Ques
         setIsLoading(true);
         try {
             let query = supabase
-                .from('lesson_questions')
+                .from('quiz_questions')
                 .select('*, lessons!inner(id, title, stage_id, subject_id)')
                 .order('created_at', { ascending: false })
                 .order('order_index', { ascending: true });
@@ -682,7 +682,7 @@ export function useDeleteQuestion(): UseMutationResult<string, void> {
         setError(null);
         try {
             const { error: err } = await supabase
-                .from('lesson_questions')
+                .from('quiz_questions')
                 .delete()
                 .eq('id', id);
 
@@ -709,7 +709,7 @@ export function useDeleteQuestions(): UseMutationResult<string[], void> {
         setError(null);
         try {
             const { error: err } = await supabase
-                .from('lesson_questions')
+                .from('quiz_questions')
                 .delete()
                 .in('id', ids);
 

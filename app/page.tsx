@@ -280,11 +280,11 @@ export default function Home() {
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform rtl:rotate-180" />
                   </Link>
                   <Link
-                    href="/game"
+                    href="/words"
                     className="group w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white font-semibold hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all duration-200"
                   >
                     <Zap className="w-5 h-5 text-amber-500" />
-                    <span>Quiz Battle</span>
+                    <span>تعلم الكلمات</span>
                   </Link>
                 </motion.div>
 
@@ -403,49 +403,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========== FEATURES SECTION ========== */}
-          <section className={`${SECTION_SPACING} bg-gray-50/50 dark:bg-white/[0.02]`}>
-            <div className={CONTAINER_CLASS}>
-              <SectionHeader
-                icon={Zap}
-                badge="لماذا QAlaa؟"
-                title="مميزات تجعل التعلم أسهل"
-                description="نوفر لك أدوات وميزات متقدمة لتسهيل رحلتك التعليمية"
-                centered
-              />
-
-              {/* Features Grid */}
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-              >
-                {[
-                  { icon: Brain, title: "تعلم ذكي", description: "نظام ذكي يتكيف مع مستواك" },
-                  { icon: Clock, title: "دروس مختصرة", description: "محتوى مركز يوفر وقتك" },
-                  { icon: Lightbulb, title: "شرح مبسط", description: "أسلوب سهل وواضح" },
-                  { icon: Award, title: "اختبارات تفاعلية", description: "تقييم مستمر لمستواك" },
-                ].map((feature, i) => (
-                  <motion.div
-                    key={i}
-                    variants={fadeInUp}
-                    className="group"
-                  >
-                    <div className="h-full p-6 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-lg hover:shadow-gray-100 dark:hover:shadow-none transition-all duration-200 text-center">
-                      <div className="w-12 h-12 mx-auto rounded-xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200">
-                        <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                      </div>
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">{feature.title}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{feature.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </section>
-
           {/* ========== EXAMS SECTION ========== */}
           {!isLoading && (
             <section className={SECTION_SPACING}>
@@ -517,6 +474,49 @@ export default function Home() {
               </div>
             </section>
           )}
+
+          {/* ========== FEATURES SECTION ========== */}
+          <section className={`${SECTION_SPACING} bg-gray-50/50 dark:bg-white/2`}>
+            <div className={CONTAINER_CLASS}>
+              <SectionHeader
+                icon={Zap}
+                badge="لماذا QAlaa؟"
+                title="مميزات تجعل التعلم أسهل"
+                description="نوفر لك أدوات وميزات متقدمة لتسهيل رحلتك التعليمية"
+                centered
+              />
+
+              {/* Features Grid */}
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={staggerContainer}
+              >
+                {[
+                  { icon: Brain, title: "تعلم ذكي", description: "نظام ذكي يتكيف مع مستواك" },
+                  { icon: Clock, title: "دروس مختصرة", description: "محتوى مركز يوفر وقتك" },
+                  { icon: Lightbulb, title: "شرح مبسط", description: "أسلوب سهل وواضح" },
+                  { icon: Award, title: "اختبارات تفاعلية", description: "تقييم مستمر لمستواك" },
+                ].map((feature, i) => (
+                  <motion.div
+                    key={i}
+                    variants={fadeInUp}
+                    className="group"
+                  >
+                    <div className="h-full p-6 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-lg hover:shadow-gray-100 dark:hover:shadow-none transition-all duration-200 text-center">
+                      <div className="w-12 h-12 mx-auto rounded-xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200">
+                        <feature.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                      </div>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">{feature.title}</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{feature.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          </section>
 
           {/* ========== HOW IT WORKS ========== */}
           <HowItWorksSection />

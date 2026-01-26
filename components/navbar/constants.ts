@@ -4,14 +4,14 @@
 // Navbar Constants - ثوابت شريط التنقل
 // =============================================
 
-import { Home, User, Gamepad2 } from 'lucide-react';
+import { Home, User, BookOpen } from 'lucide-react';
 import type { NavItem } from './types';
 
 // Navigation Items
 export const navItems: readonly NavItem[] = [
     { href: '/', label: 'الرئيسية', icon: Home },
     { href: '/teachers', label: 'المدرسين', icon: User },
-    { href: '/game', label: 'Quiz Battle', icon: Gamepad2 },
+    { href: '/words', label: 'تعلم الكلمات', icon: BookOpen },
     // Admin link will be handled separately in components
 ] as const;
 

@@ -36,9 +36,9 @@ export type Profile = Tables['profiles']['Row'];
 export type ProfileInsert = Tables['profiles']['Insert'];
 export type ProfileUpdate = Tables['profiles']['Update'];
 
-export type Question = Tables['lesson_questions']['Row'];
-export type QuestionInsert = Tables['lesson_questions']['Insert'];
-export type QuestionUpdate = Tables['lesson_questions']['Update'];
+export type Question = Tables['quiz_questions']['Row'];
+export type QuestionInsert = Tables['quiz_questions']['Insert'];
+export type QuestionUpdate = Tables['quiz_questions']['Update'];
 
 export type QuestionBank = Tables['question_banks']['Row'];
 export type AppSettings = Tables['app_settings']['Row'];

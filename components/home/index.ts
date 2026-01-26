@@ -17,5 +17,5 @@ export type { LessonCardProps } from './LessonCard';
 export type { LessonsSectionProps } from './LessonsSection';
 export type { TopStudent, TopStudentsSectionProps } from './TopStudentsSection';
 export type { SubjectCardProps } from './SubjectCard';
-export type { ExamCardProps } from './HomeExamCard';
+export type { ExamCardProps as HomeExamCardProps } from './HomeExamCard';
 export type { SubjectsGridProps } from './SubjectsGrid';
