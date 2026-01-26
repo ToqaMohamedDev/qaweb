@@ -11,13 +11,15 @@ export interface SupportedLanguage {
     code: string;
     name_en: string;
     name_native: string;
-    name_ar?: string;
-    text_direction: 'ltr' | 'rtl';
-    is_active: boolean;
-    tts_voice_id?: string;
-    tts_locale?: string;
-    flag_emoji?: string;
-    sort_order: number;
+    name_ar?: string | null;
+    text_direction: 'ltr' | 'rtl' | string;
+    is_active: boolean | null;
+    tts_voice_id?: string | null;
+    tts_locale?: string | null;
+    flag_emoji?: string | null;
+    sort_order: number | null;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 // ============================================================================
@@ -30,11 +32,11 @@ export interface PageWord {
     page_id: string; // معرّف الصفحة (p101, lesson-5...)
     language_code: string;
     word_text: string;
-    word_position: number;
-    word_context?: string;
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
+    word_position: number | null;
+    word_context?: string | null;
+    is_active: boolean | null;
+    created_at: string | null;
+    updated_at: string | null;
 }
 
 export interface PageWordWithHighlight extends PageWord {
@@ -98,10 +100,10 @@ export interface WordCategory {
     name_en: string;
     name_ar: string;
     slug: string;
-    icon_name?: string;
-    color_hex?: string;
-    sort_order: number;
-    is_active: boolean;
+    icon_name?: string | null;
+    color_hex?: string | null;
+    sort_order: number | null;
+    is_active: boolean | null;
 }
 
 // ============================================================================

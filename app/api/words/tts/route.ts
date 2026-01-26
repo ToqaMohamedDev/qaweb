@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
         if (audioBuffer) {
             // إرجاع الصوت كـ MP3
-            return new NextResponse(audioBuffer, {
+            return new NextResponse(new Uint8Array(audioBuffer), {
                 headers: {
                     'Content-Type': 'audio/mpeg',
                     'Content-Length': audioBuffer.length.toString(),
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         const audioBuffer = await ttsService.generateAudio(text, lang);
 
         if (audioBuffer) {
-            return new NextResponse(audioBuffer, {
+            return new NextResponse(new Uint8Array(audioBuffer), {
                 headers: {
                     'Content-Type': 'audio/mpeg',
                     'Content-Length': audioBuffer.length.toString(),

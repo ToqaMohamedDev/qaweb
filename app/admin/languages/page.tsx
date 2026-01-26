@@ -25,13 +25,15 @@ interface SupportedLanguage {
     code: string;
     name_en: string;
     name_native: string;
-    name_ar?: string;
-    text_direction: "ltr" | "rtl";
-    is_active: boolean;
-    tts_voice_id?: string;
-    tts_locale?: string;
-    flag_emoji?: string;
-    sort_order: number;
+    name_ar?: string | null;
+    text_direction: "ltr" | "rtl" | string;
+    is_active: boolean | null;
+    tts_voice_id?: string | null;
+    tts_locale?: string | null;
+    flag_emoji?: string | null;
+    sort_order: number | null;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 export default function LanguagesAdminPage() {

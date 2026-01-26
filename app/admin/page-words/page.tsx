@@ -189,7 +189,7 @@ export default function PageWordsAdminPage() {
             word_id: word.word_id,
             page_id: word.page_id,
             word_text: word.word_text,
-            word_position: word.word_position,
+            word_position: word.word_position ?? 0,
             word_context: word.word_context || "",
         });
         setShowAddModal(true);

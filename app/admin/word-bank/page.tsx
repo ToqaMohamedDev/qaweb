@@ -66,13 +66,25 @@ export default function WordBankAdminPage() {
 
     // جلب اللغات والتصنيفات
     const fetchMetadata = useCallback(async () => {
-        const [langsRes, catsRes] = await Promise.all([
-            supabase.from("supported_languages").select("*").eq("is_active", true).order("sort_order"),
-            supabase.from("word_categories").select("*").eq("is_active", true).order("sort_order"),
-        ]);
+        const langsRes = await supabase
+            .from("supported_languages")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order");
 
-        if (langsRes.data) setLanguages(langsRes.data);
-        if (catsRes.data) setCategories(catsRes.data);
+        if (langsRes.data) setLanguages(langsRes.data as unknown as SupportedLanguage[]);
+
+        // Fetch categories via API or direct query with type assertion
+        try {
+            const res = await fetch("/api/words/categories");
+            const data = await res.json();
+            if (data.success && data.categories) {
+                setCategories(data.categories);
+            }
+        } catch {
+            // Fallback: no categories
+            setCategories([]);
+        }
     }, []);
 
     // جلب كلمات بنك الكلمات
@@ -121,17 +133,17 @@ export default function WordBankAdminPage() {
 
             if (editingWord) {
                 // تعديل
-                const { error: updateError } = await supabase
-                    .from("word_bank")
+                const { error: updateError } = await (supabase
+                    .from("word_bank" as any)
                     .update({
-                        definition: formData.definition,
-                        category: formData.category,
+                        word_definition: formData.word_definition,
+                        category_slug: formData.category_slug,
                         difficulty_level: formData.difficulty_level,
                         example_sentence: formData.example_sentence,
-                        phonetic: formData.phonetic,
+                        phonetic_text: formData.phonetic_text,
                         notes: formData.notes,
                     })
-                    .eq("id", editingWord.id);
+                    .eq("id", editingWord.id) as any);
 
                 if (updateError) throw updateError;
             } else {
@@ -164,10 +176,10 @@ export default function WordBankAdminPage() {
         if (!confirm("هل أنت متأكد من حذف هذه الكلمة وجميع ترجماتها؟")) return;
 
         try {
-            const { error: deleteError } = await supabase
-                .from("word_bank")
+            const { error: deleteError } = await (supabase
+                .from("word_bank" as any)
                 .delete()
-                .eq("id", id);
+                .eq("id", id) as any);
 
             if (deleteError) throw deleteError;
             fetchWords();
@@ -198,7 +210,7 @@ export default function WordBankAdminPage() {
             word_text: word.word_text,
             word_definition: word.word_definition || "",
             category_slug: word.category_slug || "",
-            difficulty_level: word.difficulty_level || "beginner",
+            difficulty_level: (typeof word.difficulty_level === 'number' ? ['beginner', 'intermediate', 'advanced'][word.difficulty_level - 1] || 'beginner' : word.difficulty_level) as "beginner" | "intermediate" | "advanced",
             example_sentence: word.example_sentence || "",
             phonetic_text: word.phonetic_text || "",
             notes: word.notes || "",
