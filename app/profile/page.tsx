@@ -18,6 +18,7 @@ import {
     ActivityList,
     ProfileSettings,
 } from "@/components/profile";
+import { StudentProgressDashboard } from "@/components/profile/StudentProgressDashboard";
 import type { ProfileTab } from "@/components/profile";
 import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
@@ -178,6 +179,11 @@ export default function ProfilePage() {
                                     <StatsGrid stats={stats} />
                                     <ProgressSummary stats={stats} />
                                 </motion.div>
+                            )}
+
+                            {/* Exams Tab */}
+                            {activeTab === 'exams' && (
+                                <StudentProgressDashboard language="arabic" />
                             )}
 
                             {/* Achievements Tab */}

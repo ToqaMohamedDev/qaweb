@@ -23,6 +23,7 @@ import {
     Award,
     Filter,
     Download,
+    Edit3,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -435,6 +436,7 @@ export default function TeacherResultsPage() {
                                                     <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">الدرجة</th>
                                                     <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">التاريخ</th>
                                                     <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">المدة</th>
+                                                    <th className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">إجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -481,6 +483,15 @@ export default function TeacherResultsPage() {
                                                                     ? formatDuration(result.started_at, result.completed_at)
                                                                     : '-'}
                                                             </span>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-center">
+                                                            <Link
+                                                                href={`/teacher/exams/${result.exam_id}/grade`}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-medium hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
+                                                            >
+                                                                <Edit3 className="h-3.5 w-3.5" />
+                                                                تصحيح
+                                                            </Link>
                                                         </td>
                                                     </tr>
                                                 ))}

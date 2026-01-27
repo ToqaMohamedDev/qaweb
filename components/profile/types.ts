@@ -68,7 +68,7 @@ export interface StatCardData {
     bg: string;
 }
 
-export type ProfileTab = 'overview' | 'achievements' | 'activity' | 'settings';
+export type ProfileTab = 'overview' | 'exams' | 'achievements' | 'activity' | 'settings';
 
 export interface TabItem {
     id: ProfileTab;

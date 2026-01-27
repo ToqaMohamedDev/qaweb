@@ -2,6 +2,9 @@
  * Student Answers System - React Hooks
  * Version: 3.0
  * Date: 2026-01-27
+ * 
+ * Note: Uses type assertion for RPC calls as these are custom functions
+ * not included in the auto-generated Supabase types.
  */
 
 import { useState, useCallback } from 'react';
@@ -15,6 +18,11 @@ import type {
   StudentExamAttemptsResponse,
   AnswersJsonb,
 } from '@/lib/types/attempts.types';
+
+// Cast supabase to any to allow custom RPC function calls
+// These RPC functions are defined in the database but not in the generated types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
 
 // ============================================================================
 // Question Bank Hooks
@@ -35,7 +43,7 @@ export function useQuestionBankAttempt(questionBankId: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('get_or_create_question_bank_attempt', {
+      const { data, error: rpcError } = await db.rpc('get_or_create_question_bank_attempt', {
         p_question_bank_id: questionBankId,
       });
 
@@ -63,7 +71,7 @@ export function useQuestionBankAttempt(questionBankId: string) {
     ): Promise<UpsertAnswerResponse> => {
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc('upsert_question_bank_answer', {
+        const { data, error: rpcError } = await db.rpc('upsert_question_bank_answer', {
           p_question_bank_id: questionBankId,
           p_question_id: questionId,
           p_answer: answer,
@@ -121,7 +129,7 @@ export function useQuestionBankAttempt(questionBankId: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('submit_question_bank_attempt', {
+      const { data, error: rpcError } = await db.rpc('submit_question_bank_attempt', {
         p_attempt_id: attempt.attempt_id,
       });
 
@@ -162,7 +170,7 @@ export function useQuestionBankProgress(studentId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('get_student_question_bank_progress', {
+      const { data, error: rpcError } = await db.rpc('get_student_question_bank_progress', {
         p_student_id: studentId ?? null,
       });
 
@@ -212,7 +220,7 @@ export function useTeacherExamAttempt(examId: string) {
     ): Promise<UpsertAnswerResponse> => {
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc('upsert_teacher_exam_answer', {
+        const { data, error: rpcError } = await db.rpc('upsert_teacher_exam_answer', {
           p_exam_id: examId,
           p_question_id: questionId,
           p_answer: answer,
@@ -264,7 +272,7 @@ export function useTeacherExamAttempt(examId: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('submit_teacher_exam_attempt', {
+      const { data, error: rpcError } = await db.rpc('submit_teacher_exam_attempt', {
         p_attempt_id: attemptId,
       });
 
@@ -303,7 +311,7 @@ export function useTeacherExamResults(examId: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('get_teacher_exam_results', {
+      const { data, error: rpcError } = await db.rpc('get_teacher_exam_results', {
         p_exam_id: examId,
       });
 
@@ -326,7 +334,7 @@ export function useTeacherExamResults(examId: string) {
     async (attemptId: string, questionId: string, pointsEarned: number, comment?: string) => {
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc('grade_essay_answer', {
+        const { data, error: rpcError } = await db.rpc('grade_essay_answer', {
           p_attempt_id: attemptId,
           p_question_id: questionId,
           p_points_earned: pointsEarned,
@@ -383,7 +391,7 @@ export function useComprehensiveExamAttempt(examId: string) {
     ): Promise<UpsertAnswerResponse> => {
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc('upsert_comprehensive_exam_answer', {
+        const { data, error: rpcError } = await db.rpc('upsert_comprehensive_exam_answer', {
           p_exam_id: examId,
           p_question_id: questionId,
           p_answer: answer,
@@ -434,7 +442,7 @@ export function useComprehensiveExamAttempt(examId: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('submit_comprehensive_exam_attempt', {
+      const { data, error: rpcError } = await db.rpc('submit_comprehensive_exam_attempt', {
         p_attempt_id: attemptId,
       });
 
@@ -477,7 +485,7 @@ export function useStudentExamAttempts(studentId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_student_exam_attempts', {
+      const { data: rpcData, error: rpcError } = await db.rpc('get_student_exam_attempts', {
         p_student_id: studentId ?? null,
       });
 
