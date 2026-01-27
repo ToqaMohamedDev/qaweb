@@ -90,12 +90,47 @@ export default function SignUpPage() {
         const fetchStages = async () => {
             try {
                 const supabase = createClient();
+                
+                // Check for stale/invalid session on signup page
+                // If there's a session error, clear it to allow anonymous access
+                const { error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) {
+                    // Clear stale tokens that might cause 401/403 errors
+                    await supabase.auth.signOut();
+                }
+                
                 const { data, error } = await supabase
                     .from('educational_stages')
                     .select('id, name')
                     .order('order_index', { ascending: true });
                 
-                if (!error && data) {
+                if (error) {
+                    // If still getting auth errors, try clearing localStorage and retry
+                    if (error.code === 'PGRST301' || error.message?.includes('JWT')) {
+                        localStorage.removeItem('auth-storage');
+                        const keysToRemove: string[] = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+                                keysToRemove.push(key);
+                            }
+                        }
+                        keysToRemove.forEach(key => localStorage.removeItem(key));
+                        
+                        // Retry fetch after clearing
+                        const retrySupabase = createClient();
+                        const { data: retryData } = await retrySupabase
+                            .from('educational_stages')
+                            .select('id, name')
+                            .order('order_index', { ascending: true });
+                        if (retryData) {
+                            setStages(retryData);
+                        }
+                        return;
+                    }
+                }
+                
+                if (data) {
                     setStages(data);
                 }
             } catch (err) {

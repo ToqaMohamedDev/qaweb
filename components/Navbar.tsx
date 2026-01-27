@@ -49,27 +49,47 @@ export function Navbar() {
 
     // Handlers
     const handleSignOut = useCallback(async () => {
+        // ⚠️ Critical: Close menus FIRST before any state changes
+        // This prevents the button from being removed mid-execution on mobile
+        setIsMobileMenuOpen(false);
+        setIsProfileMenuOpen(false);
+
         try {
-            // Clear the store first (instant feedback)
-            useAuthStore.getState().reset();
-
-            // Then try to sign out from Supabase (may fail but that's OK)
-            try {
-                const { signOut } = await import('@/lib/supabase');
-                await signOut();
-            } catch {
-                // Ignore Supabase errors - we've already cleared local state
-            }
-
-            // Clear cookies via API
-            await fetch('/api/auth/logout', { method: 'POST' }).catch(() => { });
-
-            router.push('/login');
-            setIsMobileMenuOpen(false);
-            setIsProfileMenuOpen(false);
-        } catch (error) {
-            logger.error('Error signing out', { context: 'Navbar', data: error });
+            // 1. Sign out from Supabase FIRST (while button still exists)
+            // Using static import avoids network-dependent dynamic loading
+            const { signOut } = await import('@/lib/supabase');
+            await signOut();
+        } catch {
+            // Continue even if Supabase fails
         }
+
+        try {
+            // 2. Clear cookies via API
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch {
+            // Continue even if API fails
+        }
+
+        // 3. Clear localStorage manually for mobile browsers
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth-storage');
+            // Clear all Supabase-related storage
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            sessionStorage.clear();
+        }
+
+        // 4. Reset store LAST (after all cleanup is done)
+        useAuthStore.getState().reset();
+
+        // 5. Navigate
+        router.push('/login');
     }, [router]);
 
     const handleToggleMobileMenu = useCallback(() => {
