@@ -25,7 +25,7 @@ export function Navbar() {
     const router = useRouter();
 
     // Get auth state from the store (fed by AuthProvider via API Mediator)
-    const { user, isLoading, logout } = useAuthStore();
+    const { user, isLoading } = useAuthStore();
 
     // State
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,25 +50,27 @@ export function Navbar() {
     // Handlers
     const handleSignOut = useCallback(async () => {
         try {
-            // Close menus first for instant visual feedback
-            setIsMobileMenuOpen(false);
-            setIsProfileMenuOpen(false);
+            // Clear the store first (instant feedback)
+            useAuthStore.getState().reset();
 
-            // Use the store's logout() which does proper cleanup:
-            // 1. Calls supabase.auth.signOut()
-            // 2. Clears localStorage (auth-storage, sb-* keys)
-            // 3. Clears sessionStorage
-            // 4. Resets store state LAST
-            await logout();
+            // Then try to sign out from Supabase (may fail but that's OK)
+            try {
+                const { signOut } = await import('@/lib/supabase');
+                await signOut();
+            } catch {
+                // Ignore Supabase errors - we've already cleared local state
+            }
 
-            // Also clear server-side cookies
+            // Clear cookies via API
             await fetch('/api/auth/logout', { method: 'POST' }).catch(() => { });
 
             router.push('/login');
+            setIsMobileMenuOpen(false);
+            setIsProfileMenuOpen(false);
         } catch (error) {
             logger.error('Error signing out', { context: 'Navbar', data: error });
         }
-    }, [logout, router]);
+    }, [router]);
 
     const handleToggleMobileMenu = useCallback(() => {
         setIsMobileMenuOpen(prev => !prev);
