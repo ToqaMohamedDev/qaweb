@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, User, UserPlus, School } from "lucide-react";
 import { Input, Button } from "@/components";
-import { signUpWithEmail, signInWithGoogle, createClient } from "@/lib/supabase";
+import { signUpWithEmail, signInWithGoogle } from "@/lib/supabase";
 import type { UserRole } from "@/lib/database.types";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { useFormValidation, rules } from "@/hooks/useFormValidation";
@@ -85,18 +85,22 @@ export default function SignUpPage() {
     // EFFECTS
     // ═══════════════════════════════════════════════════════════════════════
 
-    // جلب المراحل الدراسية
+    // جلب المراحل الدراسية - استخدام API بدل client-side Supabase للتوافق مع الموبايل
     useEffect(() => {
         const fetchStages = async () => {
             try {
-                const supabase = createClient();
-                const { data, error } = await supabase
-                    .from('educational_stages')
-                    .select('id, name')
-                    .order('order_index', { ascending: true });
+                // استخدام API route بدل Supabase client مباشرة
+                // لأن الـ client-side Supabase بيفشل على بعض المتصفحات الموبايل
+                const response = await fetch('/api/public/data?entity=stages');
                 
-                if (!error && data) {
-                    setStages(data);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.data && Array.isArray(result.data)) {
+                        setStages(result.data.map((s: { id: string; name: string }) => ({
+                            id: s.id,
+                            name: s.name
+                        })));
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching stages:', err);

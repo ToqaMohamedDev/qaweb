@@ -18,6 +18,7 @@ import { MobileMenu } from './navbar/MobileMenu';
 import { AuthButtons } from './navbar/AuthButtons';
 import { navItems, isPathActive } from './navbar/constants';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { signOut } from '@/lib/supabase';
 import { logger } from '@/lib/utils/logger';
 
 export function Navbar() {
@@ -50,23 +51,34 @@ export function Navbar() {
     // Handlers
     const handleSignOut = useCallback(async () => {
         try {
-            // Clear the store first (instant feedback)
-            useAuthStore.getState().reset();
+            // 1. أولاً: مسح الـ cookies من السيرفر (مهم للموبايل)
+            await fetch('/api/auth/logout', { method: 'POST' });
 
-            // Then try to sign out from Supabase (may fail but that's OK)
+            // 2. ثانياً: تسجيل خروج من Supabase (static import بدل dynamic)
             try {
-                const { signOut } = await import('@/lib/supabase');
                 await signOut();
             } catch {
-                // Ignore Supabase errors - we've already cleared local state
+                // تجاهل أخطاء Supabase
             }
 
-            // Clear cookies via API
-            await fetch('/api/auth/logout', { method: 'POST' }).catch(() => { });
+            // 3. ثالثاً: مسح الـ localStorage يدوياً للتأكد
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('auth-storage');
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('sb-') || key.includes('supabase')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                sessionStorage.clear();
+            }
 
-            router.push('/login');
+            // 4. أخيراً: مسح الـ store وإغلاق القوائم
+            useAuthStore.getState().reset();
             setIsMobileMenuOpen(false);
             setIsProfileMenuOpen(false);
+
+            router.push('/login');
         } catch (error) {
             logger.error('Error signing out', { context: 'Navbar', data: error });
         }
