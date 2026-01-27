@@ -1,77 +1,90 @@
-# Control Panel Relationships: Languages, Page Words, & Word Bank
+# دليل جداول لوحة التحكم: الاستخدام الفعلي والحالة (Audit)
 
-This document details the specific relationships between the **Supported Languages**, **Page Words**, and **Word Bank** tables, as requested for the Control Panel implementation.
-
-## 1. Supported Languages (`supported_languages`)
-This is the master table for all languages enabled in the system.
-
-- **PK**: `code` (e.g., 'ar', 'en')
-- **Columns**: `name_en`, `name_native`, `is_active`, `direction`
-
-## 2. Page Words (`page_words`)
-Represents words extracted from specific pages for highlighting or "click-to-translate" features.
-
-- **Relationship**: `page_words.language_code` ➤ `supported_languages.code`
-- **Purpose**: Defines which language a word on a page belongs to.
-- **Key Columns**:
-  - `page_id`: Identifier for the page URL/Course.
-  - `word_text`: The actual word.
-  - `language_code`: FK to `supported_languages`.
-
-## 3. Word Bank (`word_bank`)
-The core vocabulary repository (dictionary) managed in the control panel.
-
-- **Relationship**: `word_bank.language_code` ➤ `supported_languages.code`
-- **Purpose**: Classifies a vocabulary word under a specific source language.
-- **Key Columns**:
-  - `word_text`: The base word.
-  - `language_code`: FK to `supported_languages` (The language of this word).
-  - `category_slug`: (Optional) Category classification.
-
-## 4. Word Bank Translations (`word_bank_translations`)
-Specific translations for words in the Word Bank.
-
-- **Relationship 1**: `word_bank_translations.word_bank_id` ➤ `word_bank.id`
-- **Relationship 2**: `word_bank_translations.target_language` ➤ `supported_languages.code`
-- **Purpose**: Provides the translation of a Word Bank item into another supported language.
+هذا المستند يوضح الحقيقة "بدون مجاملة" عن حالة كل جدول: هل هو مستخدم فعلاً في الكود؟ وأين؟ وما هي المشاكل الموجودة؟
 
 ---
 
-## Visual Diagram
+## 1. تظليل كلمات المستخدم (`user_word_highlights`)
+**الحالة: نشط ومستخدم 🟢**
+
+- **ما هذا؟**: الجدول الفعلي الذي يخزن "أكشن" التظليل الذي يوم به الطالب.
+- **مكان الاستخدام في الكود**:
+  - `app/api/words/highlight/route.ts`: هنا يتم استقبال طلب التظليل من المتصفح.
+  - `toggle_word_highlight_v2` (Database Function): الدالة المسؤولة عن إضافة/حذف التظليل داخل قاعدة البيانات.
+- **توضيح هام**:
+  - المستخدم كان محقاً: التظليل يتخزن هنا مباشرة. البنية هي `JSONB` مرنة جداً.
+  - **ملاحظة**: هذا الجدول هو "المخزن الحي" لتفاعلات الطالب مع النصوص.
+
+---
+
+## 2. بنك الكلمات (`word_bank`)
+**الحالة: نشط ومستخدم 🟢**
+
+- **ما هذا؟**: مخزن الكلمات والمفردات التي تظهر في صفحة "كلماتي" أو القاموس.
+- **مكان الاستخدام في الكود**:
+  - `app/words/page.tsx`: صفحة عرض الكلمات للطالب.
+  - `app/admin/word-bank/page.tsx`: لوحة تحكم المسؤول لإضافة كلمات جديدة.
+  - `app/api/words/word-bank/route.ts`: الـ API الذي يجلب الكلمات.
+
+---
+
+## 3. كلمات الصفحات (`page_words`)
+**الحالة: غير واضح / استخدام إداري فقط ⚠️**
+
+- **ما هذا؟**: جدول لتخزين كلمات النصوص الموجودة في الدروس لجعله قابلة للنقر.
+- **مكان الاستخدام في الكود**:
+  - `app/admin/page-words/page.tsx`: موجود فقط في لوحة تحكم الأدمن.
+  - **المشكلة**: لم يتم العثور على استخدام واضح له في "صفحة الدرس" أو الـ "Reader" الخاص بالطالب في البحث الأولي للكود.
+  - **التحليل**: غالباً واجهة المستخدم تعتمد على تظليل حر (أي كلمة في النص) وترسلها للـ API، دون الرجوع لهذا الجدول للتحقق، مما يجعله حالياً "جدول إداري" أو "ميزة غير مكتملة الربط".
+
+---
+
+## 4. اللغات المدعومة (`supported_languages`)
+**الحالة: نشط (بنية تحتية) 🔵**
+
+- **ما هذا؟**: قائمة اللغات (En, Ar, Fr...).
+- **مكان الاستخدام**:
+  - يستخدم كمرجع (Foreign Key) في كل الجداول السابقة لضمان صحة كود اللغة.
+
+---
+
+## 5. ترجمات بنك الكلمات (`word_bank_translations`)
+**الحالة: نشط ومستخدم 🟢**
+
+- **ما هذا؟**: جدول فرعي لترجمة كلمات `word_bank`.
+- **مكان الاستخدام**:
+  - يتم استدعاؤه دائماً مع `word_bank` في `app/api/words/word-bank/route.ts`.
+
+---
+
+## 6. مخزن الترجمة (`translation_cache`)
+**الحالة: غير مؤكد الاستخدام في الكود الممسوح ⚠️**
+
+- **ما هذا؟**: جدول "كاش" لتقليل التكلفة.
+- **التحليل**: لم يظهر استخدامه بشكل صريح في ملفات الـ TypeScript التي تم فحصها، ولكنه قد يستخدم عبر Database Functions (مثل `get_cached_translation`) مباشرة من الـ Supabase Client، أو قد يكون ميزة مخطط لها لم تفعل بالكامل بعد.
+
+---
+
+## الخلاصة للمطور (The Spaghetti Reality 🍝):
+
+1. **نظام التظليل (Highlighting)**: يعتمد كلياً على `user_word_highlights` وبنية JSON داخله. جدول `page_words` يبدو معزولاً في لوحة التحكم حالياً، ولا يتدخل في عملية التظليل الحية (وهذا يفسر ملاحظتك أن التظليل يتخزن في الـ user highlights مباشرة).
+2. **نظام الكلمات (Vocabulary)**: مستقر ويعتمد على `word_bank` و `word_bank_translations`.
+3. **التوصية**: إذا كان الهدف هو أن التظليل يكون "حر" (أي كلمة)، فجدول `page_words` قد يكون زائداً عن الحاجة أو يحتاج لإعادة توظيف (مثلاً لاقتراح كلمات للطالب).
+
+---
+
+## المخطط الواقعي (As-Is Architecture)
 
 ```mermaid
-erDiagram
-    supported_languages ||--o{ page_words : "defines language for"
-    supported_languages ||--o{ word_bank : "defines source language for"
-    supported_languages ||--o{ word_bank_translations : "defines target language for"
+graph TD
+    User[Student] -->|Highlights Text| API[Next.js API Route<br>/api/words/highlight]
+    API -->|RPC Call| DB_Func[toggle_word_highlight_v2]
+    DB_Func -->|Writes JSON| UserHighlights[Table: user_word_highlights]
     
-    word_bank ||--|{ word_bank_translations : "has translations"
-
-    supported_languages {
-        string code PK "e.g. 'ar', 'en'"
-        string name_en
-        string name_native
-        boolean is_active
-    }
-
-    page_words {
-        uuid id PK
-        string word_text
-        string language_code FK "Links to supported_languages.code"
-        string page_id
-    }
-
-    word_bank {
-        uuid id PK
-        string word_text
-        string language_code FK "Links to supported_languages.code"
-        string category_slug
-    }
-
-    word_bank_translations {
-        uuid id PK
-        uuid word_bank_id FK "Links to word_bank.id"
-        string target_language FK "Links to supported_languages.code"
-        string translated_text
-    }
+    User -->|Views Vocabulary| WordsPage[Page: /words]
+    WordsPage -->|Fetches| WordBank[Table: word_bank]
+    WordBank -->|Joins| Translations[Table: word_bank_translations]
+    
+    Admin[Admin User] -->|Manages| PageWords[Table: page_words]
+    PageWords -.->|No logic link found yet| UserHighlights
 ```

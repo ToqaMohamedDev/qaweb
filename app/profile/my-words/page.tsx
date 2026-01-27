@@ -16,7 +16,6 @@ import {
     Trash2,
     Loader2,
     BookmarkCheck,
-    Calendar,
     Globe,
     ChevronDown,
     AlertCircle,
@@ -31,8 +30,8 @@ interface SavedWord {
     pageId: string;
     languageCode: string;
     savedAt: string;
-    wordText?: string;
-    translation?: string;
+    wordText: string; // The actual word text to display
+    source: 'word_bank' | 'translation'; // Source of the word
 }
 
 interface SupportedLanguage {
@@ -124,12 +123,18 @@ export default function MyWordsPage() {
                 Object.entries(highlightedWords).forEach(([langCode, pages]) => {
                     Object.entries(pages).forEach(([pageId, wordIds]) => {
                         Object.entries(wordIds).forEach(([wordId, details]) => {
+                            // Determine if wordId is a UUID (from word_bank) or text (from translation)
+                            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(wordId);
+                            
                             words.push({
                                 wordId,
                                 pageId,
                                 languageCode: langCode,
                                 savedAt: details.at,
-                                wordText: wordId.split('_')[0], // استخراج النص من الـ ID
+                                // If it's a UUID, we'll need to fetch word data later
+                                // For now, use wordId as the display text (will be replaced if fetched)
+                                wordText: isUUID ? wordId : wordId,
+                                source: pageId === 'word_bank' ? 'word_bank' : 'translation',
                             });
                         });
                     });
@@ -139,11 +144,9 @@ export default function MyWordsPage() {
                 words.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
                 setSavedWords(words);
                 
-                // فتح أول قسم تلقائياً
-                if (words.length > 0) {
-                    const firstLang = words[0].languageCode;
-                    setExpandedSections(new Set([firstLang]));
-                }
+                // فتح كل الأقسام تلقائياً
+                const allLangs = new Set(words.map(w => w.languageCode));
+                setExpandedSections(allLangs);
             }
         } catch (error) {
             console.error("Error fetching saved words:", error);
@@ -230,20 +233,6 @@ export default function MyWordsPage() {
             name: lang?.name_ar || lang?.name_en || code,
             flag: lang?.flag_emoji || "🌐",
         };
-    };
-
-    // Format date
-    const formatDate = (dateStr: string) => {
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString("ar-EG", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-            });
-        } catch {
-            return dateStr;
-        }
     };
 
     // Loading state
@@ -438,45 +427,46 @@ export default function MyWordsPage() {
                                                         </div>
 
                                                         {/* Words Grid */}
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                                                             {words.map((word) => (
                                                                 <div
                                                                     key={`${word.languageCode}-${word.pageId}-${word.wordId}`}
-                                                                    className="group flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+                                                                    className="group relative p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
                                                                 >
-                                                                    <div className="flex items-center gap-3 min-w-0">
-                                                                        {/* Play Button */}
+                                                                    {/* Word Text */}
+                                                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                                                        <p className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
+                                                                            {word.wordText}
+                                                                        </p>
                                                                         <button
-                                                                            onClick={() => speakText(word.wordText || word.wordId, word.languageCode)}
-                                                                            className="shrink-0 p-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                                                                            onClick={() => speakText(word.wordText, word.languageCode)}
+                                                                            className="shrink-0 p-1 rounded bg-white dark:bg-gray-800 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                                                                         >
-                                                                            <Volume2 className="w-4 h-4 text-primary-600" />
+                                                                            <Volume2 className="w-3 h-3 text-primary-600" />
                                                                         </button>
-
-                                                                        {/* Word Info */}
-                                                                        <div className="min-w-0">
-                                                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
-                                                                                {word.wordText || word.wordId}
-                                                                            </p>
-                                                                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                                                <Calendar className="w-3 h-3" />
-                                                                                <span>{formatDate(word.savedAt)}</span>
-                                                                            </div>
-                                                                        </div>
                                                                     </div>
-
-                                                                    {/* Delete Button */}
-                                                                    <button
-                                                                        onClick={() => removeWord(word)}
-                                                                        disabled={isDeleting === word.wordId}
-                                                                        className="shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                                                                    >
-                                                                        {isDeleting === word.wordId ? (
-                                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        )}
-                                                                    </button>
+                                                                    
+                                                                    {/* Source & Date */}
+                                                                    <div className="flex items-center justify-between text-[10px] text-gray-400">
+                                                                        <span className={`px-1.5 py-0.5 rounded ${
+                                                                            word.source === 'word_bank' 
+                                                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                                                                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                                                                        }`}>
+                                                                            {word.source === 'word_bank' ? 'بنك الكلمات' : 'ترجمة'}
+                                                                        </span>
+                                                                        <button
+                                                                            onClick={() => removeWord(word)}
+                                                                            disabled={isDeleting === word.wordId}
+                                                                            className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            {isDeleting === word.wordId ? (
+                                                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                                            ) : (
+                                                                                <Trash2 className="w-3 h-3" />
+                                                                            )}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
