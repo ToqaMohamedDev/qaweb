@@ -201,11 +201,30 @@ export class NotificationClient {
      * Get unread notification count
      */
     async getUnreadCount(): Promise<number> {
-        const { data, error } = await this.supabase
-            .rpc('get_unread_notification_count');
+        // Try RPC first
+        try {
+            const { data, error } = await this.supabase
+                .rpc('get_unread_notification_count');
 
-        if (error) throw error;
-        return data as number;
+            if (!error && data !== null) {
+                return data as number;
+            }
+        } catch {
+            // RPC failed, fallback to manual count
+        }
+
+        // Fallback to manual count query
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) return 0;
+
+        const { count, error: countError } = await this.supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+
+        if (countError) throw countError;
+        return count || 0;
     }
 
     // ============================================================================
@@ -216,33 +235,84 @@ export class NotificationClient {
      * Mark a single notification as read
      */
     async markAsRead(notificationId: string): Promise<boolean> {
-        const { data, error } = await this.supabase
-            .rpc('mark_notification_read', { p_notification_id: notificationId });
+        // Try RPC first
+        try {
+            const { data, error } = await this.supabase
+                .rpc('mark_notification_read', { p_notification_id: notificationId });
 
-        if (error) throw error;
-        return data as boolean;
+            if (!error) {
+                return data as boolean;
+            }
+        } catch {
+            // RPC failed, fallback to direct update
+        }
+
+        // Fallback to direct update
+        const { error: updateError } = await this.supabase
+            .from('notifications')
+            .update({ is_read: true, read_at: new Date().toISOString() })
+            .eq('id', notificationId);
+
+        if (updateError) throw updateError;
+        return true;
     }
 
     /**
      * Mark multiple notifications as read
      */
     async markMultipleAsRead(notificationIds: string[]): Promise<number> {
-        const { data, error } = await this.supabase
-            .rpc('mark_notifications_read_bulk', { p_notification_ids: notificationIds });
+        // Try RPC first
+        try {
+            const { data, error } = await this.supabase
+                .rpc('mark_notifications_read_bulk', { p_notification_ids: notificationIds });
 
-        if (error) throw error;
-        return data as number;
+            if (!error) {
+                return data as number;
+            }
+        } catch {
+            // RPC failed, fallback to direct update
+        }
+
+        // Fallback to direct update
+        const { error: updateError } = await this.supabase
+            .from('notifications')
+            .update({ is_read: true, read_at: new Date().toISOString() })
+            .in('id', notificationIds);
+
+        if (updateError) throw updateError;
+        return notificationIds.length;
     }
 
     /**
      * Mark all notifications as read
      */
     async markAllAsRead(): Promise<number> {
-        const { data, error } = await this.supabase
-            .rpc('mark_notifications_read_bulk', { p_mark_all: true });
+        // Try RPC first
+        try {
+            const { data, error } = await this.supabase
+                .rpc('mark_notifications_read_bulk', { p_mark_all: true });
 
-        if (error) throw error;
-        return data as number;
+            if (!error) {
+                return data as number;
+            }
+        } catch {
+            // RPC failed, fallback to direct update
+        }
+
+        // Fallback to direct update
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (!user) return 0;
+
+        const { error: updateError } = await this.supabase
+            .from('notifications')
+            .update({ is_read: true, read_at: new Date().toISOString() })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+
+        if (updateError) throw updateError;
+        
+        // Return count of updated records (we don't know exact count, but operation succeeded)
+        return 1;
     }
 
     // ============================================================================

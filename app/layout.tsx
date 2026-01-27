@@ -51,9 +51,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* Theme color for different modes */}
-        <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#a78bfa" media="(prefers-color-scheme: dark)" />
+        {/* Theme color - dark mode only (matches the app's dark background) */}
+        <meta name="theme-color" content="#0a0a0a" />
 
         {/* Additional SEO meta tags */}
         <meta name="language" content="Arabic" />

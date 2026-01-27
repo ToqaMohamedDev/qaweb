@@ -76,6 +76,16 @@ export type { UseAdminTableOptions, UseAdminTableReturn } from './useAdminTable'
 export { useExamCreate } from './useExamCreate';
 export type { UseExamCreateReturn } from './useExamCreate';
 
+// Student Attempts Hooks
+export {
+    useQuestionBankAttempt,
+    useQuestionBankProgress,
+    useTeacherExamAttempt,
+    useTeacherExamResults,
+    useComprehensiveExamAttempt,
+    useStudentExamAttempts,
+} from './useStudentAttempts';
+
 // Re-export types
 export type { UseAuthReturn } from './useAuth';
 export type { AsyncState } from './useAsync';
