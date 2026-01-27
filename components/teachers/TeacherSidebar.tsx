@@ -9,7 +9,6 @@ import {
     Home,
     Compass,
     PlaySquare,
-    History,
     Menu,
     CheckCircle2,
     Users,
@@ -73,7 +72,6 @@ export function TeacherSidebar({
                 <SidebarLink icon={Home} label="الرئيسية" href="/" collapsed={!isOpen} active={currentPath === '/'} />
                 <SidebarLink icon={Compass} label="استكشاف" href="/teachers" collapsed={!isOpen} active={isTeachersPage} />
                 <SidebarLink icon={PlaySquare} label="الامتحانات" href="/arabic" collapsed={!isOpen} active={currentPath.startsWith('/arabic')} />
-                <SidebarLink icon={History} label="السجل" href="/history" collapsed={!isOpen} active={currentPath === '/history'} />
             </nav>
 
             {/* Divider */}
