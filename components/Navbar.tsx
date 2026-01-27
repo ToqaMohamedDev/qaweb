@@ -51,17 +51,11 @@ export function Navbar() {
     // Handlers
     const handleSignOut = useCallback(async () => {
         try {
-            // 1. أولاً: مسح الـ cookies من السيرفر (مهم للموبايل)
-            await fetch('/api/auth/logout', { method: 'POST' });
+            // 1. إغلاق القوائم فوراً (UI feedback)
+            setIsMobileMenuOpen(false);
+            setIsProfileMenuOpen(false);
 
-            // 2. ثانياً: تسجيل خروج من Supabase (static import بدل dynamic)
-            try {
-                await signOut();
-            } catch {
-                // تجاهل أخطاء Supabase
-            }
-
-            // 3. ثالثاً: مسح الـ localStorage يدوياً للتأكد
+            // 2. مسح الـ localStorage فوراً (sync operation)
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('auth-storage');
                 const keys = Object.keys(localStorage);
@@ -73,14 +67,23 @@ export function Navbar() {
                 sessionStorage.clear();
             }
 
-            // 4. أخيراً: مسح الـ store وإغلاق القوائم
+            // 3. مسح الـ store فوراً (sync operation)
             useAuthStore.getState().reset();
-            setIsMobileMenuOpen(false);
-            setIsProfileMenuOpen(false);
 
+            // 4. الانتقال لصفحة login فوراً
             router.push('/login');
+
+            // 5. في الخلفية: تنظيف السيرفر والـ Supabase (non-blocking)
+            Promise.all([
+                fetch('/api/auth/logout', { method: 'POST' }).catch(() => {}),
+                signOut().catch(() => {})
+            ]).catch(() => {});
+
         } catch (error) {
             logger.error('Error signing out', { context: 'Navbar', data: error });
+            // حتى لو في error، امسح الـ store وروح login
+            useAuthStore.getState().reset();
+            router.push('/login');
         }
     }, [router]);
 
