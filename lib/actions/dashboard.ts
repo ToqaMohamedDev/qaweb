@@ -162,7 +162,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
                 .eq('stage_id', stageId)
                 .eq('is_active', true)
                 .order('order_index', { ascending: true }),
-            
+
             // الدروس المنشورة للمرحلة
             supabase
                 .from('lessons')
@@ -170,13 +170,13 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
                 .eq('is_published', true)
                 .or(`stage_id.eq.${stageId},stage_id.is.null`)
                 .or(
-                    showFirst && !showSecond 
+                    showFirst && !showSecond
                         ? 'semester.eq.first,semester.eq.full_year'
                         : !showFirst && showSecond
                             ? 'semester.eq.second,semester.eq.full_year'
                             : 'semester.eq.first,semester.eq.second,semester.eq.full_year'
                 ),
-            
+
             // الامتحانات المنشورة للمرحلة أو الامتحانات العامة
             // استخدام نفس الـ query المستخدم في /api/public/data?entity=exams
             supabase
@@ -186,7 +186,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
                 .or(`stage_id.eq.${stageId},stage_id.is.null`)
                 .order('created_at', { ascending: false })
                 .limit(8),
-            
+
             // الإحصائيات بالتوازي
             fetchPlatformStatsOptimized(supabase, stageId)
         ]);
@@ -206,7 +206,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
         // ========================================
         // المرحلة 4: معالجة البيانات
         // ========================================
-        
+
         // إنشاء map لعدد الدروس لكل مادة
         const lessonsCountMap = new Map<string, number>();
         allLessons.forEach(lesson => {
@@ -225,7 +225,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
             image_url: string | null;
             is_active: boolean;
         };
-        
+
         const subjectsWithLessons: SubjectWithLessons[] = subjectStages
             .filter(ss => {
                 const subject = ss.subjects as unknown as SubjectData | null;
@@ -292,29 +292,72 @@ async function fetchPlatformStatsOptimized(
     stageId: string | null
 ): Promise<PlatformStats> {
     try {
-        const [usersResult, lessonsResult, ratingsResult] = await Promise.all([
-            // عدد الطلاب
-            supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'student'),
-            // عدد الدروس
-            supabase
-                .from('lessons')
-                .select('*', { count: 'exact', head: true })
-                .eq('is_published', true)
-                .eq('stage_id', stageId || ''),
-            // متوسط التقييمات
-            supabase
-                .from('teacher_ratings')
-                .select('rating')
-                .limit(100) // نأخذ آخر 100 تقييم فقط للسرعة
+        // Prepare promises for parallel execution
+        const usersPromise = supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', 'student');
+
+        // Lessons count (conditionally filtered by stage)
+        let lessonsQuery = supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_published', true);
+
+        if (stageId) {
+            lessonsQuery = lessonsQuery.eq('stage_id', stageId);
+        }
+
+        const ratingsPromise = supabase
+            .from('teacher_ratings')
+            .select('rating')
+            .limit(100);
+
+        // Fetch recent comprehensive exam attempts (last 50)
+        const compAttemptsPromise = supabase
+            .from('comprehensive_exam_attempts')
+            .select('total_score, max_score')
+            .eq('status', 'completed')
+            .limit(50);
+
+        // Fetch recent teacher exam attempts (last 50)
+        const teacherAttemptsPromise = supabase
+            .from('teacher_exam_attempts')
+            .select('total_score, max_score')
+            .eq('status', 'completed')
+            .limit(50);
+
+        const [usersResult, lessonsResult, ratingsResult, compAttemptsResult, teacherAttemptsResult] = await Promise.all([
+            usersPromise,
+            lessonsQuery,
+            ratingsPromise,
+            compAttemptsPromise,
+            teacherAttemptsPromise
         ]);
 
-        let averageRating = 4.8;
+        // 1. Average Rating Calculation
+        let averageRating = 4.9; // Default slightly high
         if (ratingsResult.data && ratingsResult.data.length > 0) {
             const sum = ratingsResult.data.reduce((acc, r) => acc + (r.rating || 0), 0);
             averageRating = Math.round((sum / ratingsResult.data.length) * 10) / 10;
+        }
+
+        // 2. Success Rate Calculation (Real Data)
+        let successRate = 0;
+        const allAttempts = [
+            ...(compAttemptsResult.data || []),
+            ...(teacherAttemptsResult.data || [])
+        ];
+
+        if (allAttempts.length > 0) {
+            const passedCount = allAttempts.filter(a => {
+                const max = a.max_score || 0;
+                const score = a.total_score || 0;
+                // Consider passed if score >= 50%
+                return max > 0 && (score / max) >= 0.5;
+            }).length;
+
+            successRate = Math.round((passedCount / allAttempts.length) * 100);
         }
 
         return {
@@ -322,11 +365,11 @@ async function fetchPlatformStatsOptimized(
             totalLessons: lessonsResult.count || 0,
             totalExams: 0,
             averageRating,
-            successRate: 85
+            successRate
         };
     } catch (error) {
         console.error('[Platform Stats] Error:', error);
-        return { totalUsers: 0, totalLessons: 0, totalExams: 0, averageRating: 4.8, successRate: 85 };
+        return { totalUsers: 0, totalLessons: 0, totalExams: 0, averageRating: 4.8, successRate: 0 };
     }
 }
 
