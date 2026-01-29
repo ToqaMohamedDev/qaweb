@@ -360,14 +360,12 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             const { data: directStageQBs } = await supabase
                 .from('question_banks')
                 .select('id')
-                .eq('is_published', true)
                 .eq('stage_id', stageId);
 
             // Method 2: Through lesson's stage_id (for question banks where stage_id is null)
             const { data: lessonStageQBs } = await supabase
                 .from('question_banks')
                 .select('id, lessons!inner(stage_id)')
-                .eq('is_published', true)
                 .is('stage_id', null)
                 .eq('lessons.stage_id', stageId);
 
@@ -387,11 +385,10 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 questionBankAttempts = attempts || [];
             }
         } else {
-            // No stage filter - get all published question banks
+            // No stage filter - get all question banks
             const { count: totalCount } = await supabase
                 .from('question_banks')
-                .select('id', { count: 'exact', head: true })
-                .eq('is_published', true);
+                .select('id', { count: 'exact', head: true });
             totalQuestionBanks = totalCount || 0;
 
             const { data: attempts } = await supabase
