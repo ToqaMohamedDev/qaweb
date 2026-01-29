@@ -28,20 +28,43 @@ import { logger } from '@/lib/utils/logger';
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 
+export interface ExamSubsection {
+    id?: string;
+    title?: string;
+    type?: string;
+    questions?: ExamQuestion[];
+}
+
 export interface ExamBlock {
     id?: string;
     titleAr?: string;
     titleEn?: string;
     type?: string;
     questions?: ExamQuestion[];
+    // Teacher exam structure - questions are in subsections
+    subsections?: ExamSubsection[];
     // Reading passage
     bodyText?: string;
+    readingText?: string;
+    readingTitle?: string;
     title?: string;
     genre?: string;
+    contentType?: 'none' | 'reading' | 'poetry';
     // Poetry
     verses?: string[];
+    poetryVerses?: { firstHalf: string; secondHalf: string }[];
     poet?: string;
     poemTitle?: string;
+    poetryTitle?: string;
+}
+
+// Option type for teacher exams
+export interface TeacherExamOption {
+    textAr?: string;
+    textEn?: string;
+    isCorrect?: boolean;
+    id?: string;
+    text?: string;
 }
 
 export interface ExamQuestion {
@@ -50,9 +73,20 @@ export interface ExamQuestion {
     text?: string;
     textAr?: string;
     textEn?: string;
-    options?: string[] | { id: string; text: string }[];
+    options?: string[] | { id: string; text: string }[] | TeacherExamOption[];
     correctAnswer?: string | number;
+    correctOptionId?: string;
     points?: number;
+    difficulty?: string;
+    // Special question types
+    underlinedWord?: string;      // للإعراب
+    blankTextAr?: string;         // للفراغات
+    blankTextEn?: string;
+    correctAnswerAr?: string;     // الإجابة الصحيحة
+    correctAnswerEn?: string;
+    extractionTarget?: string;    // للاستخراج
+    explanationAr?: string;
+    explanationEn?: string;
 }
 
 export interface UnifiedExamPlayerProps {
@@ -96,9 +130,26 @@ export function UnifiedExamPlayer({
 
     const blocks: ExamBlock[] = exam?.blocks || exam?.sections || [];
     const currentBlock = blocks[currentBlockIndex];
-    const questions = currentBlock?.questions || [];
+    
+    // Handle both structures:
+    // 1. Direct questions: blocks[].questions[]
+    // 2. Teacher exam with subsections: blocks[].subsections[].questions[]
+    const getBlockQuestions = (block: ExamBlock): ExamQuestion[] => {
+        if (!block) return [];
+        // If block has direct questions, use them
+        if (block.questions && block.questions.length > 0) {
+            return block.questions;
+        }
+        // If block has subsections, flatten all questions from subsections
+        if (block.subsections && block.subsections.length > 0) {
+            return block.subsections.flatMap(sub => sub.questions || []);
+        }
+        return [];
+    };
+    
+    const questions = getBlockQuestions(currentBlock);
     const currentQuestion = questions[currentQuestionIndex];
-    const totalQuestions = blocks.reduce((sum, b) => sum + (b.questions?.length || 0), 0);
+    const totalQuestions = blocks.reduce((sum, b) => sum + getBlockQuestions(b).length, 0);
 
     // Labels
     const labels = {
@@ -183,7 +234,7 @@ export function UnifiedExamPlayer({
     };
 
     // Handle answer
-    const handleAnswer = useCallback((questionId: string, answer: any) => {
+    const handleAnswer = useCallback((questionId: string, answer: string | number) => {
         setAnswers((prev) => ({
             ...prev,
             [questionId]: answer,
@@ -206,12 +257,28 @@ export function UnifiedExamPlayer({
         } else if (currentBlockIndex > 0) {
             setCurrentBlockIndex((prev) => prev - 1);
             const prevBlock = blocks[currentBlockIndex - 1];
-            setCurrentQuestionIndex((prevBlock.questions?.length || 1) - 1);
+            const prevBlockQuestions = getBlockQuestions(prevBlock);
+            setCurrentQuestionIndex(Math.max(prevBlockQuestions.length - 1, 0));
         }
     };
 
     const isLastQuestion = currentBlockIndex === blocks.length - 1 &&
         currentQuestionIndex === questions.length - 1;
+
+    // Helper to find correct answer index from teacher exam options
+    const getCorrectAnswerIndex = (q: ExamQuestion): number => {
+        if (q.correctAnswer !== undefined) {
+            return typeof q.correctAnswer === 'number' ? q.correctAnswer : parseInt(String(q.correctAnswer), 10);
+        }
+        // Teacher exam format: find option with isCorrect: true
+        if (q.options && Array.isArray(q.options)) {
+            const idx = (q.options as TeacherExamOption[]).findIndex(opt => 
+                typeof opt === 'object' && opt.isCorrect === true
+            );
+            if (idx !== -1) return idx;
+        }
+        return -1;
+    };
 
     // Submit exam
     const handleSubmit = async () => {
@@ -220,18 +287,33 @@ export function UnifiedExamPlayer({
         try {
             setIsSubmitting(true);
 
-            // Calculate score (simplified)
+            // Calculate score
             let totalScore = 0;
             let maxScore = 0;
 
             blocks.forEach((block) => {
-                block.questions?.forEach((q) => {
+                const blockQuestions = getBlockQuestions(block);
+                blockQuestions.forEach((q) => {
                     const points = q.points || 1;
                     maxScore += points;
 
                     const userAnswer = answers[q.id];
-                    if (userAnswer !== undefined && String(userAnswer) === String(q.correctAnswer)) {
-                        totalScore += points;
+                    
+                    // For MCQ/true_false: check if selected index matches correct index
+                    if (q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'true_false') {
+                        const correctIdx = getCorrectAnswerIndex(q);
+                        if (userAnswer !== undefined && Number(userAnswer) === correctIdx) {
+                            totalScore += points;
+                        }
+                    } 
+                    // For text-based questions: compare with correctAnswer field
+                    else if (userAnswer !== undefined) {
+                        const correctAnswer = isRTL 
+                            ? (q.correctAnswerAr || q.correctAnswerEn || q.correctAnswer) 
+                            : (q.correctAnswerEn || q.correctAnswerAr || q.correctAnswer);
+                        if (correctAnswer && String(userAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase()) {
+                            totalScore += points;
+                        }
                     }
                 });
             });
@@ -257,37 +339,125 @@ export function UnifiedExamPlayer({
         }
     };
 
+    // Helper to get option text based on language
+    const getOptionText = (option: string | TeacherExamOption | { id: string; text: string }): string => {
+        if (typeof option === 'string') return option;
+        if ('text' in option && option.text) return option.text;
+        // Teacher exam format: { textAr, textEn, isCorrect }
+        if ('textAr' in option || 'textEn' in option) {
+            return isRTL ? (option.textAr || option.textEn || '') : (option.textEn || option.textAr || '');
+        }
+        return '';
+    };
+
     // Render question
     const renderQuestion = (q: ExamQuestion) => {
-        const questionText = q.text || (isRTL ? q.textAr : q.textEn) || '';
+        const questionText = q.text || (isRTL ? q.textAr : q.textEn) || (isRTL ? q.textEn : q.textAr) || '';
         const userAnswer = answers[q.id];
+
+        // Question type labels
+        const questionTypeLabels: Record<string, { ar: string; en: string }> = {
+            mcq: { ar: 'اختيار من متعدد', en: 'Multiple Choice' },
+            multiple_choice: { ar: 'اختيار من متعدد', en: 'Multiple Choice' },
+            true_false: { ar: 'صح أم خطأ', en: 'True or False' },
+            essay: { ar: 'سؤال مقالي', en: 'Essay Question' },
+            parsing: { ar: 'أعرب ما تحته خط', en: 'Parsing' },
+            fill_blank: { ar: 'أكمل الفراغ', en: 'Fill in the Blank' },
+            extraction: { ar: 'استخراج', en: 'Extraction' },
+        };
+
+        const typeLabel = questionTypeLabels[q.type] || { ar: q.type, en: q.type };
 
         return (
             <div className="space-y-6">
-                <p className="text-lg font-medium text-gray-900 dark:text-white">
-                    {questionText}
-                </p>
+                {/* Question Type Badge */}
+                <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                        {isRTL ? typeLabel.ar : typeLabel.en}
+                    </span>
+                    {q.difficulty && (
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                            q.difficulty === 'easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                            q.difficulty === 'hard' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        }`}>
+                            {isRTL ? (q.difficulty === 'easy' ? 'سهل' : q.difficulty === 'hard' ? 'صعب' : 'متوسط') : q.difficulty}
+                        </span>
+                    )}
+                </div>
 
-                {/* MCQ Options */}
-                {(q.type === 'mcq' || q.type === 'multiple_choice') && q.options && (
+                {/* Parsing Question - Show underlined word */}
+                {q.type === 'parsing' && q.underlinedWord && (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">
+                            {isRTL ? 'أعرب الكلمة التالية:' : 'Parse the following word:'}
+                        </p>
+                        <p className="text-xl font-bold text-amber-900 dark:text-amber-100 underline decoration-2">
+                            {q.underlinedWord}
+                        </p>
+                    </div>
+                )}
+
+                {/* Fill Blank Question - Show text with blank */}
+                {q.type === 'fill_blank' && (q.blankTextAr || q.blankTextEn) && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                            {isRTL ? 'أكمل الفراغ في الجملة التالية:' : 'Complete the blank in the following:'}
+                        </p>
+                        <p className="text-lg text-blue-900 dark:text-blue-100">
+                            {isRTL ? (q.blankTextAr || q.blankTextEn) : (q.blankTextEn || q.blankTextAr)}
+                        </p>
+                    </div>
+                )}
+
+                {/* Extraction Question - Show what to extract */}
+                {q.type === 'extraction' && q.extractionTarget && (
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                        <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
+                            {isRTL ? 'استخرج من النص:' : 'Extract from the text:'}
+                        </p>
+                        <p className="text-lg font-semibold text-purple-900 dark:text-purple-100">
+                            {q.extractionTarget}
+                        </p>
+                    </div>
+                )}
+
+                {/* Question Text */}
+                {questionText && (
+                    <p className="text-lg font-medium text-gray-900 dark:text-white leading-relaxed">
+                        {questionText}
+                    </p>
+                )}
+
+                {/* MCQ / True-False Options */}
+                {(q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'true_false') && q.options && (
                     <div className="space-y-3">
-                        {(q.options as any[]).map((option, idx) => {
-                            const optionText = typeof option === 'string' ? option : option.text;
-                            const optionId = typeof option === 'string' ? idx : option.id;
-                            const isSelected = userAnswer === optionId || userAnswer === idx;
+                        {(q.options as (string | TeacherExamOption | { id: string; text: string })[]).map((option, idx) => {
+                            const optionText = getOptionText(option);
+                            const optionId = typeof option === 'string' ? idx : ((option as TeacherExamOption).id || idx);
+                            const isSelected = userAnswer === optionId || userAnswer === idx || userAnswer === optionText;
 
                             return (
                                 <button
                                     key={idx}
-                                    onClick={() => handleAnswer(q.id, optionId)}
+                                    onClick={() => handleAnswer(q.id, idx)}
                                     className={`w-full p-4 text-start rounded-xl border-2 transition-all ${isSelected
                                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                                         : 'border-gray-200 dark:border-[#2e2e3a] hover:border-primary-300'
                                         }`}
                                 >
-                                    <span className={isSelected ? 'text-primary-700 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}>
-                                        {optionText}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold ${
+                                            isSelected 
+                                                ? 'bg-primary-500 text-white' 
+                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                        }`}>
+                                            {String.fromCharCode(65 + idx)}
+                                        </span>
+                                        <span className={isSelected ? 'text-primary-700 dark:text-primary-400 font-medium' : 'text-gray-700 dark:text-gray-300'}>
+                                            {optionText}
+                                        </span>
+                                    </div>
                                 </button>
                             );
                         })}
@@ -295,14 +465,19 @@ export function UnifiedExamPlayer({
                 )}
 
                 {/* Essay/Text Input */}
-                {(q.type === 'essay' || q.type === 'maqali' || q.type === 'text') && (
-                    <textarea
-                        value={userAnswer || ''}
-                        onChange={(e) => handleAnswer(q.id, e.target.value)}
-                        placeholder={isRTL ? 'اكتب إجابتك هنا...' : 'Write your answer here...'}
-                        className="w-full h-40 p-4 bg-white dark:bg-[#1c1c24] border border-gray-200 dark:border-[#2e2e3a] rounded-xl resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                    />
+                {(q.type === 'essay' || q.type === 'maqali' || q.type === 'text' || q.type === 'parsing' || q.type === 'fill_blank' || q.type === 'extraction') && (
+                    <div className="space-y-2">
+                        <label className="text-sm text-gray-600 dark:text-gray-400">
+                            {isRTL ? 'إجابتك:' : 'Your answer:'}
+                        </label>
+                        <textarea
+                            value={userAnswer || ''}
+                            onChange={(e) => handleAnswer(q.id, e.target.value)}
+                            placeholder={isRTL ? 'اكتب إجابتك هنا...' : 'Write your answer here...'}
+                            className="w-full h-40 p-4 bg-white dark:bg-[#1c1c24] border border-gray-200 dark:border-[#2e2e3a] rounded-xl resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 dark:text-white"
+                            dir={isRTL ? 'rtl' : 'ltr'}
+                        />
+                    </div>
                 )}
             </div>
         );
@@ -384,17 +559,40 @@ export function UnifiedExamPlayer({
                             </div>
                         )}
 
-                        {/* Reading Passage */}
-                        {currentBlock?.bodyText && (
+                        {/* Reading Passage - supports both bodyText and readingText (teacher exams) */}
+                        {(currentBlock?.bodyText || (currentBlock?.contentType === 'reading' && currentBlock?.readingText)) && (
                             <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
                                 <div className="flex items-center gap-2 mb-4">
                                     <BookOpen className="w-5 h-5 text-blue-600" />
                                     <span className="font-semibold text-blue-800 dark:text-blue-300">
-                                        {labels.readingPassage}
+                                        {currentBlock?.readingTitle || labels.readingPassage}
                                     </span>
                                 </div>
                                 <div className="prose prose-blue dark:prose-invert max-w-none">
-                                    <p className="whitespace-pre-wrap leading-relaxed">{currentBlock.bodyText}</p>
+                                    <p className="whitespace-pre-wrap leading-relaxed">
+                                        {currentBlock.bodyText || currentBlock.readingText}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Poetry Section - for teacher exams */}
+                        {currentBlock?.contentType === 'poetry' && currentBlock?.poetryVerses && currentBlock.poetryVerses.length > 0 && (
+                            <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-200 dark:border-purple-800">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <BookOpen className="w-5 h-5 text-purple-600" />
+                                    <span className="font-semibold text-purple-800 dark:text-purple-300">
+                                        {currentBlock?.poetryTitle || labels.poetry}
+                                    </span>
+                                </div>
+                                <div className="space-y-3 text-center">
+                                    {currentBlock.poetryVerses.map((verse, idx) => (
+                                        <div key={idx} className="flex justify-center gap-8 text-lg leading-relaxed">
+                                            <span>{verse.firstHalf}</span>
+                                            <span className="text-purple-400">***</span>
+                                            <span>{verse.secondHalf}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}

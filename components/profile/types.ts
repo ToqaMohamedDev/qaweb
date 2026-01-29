@@ -11,8 +11,9 @@ export interface Stage {
 }
 
 export interface ExamStats {
-    taken: number;
-    passed: number;
+    total: number;        // إجمالي الامتحانات المتاحة للمرحلة
+    taken: number;        // عدد الامتحانات اللي الطالب دخلها
+    passed: number;       // عدد الامتحانات اللي نجح فيها
     averageScore: number;
     totalScore: number;
 }
@@ -68,7 +69,7 @@ export interface StatCardData {
     bg: string;
 }
 
-export type ProfileTab = 'overview' | 'exams' | 'achievements' | 'activity' | 'settings';
+export type ProfileTab = 'overview' | 'exams' | 'achievements' | 'settings';
 
 export interface TabItem {
     id: ProfileTab;
@@ -85,8 +86,8 @@ export const initialStats: UserStats = {
     activeDays: 1,
     currentStreak: 0,
     averageScore: 0,
-    siteExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
-    teacherExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+    siteExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+    teacherExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
 };
 
 export const initialFormData: ProfileFormData = {

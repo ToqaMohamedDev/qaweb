@@ -47,12 +47,14 @@ export function StudentProgressDashboard({
   const {
     data: examAttempts,
     loading: examsLoading,
+    error: examsError,
     fetchAttempts,
   } = useStudentExamAttempts(studentId);
 
   const {
     progress: bankProgress,
     loading: banksLoading,
+    error: banksError,
     fetchProgress,
   } = useQuestionBankProgress(studentId);
 
@@ -61,8 +63,9 @@ export function StudentProgressDashboard({
 
   // Fetch data on mount
   useEffect(() => {
-    fetchAttempts();
-    fetchProgress();
+    fetchAttempts().catch(console.error);
+    fetchProgress().catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const labels = {
@@ -88,6 +91,7 @@ export function StudentProgressDashboard({
   };
 
   const isLoading = examsLoading || banksLoading;
+  const hasError = examsError || banksError;
 
   // ==========================================
   // SEPARATE STATS FOR EACH CATEGORY
@@ -144,6 +148,30 @@ export function StudentProgressDashboard({
       <div className="bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6">
         <div className="flex items-center justify-center h-40">
           <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6">
+        <div className="flex flex-col items-center justify-center h-40 text-center">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-3">
+            <FileText className="w-6 h-6 text-red-500" />
+          </div>
+          <p className="text-gray-500 dark:text-gray-400">
+            {isRTL ? 'حدث خطأ أثناء تحميل البيانات' : 'Error loading data'}
+          </p>
+          <button
+            onClick={() => {
+              fetchAttempts().catch(console.error);
+              fetchProgress().catch(console.error);
+            }}
+            className="mt-3 px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            {isRTL ? 'إعادة المحاولة' : 'Retry'}
+          </button>
         </div>
       </div>
     );

@@ -235,11 +235,14 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
         // Total lessons للمرحلة
         const totalLessons = stageLessonIds.length;
 
-        // Comprehensive exam attempts (امتحانات الموقع) - فلترة حسب المرحلة
+        // =============================================
+        // Comprehensive exams (امتحانات الموقع) - فلترة حسب المرحلة
+        // =============================================
         let comprehensiveAttempts: any[] = [];
+        let totalSiteExams = 0;
 
         if (stageId) {
-            // Get exams for this stage
+            // Get ALL published exams for this stage (to get total count)
             const { data: stageCompExams } = await supabase
                 .from('comprehensive_exams')
                 .select('id')
@@ -247,6 +250,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 .eq('stage_id', stageId);
 
             const stageCompExamIds = (stageCompExams || []).map((e: any) => e.id);
+            totalSiteExams = stageCompExamIds.length;
 
             if (stageCompExamIds.length > 0) {
                 // Fetch attempts only for exams in this stage
@@ -257,9 +261,14 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                     .in('exam_id', stageCompExamIds);
                 comprehensiveAttempts = attempts || [];
             }
-            // If no exams for this stage, comprehensiveAttempts stays empty []
         } else {
-            // No stage filter - get all attempts
+            // No stage filter - get all published exams count
+            const { count: totalCount } = await supabase
+                .from('comprehensive_exams')
+                .select('id', { count: 'exact', head: true })
+                .eq('is_published', true);
+            totalSiteExams = totalCount || 0;
+
             const { data: attempts } = await supabase
                 .from('comprehensive_exam_attempts')
                 .select('*')
@@ -267,11 +276,14 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             comprehensiveAttempts = attempts || [];
         }
 
-        // Teacher exam attempts (امتحانات المدرسين) - فلترة حسب المرحلة
+        // =============================================
+        // Teacher exams (امتحانات المدرسين) - فلترة حسب المرحلة
+        // =============================================
         let teacherAttempts: any[] = [];
+        let totalTeacherExams = 0;
 
         if (stageId) {
-            // Get exams for this stage
+            // Get ALL published exams for this stage (to get total count)
             const { data: stageTeacherExams } = await supabase
                 .from('teacher_exams')
                 .select('id')
@@ -279,6 +291,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 .eq('stage_id', stageId);
 
             const stageTeacherExamIds = (stageTeacherExams || []).map((e: any) => e.id);
+            totalTeacherExams = stageTeacherExamIds.length;
 
             if (stageTeacherExamIds.length > 0) {
                 // Fetch attempts only for exams in this stage
@@ -289,9 +302,14 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                     .in('exam_id', stageTeacherExamIds);
                 teacherAttempts = attempts || [];
             }
-            // If no exams for this stage, teacherAttempts stays empty []
         } else {
-            // No stage filter - get all attempts
+            // No stage filter - get all published exams count
+            const { count: totalCount } = await supabase
+                .from('teacher_exams')
+                .select('id', { count: 'exact', head: true })
+                .eq('is_published', true);
+            totalTeacherExams = totalCount || 0;
+
             const { data: attempts } = await supabase
                 .from('teacher_exam_attempts')
                 .select('*')
@@ -345,16 +363,18 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
 
             // إحصائيات امتحانات الموقع (Comprehensive)
             siteExams: {
-                taken: siteExamStats.taken,
-                passed: siteExamStats.passed,
+                total: totalSiteExams,           // إجمالي الامتحانات المتاحة للمرحلة
+                taken: siteExamStats.taken,      // عدد الامتحانات اللي الطالب دخلها
+                passed: siteExamStats.passed,    // عدد الامتحانات اللي نجح فيها
                 averageScore: siteExamStats.averageScore,
                 totalScore: siteExamStats.totalScore,
             },
 
             // إحصائيات امتحانات المدرسين (Teacher)
             teacherExams: {
-                taken: teacherExamStats.taken,
-                passed: teacherExamStats.passed,
+                total: totalTeacherExams,        // إجمالي الامتحانات المتاحة للمرحلة
+                taken: teacherExamStats.taken,   // عدد الامتحانات اللي الطالب دخلها
+                passed: teacherExamStats.passed, // عدد الامتحانات اللي نجح فيها
                 averageScore: teacherExamStats.averageScore,
                 totalScore: teacherExamStats.totalScore,
             },
@@ -374,8 +394,8 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
         return {
             completedLessons: 0,
             totalLessons: 0,
-            siteExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
-            teacherExams: { taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+            siteExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+            teacherExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
             examsTaken: 0,
             passedExams: 0,
             totalScore: 0,

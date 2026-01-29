@@ -361,13 +361,29 @@ export default function ExamHistoryPage() {
                         max_score,
                         started_at,
                         completed_at,
-                        created_at,
-                        exam:comprehensive_exams(exam_title, type)
+                        created_at
                     `)
                     .eq("student_id", user.id)
                     .order("created_at", { ascending: false });
 
-                if (compError) throw compError;
+                if (compError) {
+                    console.error("Error fetching comprehensive attempts:", compError);
+                }
+
+                // Fetch comprehensive exam details separately
+                const compExamIds = (compAttempts || []).map(a => a.exam_id);
+                let compExamsData: Record<string, any> = {};
+                
+                if (compExamIds.length > 0) {
+                    const { data: exams } = await supabase
+                        .from("comprehensive_exams")
+                        .select("id, exam_title, type")
+                        .in("id", compExamIds);
+                    
+                    if (exams) {
+                        compExamsData = Object.fromEntries(exams.map(e => [e.id, e]));
+                    }
+                }
 
                 // Combine and normalize data
                 const normalizedTeacher: ExamAttempt[] = (teacherAttempts || []).map((a: any) => {
@@ -390,20 +406,23 @@ export default function ExamHistoryPage() {
                     };
                 });
 
-                const normalizedComp: ExamAttempt[] = (compAttempts || []).map((a: any) => ({
-                    id: a.id,
-                    exam_id: a.exam_id,
-                    student_id: a.student_id,
-                    status: a.status,
-                    total_score: a.total_score,
-                    max_score: a.max_score,
-                    started_at: a.started_at,
-                    completed_at: a.completed_at,
-                    created_at: a.created_at,
-                    exam_title: a.exam?.exam_title,
-                    exam_type: a.exam?.type,
-                    source: "comprehensive" as const,
-                }));
+                const normalizedComp: ExamAttempt[] = (compAttempts || []).map((a: any) => {
+                    const examData = compExamsData[a.exam_id];
+                    return {
+                        id: a.id,
+                        exam_id: a.exam_id,
+                        student_id: a.student_id,
+                        status: a.status,
+                        total_score: a.total_score,
+                        max_score: a.max_score,
+                        started_at: a.started_at,
+                        completed_at: a.completed_at,
+                        created_at: a.created_at,
+                        exam_title: examData?.exam_title,
+                        exam_type: examData?.type,
+                        source: "comprehensive" as const,
+                    };
+                });
 
                 setAttempts([...normalizedTeacher, ...normalizedComp]);
             } catch (error) {

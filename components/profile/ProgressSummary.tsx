@@ -14,9 +14,9 @@ interface ProgressSummaryProps {
 }
 
 export function ProgressSummary({ stats }: ProgressSummaryProps) {
-    // Get separate exam stats
-    const siteExams = stats.siteExams || { taken: 0, passed: 0, averageScore: 0 };
-    const teacherExams = stats.teacherExams || { taken: 0, passed: 0, averageScore: 0 };
+    // Get separate exam stats with total available for stage
+    const siteExams = stats.siteExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
+    const teacherExams = stats.teacherExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
 
     return (
         <div className="bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 shadow-lg">
@@ -60,7 +60,7 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             امتحانات الموقع الناجحة
                         </span>
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
-                            {siteExams.passed} / {siteExams.taken}
+                            {siteExams.passed} / {siteExams.total}
                         </span>
                     </div>
                     <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -68,8 +68,8 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             initial={{ width: 0 }}
                             animate={{
                                 width:
-                                    siteExams.taken > 0
-                                        ? `${(siteExams.passed / siteExams.taken) * 100}%`
+                                    siteExams.total > 0
+                                        ? `${(siteExams.passed / siteExams.total) * 100}%`
                                         : '0%',
                             }}
                             transition={{ duration: 1, delay: 0.5 }}
@@ -86,7 +86,7 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             امتحانات المدرسين الناجحة
                         </span>
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
-                            {teacherExams.passed} / {teacherExams.taken}
+                            {teacherExams.passed} / {teacherExams.total}
                         </span>
                     </div>
                     <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -94,8 +94,8 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             initial={{ width: 0 }}
                             animate={{
                                 width:
-                                    teacherExams.taken > 0
-                                        ? `${(teacherExams.passed / teacherExams.taken) * 100}%`
+                                    teacherExams.total > 0
+                                        ? `${(teacherExams.passed / teacherExams.total) * 100}%`
                                         : '0%',
                             }}
                             transition={{ duration: 1, delay: 0.7 }}

@@ -15,7 +15,6 @@ import {
     StatsGrid,
     ProgressSummary,
     AchievementsGrid,
-    ActivityList,
     ProfileSettings,
 } from "@/components/profile";
 import { StudentProgressDashboard } from "@/components/profile/StudentProgressDashboard";
@@ -189,14 +188,6 @@ export default function ProfilePage() {
                             {/* Achievements Tab */}
                             {activeTab === 'achievements' && (
                                 <AchievementsGrid achievements={achievements} />
-                            )}
-
-                            {/* Activity Tab */}
-                            {activeTab === 'activity' && (
-                                <ActivityList
-                                    activities={recentActivity}
-                                    formatDate={formatRelativeDate}
-                                />
                             )}
 
                             {/* Settings Tab */}

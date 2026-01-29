@@ -12,9 +12,6 @@ import {
     ChevronDown,
     Shield,
     LogOut,
-    Trophy,
-    Crown,
-    Zap,
     Sparkles,
     ArrowLeft,
     BookOpen,
@@ -96,105 +93,46 @@ export function UserProfileDropdown({
                         animate="visible"
                         exit="exit"
                         style={{ perspective: '1000px' }}
-                        className="absolute top-full left-0 mt-3 w-[360px] rounded-2xl bg-white dark:bg-[#1c1c24] backdrop-blur-xl border border-gray-200/80 dark:border-[#2e2e3a] shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] overflow-hidden"
+                        className="absolute top-full left-0 mt-3 w-[300px] rounded-2xl bg-white dark:bg-[#1c1c24] backdrop-blur-xl border border-gray-200/80 dark:border-[#2e2e3a] shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] overflow-hidden"
                     >
-                        {/* Elegant Gradient Header */}
-                        <div className="relative h-32 overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700">
-                            {/* Subtle pattern overlay */}
-                            <div className="absolute inset-0 opacity-10">
-                                <div className="absolute inset-0" style={{
-                                    backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                                    backgroundSize: '24px 24px'
-                                }} />
-                            </div>
-                            
-                            {/* Soft glow effect */}
-                            <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-                            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-indigo-400/20 rounded-full blur-2xl" />
-                            
-                            {/* Minimal decorative icons */}
-                            <motion.div
-                                animate={{ 
-                                    y: [0, -8, 0],
-                                    opacity: [0.3, 0.5, 0.3]
-                                }}
-                                transition={{ 
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                                className="absolute top-4 right-5"
-                            >
-                                <Sparkles className="w-5 h-5 text-white/40" />
-                            </motion.div>
-                        </div>
-
-                        {/* User Profile Section */}
-                        <div className="relative -mt-16 px-6">
-                            <div className="flex items-end gap-4 mb-4">
-                                {/* Avatar with refined styling */}
-                                <motion.div 
-                                    variants={itemVariants} 
-                                    className="relative"
-                                >
-                                    <div className="relative w-24 h-24 rounded-2xl bg-white dark:bg-[#252530] p-1.5 shadow-xl">
-                                        <Avatar
-                                            src={user?.user_metadata?.avatar_url}
-                                            name={user?.user_metadata?.name}
-                                            email={user?.email}
-                                            size="xl"
-                                            rounded="xl"
-                                            customGradient="from-violet-500 via-purple-500 to-indigo-600"
-                                        />
+                        {/* Compact User Profile Section */}
+                        <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center gap-3">
+                                {/* Avatar */}
+                                <motion.div variants={itemVariants} className="relative">
+                                    <div className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 p-0.5 shadow-lg">
+                                        <div className="w-full h-full rounded-[10px] overflow-hidden bg-white dark:bg-[#252530]">
+                                            <Avatar
+                                                src={user?.user_metadata?.avatar_url}
+                                                name={user?.user_metadata?.name}
+                                                email={user?.email}
+                                                size="lg"
+                                                rounded="xl"
+                                                customGradient="from-violet-500 via-purple-500 to-indigo-600"
+                                            />
+                                        </div>
                                     </div>
+                                    {/* Online indicator */}
+                                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-[#1c1c24]" />
                                 </motion.div>
                                 
                                 {/* User info */}
-                                <motion.div variants={itemVariants} className="flex-1 min-w-0 pb-2">
-                                    <h3 className="text-base font-bold text-gray-900 dark:text-white truncate mb-1">
+                                <motion.div variants={itemVariants} className="flex-1 min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
                                         {user?.user_metadata?.name || user?.email?.split('@')[0]}
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                         {user?.email}
                                     </p>
                                 </motion.div>
+                                
+                                {/* Sparkle decoration */}
+                                <Sparkles className="w-4 h-4 text-violet-400 opacity-60" />
                             </div>
-                        </div>
-
-                        {/* Stats Cards - Refined Design */}
-                        <motion.div variants={itemVariants} className="px-6 pb-5">
-                            <div className="grid grid-cols-3 gap-2.5">
-                                <StatCard
-                                    icon={Trophy}
-                                    value="150"
-                                    label="نقطة"
-                                    gradient="from-amber-500 to-orange-600"
-                                    iconBg="bg-amber-500"
-                                />
-                                <StatCard
-                                    icon={Crown}
-                                    value="#12"
-                                    label="مرتبة"
-                                    gradient="from-violet-500 to-purple-600"
-                                    iconBg="bg-violet-500"
-                                />
-                                <StatCard
-                                    icon={Zap}
-                                    value="25"
-                                    label="اختبار"
-                                    gradient="from-cyan-500 to-blue-600"
-                                    iconBg="bg-cyan-500"
-                                />
-                            </div>
-                        </motion.div>
-
-                        {/* Divider */}
-                        <div className="px-6 pb-3">
-                            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
                         </div>
 
                         {/* Menu Items */}
-                        <div className="px-3 pb-3 space-y-1">
+                        <div className="p-2 space-y-0.5">
                             {isUserAdmin && (
                                 <motion.div variants={itemVariants}>
                                     <MenuLink
@@ -229,20 +167,18 @@ export function UserProfileDropdown({
                             )}
 
                             {/* Divider */}
-                            <motion.div variants={itemVariants} className="py-1.5">
-                                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
-                            </motion.div>
+                            <div className="my-1 mx-2 h-px bg-gray-100 dark:bg-gray-800" />
 
-                            {/* Logout Button - Refined */}
+                            {/* Logout Button */}
                             <motion.div variants={itemVariants}>
                                 <button
                                     onClick={onSignOut}
-                                    className="group relative w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl overflow-hidden transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                    className="group w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-950/20"
                                 >
-                                    <div className="relative p-2 rounded-lg bg-red-50 dark:bg-red-950/30 group-hover:bg-red-500 transition-all duration-200">
+                                    <div className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 group-hover:bg-red-500 transition-all duration-200">
                                         <LogOut className="w-4 h-4 text-red-500 dark:text-red-400 group-hover:text-white transition-colors" />
                                     </div>
-                                    <span className="relative text-red-600 dark:text-red-400 font-semibold">
+                                    <span className="text-red-600 dark:text-red-400 font-medium">
                                         تسجيل الخروج
                                     </span>
                                 </button>
@@ -256,34 +192,6 @@ export function UserProfileDropdown({
 }
 
 // Helper Components
-interface StatCardProps {
-    icon: React.ComponentType<{ className?: string }>;
-    value: string;
-    label: string;
-    gradient: string;
-    iconBg: string;
-}
-
-function StatCard({ icon: Icon, value, label, gradient, iconBg }: StatCardProps) {
-    return (
-        <motion.div
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            className="relative group cursor-pointer"
-        >
-            <div className="relative text-center p-3.5 rounded-xl bg-gray-50/80 dark:bg-[#252530]/50 border border-gray-200/60 dark:border-[#2e2e3a]/60 hover:border-gray-300 dark:hover:border-[#3e3e4a] transition-all duration-200">
-                <div className={`w-9 h-9 mx-auto mb-2 rounded-lg ${iconBg} flex items-center justify-center shadow-sm`}>
-                    <Icon className="w-4.5 h-4.5 text-white" />
-                </div>
-                <p className={`text-base font-bold bg-gradient-to-br ${gradient} bg-clip-text text-transparent mb-0.5`}>
-                    {value}
-                </p>
-                <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400">{label}</p>
-            </div>
-        </motion.div>
-    );
-}
-
 interface MenuLinkProps {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
@@ -298,10 +206,10 @@ function MenuLink({ href, icon: Icon, label, description, variant = 'default' }:
     return (
         <Link
             href={href}
-            className="group relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl overflow-hidden transition-all duration-200 hover:bg-gray-50 dark:hover:bg-[#252530]/50"
+            className="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-gray-50 dark:hover:bg-[#252530]/50"
         >
             <div
-                className={`relative p-2 rounded-lg transition-all duration-200 ${
+                className={`p-1.5 rounded-lg transition-all duration-200 ${
                     isPrimary
                         ? 'bg-gradient-to-br from-violet-500 to-purple-600 shadow-sm'
                         : 'bg-gray-100 dark:bg-[#252530] group-hover:bg-gray-200 dark:group-hover:bg-[#2e2e3a]'
@@ -309,21 +217,15 @@ function MenuLink({ href, icon: Icon, label, description, variant = 'default' }:
             >
                 <Icon className={`w-4 h-4 ${isPrimary ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`} />
             </div>
-            <div className="relative flex-1 min-w-0">
-                <div className={`font-semibold truncate ${isPrimary ? 'text-violet-700 dark:text-violet-300' : 'text-gray-900 dark:text-white'}`}>
+            <div className="flex-1 min-w-0">
+                <div className={`font-medium truncate ${isPrimary ? 'text-violet-700 dark:text-violet-300' : 'text-gray-900 dark:text-white'}`}>
                     {label}
                 </div>
-                <p className={`text-[11px] font-normal truncate ${isPrimary ? 'text-violet-500/70 dark:text-violet-400/60' : 'text-gray-500 dark:text-gray-400'}`}>
+                <p className={`text-[10px] font-normal truncate ${isPrimary ? 'text-violet-500/70 dark:text-violet-400/60' : 'text-gray-500 dark:text-gray-400'}`}>
                     {description}
                 </p>
             </div>
-            <div
-                className={`relative w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-200 ${
-                    isPrimary ? 'bg-violet-100 dark:bg-violet-900/30' : 'bg-gray-100 dark:bg-[#252530]'
-                }`}
-            >
-                <ArrowLeft className={`w-3.5 h-3.5 ${isPrimary ? 'text-violet-600 dark:text-violet-400' : 'text-gray-600 dark:text-gray-400'}`} />
-            </div>
+            <ArrowLeft className={`w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity ${isPrimary ? 'text-violet-500' : 'text-gray-400'}`} />
         </Link>
     );
 }

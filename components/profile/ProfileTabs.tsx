@@ -4,7 +4,7 @@
 // ProfileTabs Component - تبويبات الملف الشخصي
 // =============================================
 
-import { TrendingUp, Trophy, Clock, Settings, FileText } from 'lucide-react';
+import { TrendingUp, Trophy, Settings, FileText } from 'lucide-react';
 import type { ProfileTab, TabItem } from './types';
 
 interface ProfileTabsProps {
@@ -16,7 +16,6 @@ const tabs: TabItem[] = [
     { id: 'overview', label: 'نظرة عامة', icon: TrendingUp },
     { id: 'exams', label: 'الامتحانات', icon: FileText },
     { id: 'achievements', label: 'الإنجازات', icon: Trophy },
-    { id: 'activity', label: 'النشاط', icon: Clock },
     { id: 'settings', label: 'الإعدادات', icon: Settings },
 ];
 
