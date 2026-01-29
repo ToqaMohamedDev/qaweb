@@ -16,6 +16,79 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 
+// =============================================
+// TypeScript Interfaces for Profile API
+// =============================================
+
+interface ExamAttempt {
+    exam_id: string;
+    status: string;
+    total_score: number | null;
+    max_score: number | null;
+    started_at?: string;
+    completed_at?: string;
+    percentage?: number | null;
+    comprehensive_exams?: { exam_title?: string };
+    teacher_exams?: { title?: string };
+}
+
+interface QuestionBankAttempt {
+    question_bank_id: string;
+    status: string;
+    score_percentage: number | null;
+    started_at?: string;
+    completed_at?: string;
+}
+
+interface Stage {
+    id: string;
+    name: string;
+}
+
+interface LessonProgress {
+    is_completed: boolean;
+    completed_at?: string;
+}
+
+interface ExamStatsResult {
+    taken: number;
+    passed: number;
+    averageScore: number;
+    totalScore: number;
+}
+
+interface UserStats {
+    completedLessons: number;
+    totalLessons: number;
+    siteExams: {
+        total: number;
+        taken: number;
+        passed: number;
+        averageScore: number;
+        totalScore: number;
+    };
+    teacherExams: {
+        total: number;
+        taken: number;
+        passed: number;
+        averageScore: number;
+        totalScore: number;
+    };
+    questionBank: {
+        total: number;
+        taken: number;
+        passed: number;
+        averageScore: number;
+        totalScore: number;
+    };
+    examsTaken: number;
+    passedExams: number;
+    averageScore: number;
+    totalScore: number;
+    activeDays: number;
+    currentStreak: number;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
@@ -146,13 +219,13 @@ export async function PATCH(request: NextRequest) {
  * دالة مساعدة لحساب إحصائيات الامتحانات
  * بتحسب عدد الامتحانات الفريدة (مش المحاولات)
  */
-function calculateExamStats(attempts: any[]) {
+function calculateExamStats(attempts: ExamAttempt[]): ExamStatsResult {
     if (!attempts || attempts.length === 0) {
         return { taken: 0, passed: 0, averageScore: 0, totalScore: 0 };
     }
 
     // Group attempts by exam_id to count unique exams
-    const examGroups = new Map<string, any[]>();
+    const examGroups = new Map<string, ExamAttempt[]>();
     attempts.forEach(attempt => {
         const examId = attempt.exam_id;
         if (!examGroups.has(examId)) {
@@ -167,7 +240,7 @@ function calculateExamStats(attempts: any[]) {
     // For each exam, check if the best attempt is passed
     let passed = 0;
     let totalScoreSum = 0;
-    let completedExamScores: number[] = [];
+    const completedExamScores: number[] = [];
 
     examGroups.forEach((examAttempts) => {
         // Get the best/latest completed attempt for this exam
@@ -179,14 +252,14 @@ function calculateExamStats(attempts: any[]) {
         if (completedAttempts.length > 0) {
             // Get the best score for this exam
             const bestAttempt = completedAttempts.reduce((best, current) => {
-                const bestScore = best.total_score / best.max_score;
-                const currentScore = current.total_score / current.max_score;
+                const bestScore = (best.total_score ?? 0) / (best.max_score ?? 1);
+                const currentScore = (current.total_score ?? 0) / (current.max_score ?? 1);
                 return currentScore > bestScore ? current : best;
             });
 
-            const scorePercent = (bestAttempt.total_score / bestAttempt.max_score);
+            const scorePercent = (bestAttempt.total_score ?? 0) / (bestAttempt.max_score ?? 1);
             completedExamScores.push(scorePercent * 100);
-            totalScoreSum += bestAttempt.total_score;
+            totalScoreSum += bestAttempt.total_score ?? 0;
 
             // Check if passed (>= 60%)
             if (scorePercent >= 0.6) {
@@ -323,6 +396,49 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
         // حساب إحصائيات امتحانات المدرسين (Teacher)
         const teacherExamStats = calculateExamStats(teacherAttempts);
 
+        // =============================================
+        // Question Bank (بنك الأسئلة) - فلترة حسب المرحلة
+        // =============================================
+        let questionBankAttempts: any[] = [];
+        let totalQuestionBanks = 0;
+
+        if (stageId) {
+            // Get ALL published question banks for this stage
+            const { data: stageQBs } = await supabase
+                .from('question_banks')
+                .select('id')
+                .eq('is_published', true)
+                .eq('stage_id', stageId);
+
+            const stageQBIds = (stageQBs || []).map((qb: any) => qb.id);
+            totalQuestionBanks = stageQBIds.length;
+
+            if (stageQBIds.length > 0) {
+                const { data: attempts } = await supabase
+                    .from('question_bank_attempts')
+                    .select('*')
+                    .eq('student_id', userId)
+                    .in('question_bank_id', stageQBIds);
+                questionBankAttempts = attempts || [];
+            }
+        } else {
+            // No stage filter - get all published question banks
+            const { count: totalCount } = await supabase
+                .from('question_banks')
+                .select('id', { count: 'exact', head: true })
+                .eq('is_published', true);
+            totalQuestionBanks = totalCount || 0;
+
+            const { data: attempts } = await supabase
+                .from('question_bank_attempts')
+                .select('*')
+                .eq('student_id', userId);
+            questionBankAttempts = attempts || [];
+        }
+
+        // حساب إحصائيات بنك الأسئلة
+        const questionBankStats = calculateQuestionBankStats(questionBankAttempts);
+
         const completedLessons = lessonProgress?.filter((p: any) => p.is_completed)?.length || 0;
 
         // Calculate active days and streak
@@ -379,6 +495,15 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
                 totalScore: teacherExamStats.totalScore,
             },
 
+            // إحصائيات بنك الأسئلة (Question Bank)
+            questionBank: {
+                total: totalQuestionBanks,           // إجمالي بنوك الأسئلة المتاحة للمرحلة
+                taken: questionBankStats.taken,      // عدد البنوك اللي الطالب دخلها
+                passed: questionBankStats.passed,    // عدد البنوك اللي أكملها
+                averageScore: questionBankStats.averageScore,
+                totalScore: questionBankStats.totalScore,
+            },
+
             // الإحصائيات المجمعة (للتوافق مع الكود القديم)
             examsTaken: siteExamStats.taken + teacherExamStats.taken,
             passedExams: siteExamStats.passed + teacherExamStats.passed,
@@ -396,6 +521,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             totalLessons: 0,
             siteExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
             teacherExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+            questionBank: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
             examsTaken: 0,
             passedExams: 0,
             totalScore: 0,
@@ -487,4 +613,53 @@ async function getRecentActivity(supabase: any, userId: string) {
         console.error('[Profile API] Activity error:', error);
         return [];
     }
+}
+
+/**
+ * دالة مساعدة لحساب إحصائيات بنك الأسئلة
+ */
+function calculateQuestionBankStats(attempts: any[]): { taken: number; passed: number; averageScore: number; totalScore: number } {
+    if (!attempts || attempts.length === 0) {
+        return { taken: 0, passed: 0, averageScore: 0, totalScore: 0 };
+    }
+
+    // Group attempts by question_bank_id to count unique question banks
+    const qbGroups = new Map<string, any[]>();
+    attempts.forEach(attempt => {
+        const qbId = attempt.question_bank_id;
+        if (!qbGroups.has(qbId)) {
+            qbGroups.set(qbId, []);
+        }
+        qbGroups.get(qbId)!.push(attempt);
+    });
+
+    const taken = qbGroups.size;
+    let passed = 0;
+    let totalScoreSum = 0;
+    const completedQBScores: number[] = [];
+
+    qbGroups.forEach((qbAttempts) => {
+        const completedAttempts = qbAttempts.filter(
+            (e: any) => e.status === 'completed' && e.score_percentage != null
+        );
+
+        if (completedAttempts.length > 0) {
+            const bestAttempt = completedAttempts.reduce((best: any, current: any) => {
+                return (current.score_percentage || 0) > (best.score_percentage || 0) ? current : best;
+            });
+
+            completedQBScores.push(bestAttempt.score_percentage || 0);
+            totalScoreSum += bestAttempt.score_percentage || 0;
+
+            if ((bestAttempt.score_percentage || 0) >= 60) {
+                passed++;
+            }
+        }
+    });
+
+    const averageScore = completedQBScores.length > 0
+        ? Math.round(completedQBScores.reduce((a, b) => a + b, 0) / completedQBScores.length)
+        : 0;
+
+    return { taken, passed, averageScore, totalScore: totalScoreSum };
 }

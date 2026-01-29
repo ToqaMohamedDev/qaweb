@@ -30,9 +30,23 @@ import {
   useQuestionBankProgress,
 } from '@/hooks/useStudentAttempts';
 
+interface ExamStats {
+  total: number;
+  taken: number;
+  passed: number;
+  averageScore: number;
+  totalScore?: number;
+}
+
 interface StudentProgressDashboardProps {
   studentId?: string;
   language?: 'arabic' | 'english';
+  /** Stats from useProfile hook - includes total available exams for the stage */
+  stats?: {
+    siteExams?: ExamStats;
+    teacherExams?: ExamStats;
+    questionBank?: ExamStats;
+  };
 }
 
 // Tab types - completely separate categories
@@ -41,6 +55,7 @@ type TabType = 'site_exams' | 'teacher_exams' | 'question_bank';
 export function StudentProgressDashboard({
   studentId,
   language = 'arabic',
+  stats,
 }: StudentProgressDashboardProps) {
   const isRTL = language === 'arabic';
 
@@ -98,7 +113,8 @@ export function StudentProgressDashboard({
   // ==========================================
 
   // Site Exams Stats (comprehensive_exams)
-  const siteExamsTotal = examAttempts?.comprehensive_exams?.length || 0;
+  // Use total from stats (total available for stage), fallback to attempts count
+  const siteExamsTotal = stats?.siteExams?.total ?? (examAttempts?.comprehensive_exams?.length || 0);
   const siteExamsCompleted = examAttempts?.comprehensive_exams?.filter(e => e.status !== 'in_progress').length || 0;
   const siteExamsAvgScore = (() => {
     const completed = examAttempts?.comprehensive_exams?.filter(e => e.percentage !== null) || [];
@@ -107,7 +123,8 @@ export function StudentProgressDashboard({
   })();
 
   // Teacher Exams Stats (teacher_exams)
-  const teacherExamsTotal = examAttempts?.teacher_exams?.length || 0;
+  // Use total from stats (total available for stage), fallback to attempts count
+  const teacherExamsTotal = stats?.teacherExams?.total ?? (examAttempts?.teacher_exams?.length || 0);
   const teacherExamsCompleted = examAttempts?.teacher_exams?.filter(e => e.status !== 'in_progress').length || 0;
   const teacherExamsAvgScore = (() => {
     const completed = examAttempts?.teacher_exams?.filter(e => e.percentage !== null) || [];
@@ -116,7 +133,8 @@ export function StudentProgressDashboard({
   })();
 
   // Question Bank Stats (question_bank_attempts)
-  const questionBankTotal = bankProgress?.length || 0;
+  // Use total from stats (total available for stage), fallback to attempts count
+  const questionBankTotal = stats?.questionBank?.total ?? (bankProgress?.length || 0);
   const questionBankCompleted = bankProgress?.filter(p => p.status === 'completed').length || 0;
   const questionBankAvgScore = (() => {
     const completed = bankProgress?.filter(p => p.score_percentage > 0) || [];

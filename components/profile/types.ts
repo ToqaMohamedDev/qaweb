@@ -30,6 +30,7 @@ export interface UserStats {
     // إحصائيات منفصلة
     siteExams?: ExamStats;
     teacherExams?: ExamStats;
+    questionBank?: ExamStats;
 }
 
 export interface ActivityItem {
@@ -88,6 +89,7 @@ export const initialStats: UserStats = {
     averageScore: 0,
     siteExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
     teacherExams: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
+    questionBank: { total: 0, taken: 0, passed: 0, averageScore: 0, totalScore: 0 },
 };
 
 export const initialFormData: ProfileFormData = {

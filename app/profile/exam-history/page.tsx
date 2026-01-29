@@ -299,17 +299,7 @@ export default function ExamHistoryPage() {
                 // Fetch teacher exam attempts - استخدام query منفصل لتجنب مشاكل العلاقات
                 const { data: teacherAttempts, error: teacherError } = await supabase
                     .from("teacher_exam_attempts")
-                    .select(`
-                        id,
-                        exam_id,
-                        student_id,
-                        status,
-                        total_score,
-                        max_score,
-                        started_at,
-                        completed_at,
-                        created_at
-                    `)
+                    .select("id, exam_id, student_id, status, total_score, max_score, started_at, completed_at, created_at")
                     .eq("student_id", user.id)
                     .order("created_at", { ascending: false });
 
@@ -320,29 +310,29 @@ export default function ExamHistoryPage() {
                 // جلب بيانات الامتحانات المرتبطة
                 const teacherExamIds = (teacherAttempts || []).map(a => a.exam_id);
                 let teacherExamsData: Record<string, any> = {};
-                
+
                 if (teacherExamIds.length > 0) {
                     const { data: exams } = await supabase
                         .from("teacher_exams")
                         .select("id, exam_title, type, created_by")
                         .in("id", teacherExamIds);
-                    
+
                     if (exams) {
                         // جلب بيانات المدرسين
                         const teacherIds = [...new Set(exams.map(e => e.created_by).filter(Boolean))];
                         let teachersData: Record<string, any> = {};
-                        
+
                         if (teacherIds.length > 0) {
                             const { data: teachers } = await supabase
                                 .from("profiles")
                                 .select("id, name")
                                 .in("id", teacherIds);
-                            
+
                             if (teachers) {
                                 teachersData = Object.fromEntries(teachers.map(t => [t.id, t]));
                             }
                         }
-                        
+
                         teacherExamsData = Object.fromEntries(
                             exams.map(e => [e.id, { ...e, teacher: teachersData[e.created_by] }])
                         );
@@ -352,34 +342,24 @@ export default function ExamHistoryPage() {
                 // Fetch comprehensive exam attempts
                 const { data: compAttempts, error: compError } = await supabase
                     .from("comprehensive_exam_attempts")
-                    .select(`
-                        id,
-                        exam_id,
-                        student_id,
-                        status,
-                        total_score,
-                        max_score,
-                        started_at,
-                        completed_at,
-                        created_at
-                    `)
+                    .select("id, exam_id, student_id, status, total_score, max_score, started_at, completed_at, created_at")
                     .eq("student_id", user.id)
                     .order("created_at", { ascending: false });
 
                 if (compError) {
-                    console.error("Error fetching comprehensive attempts:", compError);
+                    console.error("Error fetching comprehensive attempts:", JSON.stringify(compError, null, 2));
                 }
 
                 // Fetch comprehensive exam details separately
                 const compExamIds = (compAttempts || []).map(a => a.exam_id);
                 let compExamsData: Record<string, any> = {};
-                
+
                 if (compExamIds.length > 0) {
                     const { data: exams } = await supabase
                         .from("comprehensive_exams")
                         .select("id, exam_title, type")
                         .in("id", compExamIds);
-                    
+
                     if (exams) {
                         compExamsData = Object.fromEntries(exams.map(e => [e.id, e]));
                     }
