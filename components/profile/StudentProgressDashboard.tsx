@@ -137,9 +137,21 @@ export function StudentProgressDashboard({
   const questionBankTotal = stats?.questionBank?.total ?? (bankProgress?.length || 0);
   const questionBankCompleted = bankProgress?.filter(p => p.status === 'completed').length || 0;
   const questionBankAvgScore = (() => {
-    const completed = bankProgress?.filter(p => p.score_percentage > 0) || [];
-    if (completed.length === 0) return 0;
-    return Math.round(completed.reduce((sum, p) => sum + p.score_percentage, 0) / completed.length);
+    // Filter valid attempts (either completed or have items)
+    const validAttempts = bankProgress?.filter(p =>
+      (p.score_percentage && p.score_percentage > 0) ||
+      (p.total_questions > 0 && p.correct_count >= 0)
+    ) || [];
+
+    if (validAttempts.length === 0) return 0;
+
+    const sum = validAttempts.reduce((acc, p) => {
+      const percentage = p.score_percentage ??
+        (p.total_questions > 0 ? Math.round((p.correct_count / p.total_questions) * 100) : 0);
+      return acc + percentage;
+    }, 0);
+
+    return Math.round(sum / validAttempts.length);
   })();
 
   const getStatusBadge = (status: string) => {
@@ -274,11 +286,10 @@ export function StudentProgressDashboard({
           {/* Tab 1: Site Exams */}
           <button
             onClick={() => setActiveTab('site_exams')}
-            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'site_exams'
+            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'site_exams'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/10'
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-center gap-2">
               <FileText className="w-4 h-4" />
@@ -289,11 +300,10 @@ export function StudentProgressDashboard({
           {/* Tab 2: Teacher Exams */}
           <button
             onClick={() => setActiveTab('teacher_exams')}
-            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'teacher_exams'
+            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'teacher_exams'
                 ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-500 bg-purple-50/50 dark:bg-purple-900/10'
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-center gap-2">
               <GraduationCap className="w-4 h-4" />
@@ -304,11 +314,10 @@ export function StudentProgressDashboard({
           {/* Tab 3: Question Bank */}
           <button
             onClick={() => setActiveTab('question_bank')}
-            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'question_bank'
+            className={`flex-1 min-w-[120px] px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'question_bank'
                 ? 'text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 bg-amber-50/50 dark:bg-amber-900/10'
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-center gap-2">
               <BookOpen className="w-4 h-4" />
@@ -466,8 +475,8 @@ export function StudentProgressDashboard({
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {typeof practice.bank_title === 'object' 
-                              ? (isRTL ? practice.bank_title.ar : practice.bank_title.en) 
+                            {typeof practice.bank_title === 'object'
+                              ? (isRTL ? practice.bank_title.ar : practice.bank_title.en)
                               : practice.bank_title}
                           </p>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -477,10 +486,10 @@ export function StudentProgressDashboard({
                         </div>
                       </div>
                       <div className="text-end">
-                        {practice.status === 'completed' ? (
-                          <div>
-                            <p className={`text-xl font-bold ${getScoreColor(practice.score_percentage)}`}>
-                              {Math.round(practice.score_percentage)}%
+                        {practice.status === 'completed' || (practice.total_questions > 0 && practice.correct_count >= 0) ? (
+                          <div className="flex flex-col items-end">
+                            <p className={`text-xl font-bold ${getScoreColor(practice.score_percentage || (practice.total_questions > 0 ? (practice.correct_count / practice.total_questions) * 100 : 0))}`}>
+                              {Math.round(practice.score_percentage || (practice.total_questions > 0 ? (practice.correct_count / practice.total_questions) * 100 : 0))}%
                             </p>
                             <p className="text-xs text-gray-500">
                               {practice.correct_count}/{practice.total_questions}

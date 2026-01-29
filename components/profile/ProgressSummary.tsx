@@ -17,6 +17,7 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
     // Get separate exam stats with total available for stage
     const siteExams = stats.siteExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
     const teacherExams = stats.teacherExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
+    const questionBank = stats.questionBank || { total: 0, taken: 0, passed: 0, averageScore: 0 };
 
     return (
         <div className="bg-white/80 dark:bg-[#1c1c24]/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-gray-800/60 p-6 shadow-lg">
@@ -100,6 +101,32 @@ export function ProgressSummary({ stats }: ProgressSummaryProps) {
                             }}
                             transition={{ duration: 1, delay: 0.7 }}
                             className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                        />
+                    </div>
+                </div>
+
+                {/* Question Bank Progress */}
+                <div>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-amber-500" />
+                            بنوك الأسئلة المكتملة
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                            {questionBank.passed} / {questionBank.total}
+                        </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{
+                                width:
+                                    questionBank.total > 0
+                                        ? `${(questionBank.passed / questionBank.total) * 100}%`
+                                        : '0%',
+                            }}
+                            transition={{ duration: 1, delay: 0.9 }}
+                            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
                         />
                     </div>
                 </div>

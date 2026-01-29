@@ -355,7 +355,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
         if (stageId) {
             // Get ALL published question banks for this stage
             // Note: stage_id on question_banks can be NULL, so we also check via lesson's stage_id
-            
+
             // Method 1: Direct stage_id match
             const { data: directStageQBs } = await supabase
                 .from('question_banks')
@@ -375,7 +375,7 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
             const directIds = (directStageQBs || []).map((qb: any) => qb.id);
             const lessonIds = (lessonStageQBs || []).map((qb: any) => qb.id);
             const stageQBIds = [...new Set([...directIds, ...lessonIds])];
-            
+
             totalQuestionBanks = stageQBIds.length;
 
             if (stageQBIds.length > 0) {
@@ -600,31 +600,44 @@ function calculateQuestionBankStats(attempts: any[]): { taken: number; passed: n
 
     const taken = qbGroups.size;
     let passed = 0;
-    let totalScoreSum = 0;
-    const completedQBScores: number[] = [];
+    const bestScores: number[] = [];
 
     qbGroups.forEach((qbAttempts) => {
-        const completedAttempts = qbAttempts.filter(
-            (e: any) => e.status === 'completed' && e.score_percentage != null
-        );
+        // Calculate scores manually because score_percentage might be missing in DB view
+        const enrichedAttempts = qbAttempts.map((attempt: any) => {
+            const percentage = attempt.score_percentage ??
+                (attempt.total_questions > 0
+                    ? Math.round((attempt.correct_count / attempt.total_questions) * 100)
+                    : 0);
+            return { ...attempt, score_percentage: percentage };
+        });
 
-        if (completedAttempts.length > 0) {
-            const bestAttempt = completedAttempts.reduce((best: any, current: any) => {
-                return (current.score_percentage || 0) > (best.score_percentage || 0) ? current : best;
-            });
+        // Find best attempt for this question bank
+        const bestAttempt = enrichedAttempts.reduce((best, current) =>
+            (current.score_percentage > best.score_percentage) ? current : best
+            , { score_percentage: 0 });
 
-            completedQBScores.push(bestAttempt.score_percentage || 0);
-            totalScoreSum += bestAttempt.score_percentage || 0;
+        // A question bank is considered "passed/completed" if at least one attempt is status='completed' 
+        // OR simply if they achieved a good score. 
+        // We'll trust status='completed' OR > 50% score as a fallback.
+        const isCompleted = enrichedAttempts.some(a => a.status === 'completed') || bestAttempt.score_percentage >= 50;
 
-            if ((bestAttempt.score_percentage || 0) >= 60) {
-                passed++;
-            }
+        if (isCompleted) {
+            passed++;
+            bestScores.push(bestAttempt.score_percentage);
         }
     });
 
-    const averageScore = completedQBScores.length > 0
-        ? Math.round(completedQBScores.reduce((a, b) => a + b, 0) / completedQBScores.length)
+    const averageScore = bestScores.length > 0
+        ? Math.round(bestScores.reduce((a, b) => a + b, 0) / bestScores.length)
         : 0;
 
-    return { taken, passed, averageScore, totalScore: totalScoreSum };
+    return {
+        taken,
+        passed,
+        averageScore,
+        totalScore: averageScore // Using average as the metric
+    };
 }
+
+
