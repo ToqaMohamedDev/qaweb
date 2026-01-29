@@ -107,7 +107,7 @@ export function ProfileSidebar({
                     <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-violet-200/50 dark:border-violet-800/30">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
-                                تقدم المستوى
+                                تقدم الدروس
                             </span>
                             <span className="text-xs font-bold text-violet-600 dark:text-violet-400">
                                 {levelProgress}%

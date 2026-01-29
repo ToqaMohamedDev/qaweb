@@ -5,7 +5,7 @@
 // =============================================
 
 import { motion } from 'framer-motion';
-import { BookOpen, FileText, GraduationCap } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, HelpCircle } from 'lucide-react';
 import type { UserStats } from './types';
 
 interface StatsGridProps {
@@ -16,6 +16,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
     // Get separate exam stats with total available for stage
     const siteExams = stats.siteExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
     const teacherExams = stats.teacherExams || { total: 0, taken: 0, passed: 0, averageScore: 0 };
+    const questionBank = stats.questionBank || { total: 0, taken: 0, passed: 0, averageScore: 0 };
 
     const statCards = [
         {
@@ -47,10 +48,20 @@ export function StatsGrid({ stats }: StatsGridProps) {
             iconBg: 'bg-purple-500',
             subLabel: teacherExams.total > 0 ? `${teacherExams.averageScore}% متوسط` : undefined,
         },
+        {
+            label: 'بنك الأسئلة',
+            value: questionBank.taken,
+            total: questionBank.total,  // إجمالي بنوك الأسئلة المتاحة للمرحلة
+            icon: HelpCircle,
+            gradient: 'from-amber-500 to-orange-500',
+            bg: 'from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20',
+            iconBg: 'bg-amber-500',
+            subLabel: questionBank.total > 0 ? `${questionBank.averageScore}% متوسط` : undefined,
+        },
     ];
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {statCards.map((stat, index) => (
                 <motion.div
                     key={stat.label}

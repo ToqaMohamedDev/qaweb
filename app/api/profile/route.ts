@@ -32,61 +32,11 @@ interface ExamAttempt {
     teacher_exams?: { title?: string };
 }
 
-interface QuestionBankAttempt {
-    question_bank_id: string;
-    status: string;
-    score_percentage: number | null;
-    started_at?: string;
-    completed_at?: string;
-}
-
-interface Stage {
-    id: string;
-    name: string;
-}
-
-interface LessonProgress {
-    is_completed: boolean;
-    completed_at?: string;
-}
-
 interface ExamStatsResult {
     taken: number;
     passed: number;
     averageScore: number;
     totalScore: number;
-}
-
-interface UserStats {
-    completedLessons: number;
-    totalLessons: number;
-    siteExams: {
-        total: number;
-        taken: number;
-        passed: number;
-        averageScore: number;
-        totalScore: number;
-    };
-    teacherExams: {
-        total: number;
-        taken: number;
-        passed: number;
-        averageScore: number;
-        totalScore: number;
-    };
-    questionBank: {
-        total: number;
-        taken: number;
-        passed: number;
-        averageScore: number;
-        totalScore: number;
-    };
-    examsTaken: number;
-    passedExams: number;
-    averageScore: number;
-    totalScore: number;
-    activeDays: number;
-    currentStreak: number;
 }
 
 export const dynamic = 'force-dynamic';
@@ -404,13 +354,28 @@ async function getUserStats(supabase: any, userId: string, stageId: string | nul
 
         if (stageId) {
             // Get ALL published question banks for this stage
-            const { data: stageQBs } = await supabase
+            // Note: stage_id on question_banks can be NULL, so we also check via lesson's stage_id
+            
+            // Method 1: Direct stage_id match
+            const { data: directStageQBs } = await supabase
                 .from('question_banks')
                 .select('id')
                 .eq('is_published', true)
                 .eq('stage_id', stageId);
 
-            const stageQBIds = (stageQBs || []).map((qb: any) => qb.id);
+            // Method 2: Through lesson's stage_id (for question banks where stage_id is null)
+            const { data: lessonStageQBs } = await supabase
+                .from('question_banks')
+                .select('id, lessons!inner(stage_id)')
+                .eq('is_published', true)
+                .is('stage_id', null)
+                .eq('lessons.stage_id', stageId);
+
+            // Combine both sets of IDs
+            const directIds = (directStageQBs || []).map((qb: any) => qb.id);
+            const lessonIds = (lessonStageQBs || []).map((qb: any) => qb.id);
+            const stageQBIds = [...new Set([...directIds, ...lessonIds])];
+            
             totalQuestionBanks = stageQBIds.length;
 
             if (stageQBIds.length > 0) {
