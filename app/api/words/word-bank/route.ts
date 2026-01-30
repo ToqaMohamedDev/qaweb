@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     try {
         const supabase = await createClient();
         const { searchParams } = new URL(request.url);
-        
+
         const language_code = searchParams.get('language_code');
         const category = searchParams.get('category');
         const difficulty = searchParams.get('difficulty');
@@ -23,10 +23,7 @@ export async function GET(request: NextRequest) {
 
         let query = supabase
             .from('word_bank')
-            .select(`
-                *,
-                translations:word_bank_translations(*)
-            `, { count: 'exact' })
+            .select(`*`, { count: 'exact' })
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
@@ -80,7 +77,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createClient();
-        
+
         // تحقق من صلاحيات الأدمن
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -113,7 +110,6 @@ export async function POST(request: NextRequest) {
             example_sentence,
             phonetic_text,
             notes,
-            translations, // Array of translations
         } = body;
 
         if (!language_code || !word_text) {
@@ -149,41 +145,7 @@ export async function POST(request: NextRequest) {
             throw wordError;
         }
 
-        // إضافة الترجمات إذا موجودة
-        if (translations && Array.isArray(translations) && translations.length > 0) {
-            const translationsToInsert = translations.map((t: {
-                target_language: string;
-                translation: string;
-                pronunciation_url?: string;
-                example_sentence?: string;
-            }) => ({
-                word_bank_id: wordData.id,
-                target_language: t.target_language,
-                translation: t.translation,
-                pronunciation_url: t.pronunciation_url,
-                example_sentence: t.example_sentence,
-            }));
-
-            const { error: transError } = await supabase
-                .from('word_bank_translations')
-                .insert(translationsToInsert);
-
-            if (transError) {
-                console.error('Error adding translations:', transError);
-            }
-        }
-
-        // جلب الكلمة مع الترجمات
-        const { data: fullWord } = await supabase
-            .from('word_bank')
-            .select(`
-                *,
-                translations:word_bank_translations(*)
-            `)
-            .eq('id', wordData.id)
-            .single();
-
-        return NextResponse.json({ success: true, word: fullWord });
+        return NextResponse.json({ success: true, word: wordData });
     } catch (error) {
         console.error('Error creating word in bank:', error);
         return NextResponse.json(
@@ -192,3 +154,4 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+

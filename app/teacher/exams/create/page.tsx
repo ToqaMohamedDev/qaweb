@@ -671,6 +671,33 @@ export default function TeacherCreateExamPage() {
 
             if (examId) {
                 // تحديث امتحان موجود في teacher_exams
+
+                // WORKAROUND: If the exam is published, unpublish it first.
+                // The DB trigger 'prevent_published_question_edit' prevents modifying blocks
+                // while is_published is true, even if we are setting is_published=false in the same update.
+                if (fetchedExam?.is_published) {
+                    try {
+                        const { error: unpublishError } = await supabase
+                            .from('teacher_exams')
+                            .update({
+                                is_published: false,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', examId);
+
+                        if (unpublishError) {
+                            console.error('Error unpublishing exam:', unpublishError);
+                            // We don't throw here, we let the main update try, 
+                            // though it might fail if unpublish failed.
+                        } else {
+                            // Update local state to reflect unpublish so subsequent saves don't try again needlessly
+                            setFetchedExam((prev: any) => ({ ...prev, is_published: false }));
+                        }
+                    } catch (e) {
+                        console.error('Exception unpublishing exam:', e);
+                    }
+                }
+
                 const { error, data } = await supabase
                     .from('teacher_exams')
                     .update({

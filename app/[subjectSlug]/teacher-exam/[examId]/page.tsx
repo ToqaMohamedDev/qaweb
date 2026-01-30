@@ -2,10 +2,11 @@
 
 // =============================================
 // Dynamic Teacher Exam Page - صفحة امتحان المدرس الديناميكية
+// Section-based display with all questions per section visible
 // =============================================
 
 import { useParams } from "next/navigation";
-import { UnifiedExamPlayer } from "@/components/exam/UnifiedExamPlayer";
+import { TeacherExamSectionPlayer } from "@/components/exam/TeacherExamSectionPlayer";
 
 export default function DynamicTeacherExamPage() {
     const params = useParams();
@@ -16,10 +17,9 @@ export default function DynamicTeacherExamPage() {
     const language = subjectSlug === "english" ? "english" : "arabic";
 
     return (
-        <UnifiedExamPlayer
+        <TeacherExamSectionPlayer
             examId={examId}
             language={language}
-            isTeacherExam={true}
         />
     );
 }

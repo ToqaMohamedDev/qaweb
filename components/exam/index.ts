@@ -11,6 +11,7 @@ export { ExamList, type ExamListProps, type ExamData } from './ExamList';
 export { UnifiedExamPlayer, type UnifiedExamPlayerProps, type ExamResults, type ExamBlock, type ExamQuestion } from './UnifiedExamPlayer';
 export { ExamPlayerWithGrading } from './ExamPlayerWithGrading';
 export { QuestionBankPlayer } from './QuestionBankPlayer';
+export { TeacherExamSectionPlayer, type TeacherExamSectionPlayerProps } from './TeacherExamSectionPlayer';
 
 // UI Components
 export {
