@@ -435,7 +435,7 @@ export default function WordsPage() {
                                                     disabled={savingWordId === word.concept_id}
                                                     className={`absolute top-3 left-3 p-2 rounded-lg transition-all ${isSaved
                                                         ? "bg-green-500/20 text-green-400"
-                                                        : "bg-white/5 text-zinc-500 opacity-0 group-hover:opacity-100"
+                                                        : "bg-white/5 text-zinc-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                                         } hover:scale-110`}
                                                 >
                                                     {savingWordId === word.concept_id ? (
@@ -494,7 +494,7 @@ export default function WordsPage() {
                                                         e.stopPropagation();
                                                         speakText(lemma, selectedLanguage);
                                                     }}
-                                                    className="absolute bottom-3 left-3 p-2.5 rounded-xl bg-white/5 text-zinc-500 opacity-0 group-hover:opacity-100 hover:bg-purple-500/20 hover:text-purple-400 transition-all"
+                                                    className="absolute bottom-3 left-3 p-2.5 rounded-xl bg-white/5 text-zinc-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:bg-purple-500/20 hover:text-purple-400 transition-all"
                                                     title="استمع للنطق"
                                                 >
                                                     <Volume2 className="w-4 h-4" />
@@ -591,7 +591,7 @@ export default function WordsPage() {
                                                 onClick={() => openWordDetail(word)}
                                             >
                                                 {/* Actions */}
-                                                <div className="absolute top-3 left-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute top-3 left-3 flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
