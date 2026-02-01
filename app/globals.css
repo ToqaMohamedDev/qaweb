@@ -103,6 +103,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  background-color: var(--background); /* Fix mobile overscroll color */
 }
 
 /* Fix for fixed header jitter on mobile */
@@ -126,7 +127,7 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-cairo), var(--font-inter), system-ui, sans-serif;
-  min-height: 100dvh;
+  min-height: 100dvh; /* Use dvh for mobile address bar handling */
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -135,9 +136,15 @@ body {
 }
 
 /* ===== Dark Mode Background Enhancement ===== */
+.dark html {
+  background-color: #0a0f1a; /* Ensure dark background for overscroll */
+}
+
 .dark body {
   background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 50%, #0a0f1a 100%);
   background-attachment: fixed;
+  /* Ensure min-height covers the viewport */
+  min-height: 100dvh;
 }
 
 /* ===== Selection ===== */

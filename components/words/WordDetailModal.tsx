@@ -45,15 +45,15 @@ function speakText(text: string, langCode: string): void {
         ar: "ar-SA", en: "en-US", fr: "fr-FR", de: "de-DE",
     };
     utterance.lang = localeMap[langCode] || langCode;
-    
+
     // Improved TTS settings for better pronunciation
     utterance.rate = 0.9; // Slightly slower for clarity
     utterance.pitch = 1.0;
-    
+
     // Try to find a native voice for the language
     const voices = speechSynthesis.getVoices();
     const targetLang = localeMap[langCode] || langCode;
-    
+
     // Priority: exact match > starts with lang code > any match
     let voice = voices.find(v => v.lang === targetLang);
     if (!voice) {
@@ -62,7 +62,7 @@ function speakText(text: string, langCode: string): void {
     if (voice) {
         utterance.voice = voice;
     }
-    
+
     speechSynthesis.speak(utterance);
 }
 
@@ -143,11 +143,10 @@ export function WordDetailModal({
                         <button
                             onClick={handleSaveToggle}
                             disabled={isSaving}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                isSaved
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isSaved
                                     ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
                                     : "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30"
-                            }`}
+                                }`}
                         >
                             {isSaving ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -194,18 +193,17 @@ export function WordDetailModal({
                     )}
 
                     {/* Language Tabs */}
-                    <div className="flex gap-2 p-1 rounded-xl bg-white/5">
+                    <div className="flex gap-2 p-1 rounded-xl bg-white/5 overflow-x-auto scrollbar-hide">
                         {availableLanguages.map((lang) => {
                             const config = LANGUAGE_CONFIG[lang as keyof typeof LANGUAGE_CONFIG];
                             return (
                                 <button
                                     key={lang}
                                     onClick={() => setActiveTab(lang)}
-                                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        activeTab === lang
+                                    className={`shrink-0 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap min-w-fit ${activeTab === lang
                                             ? "bg-purple-600 text-white"
                                             : "text-zinc-400 hover:text-white hover:bg-white/5"
-                                    }`}
+                                        }`}
                                 >
                                     <span>{config?.flag}</span>
                                     <span>{config?.nameAr}</span>
@@ -228,8 +226,8 @@ export function WordDetailModal({
                                     </p>
                                     {currentEntry.gender && (
                                         <span className="text-xs text-zinc-400">
-                                            ({currentEntry.gender === "masculine" ? "مذكر" : 
-                                              currentEntry.gender === "feminine" ? "مؤنث" : currentEntry.gender})
+                                            ({currentEntry.gender === "masculine" ? "مذكر" :
+                                                currentEntry.gender === "feminine" ? "مؤنث" : currentEntry.gender})
                                         </span>
                                     )}
                                 </div>
