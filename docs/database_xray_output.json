@@ -273,7 +273,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "id",
-    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"uuid\", \"data_type\": \"uuid\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"gen_random_uuid()\", \"identity\": null, \"nullable\": false, \"position\": 1, \"generated\": null, \"statistics\": {\"correlation\": 0.0009, \"avg_width_bytes\": 16, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "02_TABLE_META",
@@ -417,7 +417,7 @@
     "section": "02_TABLE_META",
     "table_name": "user_devices",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 3, \"live\": 11, \"estimated\": 11}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"32 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"80 kB\", \"total_bytes\": 81920}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 12, \"inserts\": 21, \"updates\": 2207, \"hot_updates\": 1273}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": \"2026-01-29T15:14:52.47886+00:00\", \"last_analyze\": \"2026-01-29T15:14:52.492912+00:00\", \"vacuum_count\": 1, \"analyze_count\": 1, \"last_autovacuum\": \"2026-01-29T12:59:23.460227+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 21.43}"
+    "details": "{\"rows\": {\"dead\": 6, \"live\": 11, \"estimated\": 11}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"32 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"80 kB\", \"total_bytes\": 81920}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 12, \"inserts\": 21, \"updates\": 2252, \"hot_updates\": 1318}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": \"2026-01-29T15:14:52.47886+00:00\", \"last_analyze\": \"2026-01-29T15:14:52.492912+00:00\", \"vacuum_count\": 1, \"analyze_count\": 1, \"last_autovacuum\": \"2026-01-29T12:59:23.460227+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 35.29}"
   },
   {
     "section": "02_TABLE_META",
@@ -447,7 +447,7 @@
     "section": "02_TABLE_META",
     "table_name": "word_bank",
     "name": "storage_info",
-    "details": "{\"rows\": {\"dead\": 0, \"live\": 29, \"estimated\": 0}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"48 kB\", \"table_size\": \"8192 bytes\", \"toast_size\": \"8192 bytes\", \"total_size\": \"80 kB\", \"total_bytes\": 81920}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 87, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-26T16:18:13.275849+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 0.00}"
+    "details": "{\"rows\": {\"dead\": 1330, \"live\": 524219, \"estimated\": 524219}, \"owner\": \"postgres\", \"storage\": {\"index_size\": \"108 MB\", \"table_size\": \"73 MB\", \"toast_size\": \"8192 bytes\", \"total_size\": \"181 MB\", \"total_bytes\": 189726720}, \"fillfactor\": \"100\", \"operations\": {\"deletes\": 0, \"inserts\": 526111, \"updates\": 0, \"hot_updates\": 0}, \"rls_forced\": false, \"description\": \"No description\", \"maintenance\": {\"last_vacuum\": null, \"last_analyze\": null, \"vacuum_count\": 0, \"analyze_count\": 0, \"last_autovacuum\": \"2026-01-31T11:52:28.517443+00:00\"}, \"rls_enabled\": true, \"bloat_percentage\": 0.25}"
   },
   {
     "section": "05_COLUMN",
@@ -627,7 +627,13 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "language_code",
-    "details": "{\"type\": {\"udt_name\": \"varchar\", \"data_type\": \"character varying\", \"numeric_scale\": null, \"char_max_length\": 10, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"varchar\", \"data_type\": \"character varying\", \"numeric_scale\": null, \"char_max_length\": 10, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 2, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 3, \"distinct_values\": 2.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{ar,en}\"}, \"description\": null}"
+  },
+  {
+    "section": "03_VIEW",
+    "table_name": "word_bank_view",
+    "name": "definition",
+    "details": "{\"depends_on\": [\"public.word_bank\"], \"check_option\": \"NONE\", \"is_updatable\": \"YES\", \"definition_length\": 605, \"definition_preview\": \" SELECT id,\\n    word_text,\\n    word_norm,\\n    language_code,\\n    meaning_id,\\n    category_slug,\\n    difficulty_level,\\n    phonetic_text,\\n    example_sentence,\\n    created_at,\\n    ( SELECT w2.word_text\\n           FROM word_bank w2\\n          WHERE ((w2.meaning_id = w1.meaning_id) AND ((w2.language_code)::text <> (w1.language_code)::text))\\n         LIMIT 1) AS translation_text,\\n    ( SELECT w2.language_code\\n           FROM word_bank w2\\n          WHERE ((w2.meaning_id = w1.meaning_id) AND ((w2.langu\", \"is_insertable_into\": \"YES\"}"
   },
   {
     "section": "05_COLUMN",
@@ -807,7 +813,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "word_text",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": false, \"position\": 3, \"generated\": null, \"statistics\": {\"correlation\": -0.5035, \"avg_width_bytes\": 25, \"distinct_values\": -0.95, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -987,7 +993,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "word_definition",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 4, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1149,7 +1155,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "category_slug",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 5, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -1305,7 +1311,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "difficulty_level",
-    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"1\", \"identity\": null, \"nullable\": true, \"position\": 6, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": 1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{1}\"}, \"description\": null}"
   },
   {
     "section": "06_CONSTRAINT_KEY",
@@ -1713,7 +1719,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "example_sentence",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 7, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "07_CONSTRAINT_CHECK",
@@ -1887,7 +1893,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "phonetic_text",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 8, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "08_FK_OUTGOING",
@@ -2175,7 +2181,7 @@
     "section": "08_FK_OUTGOING",
     "table_name": "word_bank",
     "name": "word_bank_language_code_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"word_bank\", \"columns\": [\"language_code\"]}, \"target\": {\"table\": \"supported_languages\", \"columns\": [\"code\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 29, \"target_rows\": 8}, \"relationship_type\": \"ONE_TO_ONE\"}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\", \"match_type\": \"NONE\"}, \"source\": {\"table\": \"word_bank\", \"columns\": [\"language_code\"]}, \"target\": {\"table\": \"supported_languages\", \"columns\": [\"code\"]}, \"direction\": \"OUTGOING\", \"cardinality\": {\"source_rows\": 524219, \"target_rows\": 8}, \"relationship_type\": \"ONE_TO_ONE\"}"
   },
   {
     "section": "05_COLUMN",
@@ -2289,7 +2295,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "notes",
-    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 9, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 100.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -2571,7 +2577,7 @@
     "section": "09_FK_INCOMING",
     "table_name": "supported_languages",
     "name": "word_bank_language_code_fkey",
-    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"code\"], \"referenced_by\": {\"table\": \"word_bank\", \"columns\": [\"language_code\"], \"row_count\": 29}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to word_bank\", \"cascade_risk\": \"HIGH\"}}"
+    "details": "{\"rules\": {\"on_delete\": \"CASCADE\", \"on_update\": \"NO ACTION\"}, \"direction\": \"INCOMING\", \"local_columns\": [\"code\"], \"referenced_by\": {\"table\": \"word_bank\", \"columns\": [\"language_code\"], \"row_count\": 524219}, \"impact_analysis\": {\"warning\": \"⚠️ Deleting rows will cascade to word_bank\", \"cascade_risk\": \"HIGH\"}}"
   },
   {
     "section": "09_FK_INCOMING",
@@ -2685,7 +2691,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "is_active",
-    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"true\", \"identity\": null, \"nullable\": true, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"true\", \"identity\": null, \"nullable\": true, \"position\": 10, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 1, \"distinct_values\": 1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{t}\"}, \"description\": null}"
   },
   {
     "section": "10_RELATIONSHIP_SUMMARY",
@@ -2961,25 +2967,25 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "created_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 11, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 11, \"generated\": null, \"statistics\": {\"correlation\": 0.9999, \"avg_width_bytes\": 8, \"distinct_values\": 211.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"2026-01-31 11:48:13.267545+00\\\",\\\"2026-01-31 11:48:17.293701+00\\\",\\\"2026-01-31 11:48:20.133615+00\\\",\\\"20\"}, \"description\": null}"
   },
   {
     "section": "11_INDEX",
     "table_name": "app_settings",
     "name": "app_settings_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX app_settings_pkey ON public.app_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6, \"is_unused\": false, \"tuples_read\": 5, \"tuples_fetched\": 5}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX app_settings_pkey ON public.app_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 10, \"is_unused\": false, \"tuples_read\": 9, \"tuples_fetched\": 9}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "chat_messages",
     "name": "chat_messages_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX chat_messages_pkey ON public.chat_messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 7, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX chat_messages_pkey ON public.chat_messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 10, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "comprehensive_exam_attempts",
     "name": "comprehensive_exam_attempts_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exam_attempts_pkey ON public.comprehensive_exam_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 10, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX comprehensive_exam_attempts_pkey ON public.comprehensive_exam_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 13, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3009,7 +3015,7 @@
     "section": "11_INDEX",
     "table_name": "comprehensive_exams",
     "name": "idx_comprehensive_exams_created_by",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 316, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_comprehensive_exams_created_by ON public.comprehensive_exams USING btree (created_by)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 328, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3027,13 +3033,13 @@
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1082, \"is_unused\": false, \"tuples_read\": 1203, \"tuples_fetched\": 1203}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_pkey ON public.educational_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1120, \"is_unused\": false, \"tuples_read\": 1274, \"tuples_fetched\": 1274}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "educational_stages",
     "name": "educational_stages_slug_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1895, \"is_unused\": false, \"tuples_read\": 1895, \"tuples_fetched\": 1895}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX educational_stages_slug_key ON public.educational_stages USING btree (slug)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1931, \"is_unused\": false, \"tuples_read\": 1931, \"tuples_fetched\": 1931}}"
   },
   {
     "section": "11_INDEX",
@@ -3051,7 +3057,7 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "idx_lessons_stage_subject_semester",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_subject_semester ON public.lessons USING btree (stage_id, subject_id, semester)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 4746, \"is_unused\": false, \"tuples_read\": 79371, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_lessons_stage_subject_semester ON public.lessons USING btree (stage_id, subject_id, semester)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 4894, \"is_unused\": false, \"tuples_read\": 81835, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3063,19 +3069,19 @@
     "section": "11_INDEX",
     "table_name": "lessons",
     "name": "lessons_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 129, \"is_unused\": false, \"tuples_read\": 1515, \"tuples_fetched\": 1515}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX lessons_pkey ON public.lessons USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 133, \"is_unused\": false, \"tuples_read\": 1915, \"tuples_fetched\": 1915}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "messages",
     "name": "messages_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 8, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 11, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "notification_preferences",
     "name": "notification_preferences_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notification_preferences_pkey ON public.notification_preferences USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX notification_preferences_pkey ON public.notification_preferences USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 18, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3105,13 +3111,13 @@
     "section": "11_INDEX",
     "table_name": "profiles",
     "name": "idx_profiles_email",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_profiles_email ON public.profiles USING btree (email)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 13, \"is_unused\": false, \"tuples_read\": 121, \"tuples_fetched\": 1}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_profiles_email ON public.profiles USING btree (email)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 19, \"is_unused\": false, \"tuples_read\": 181, \"tuples_fetched\": 1}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "profiles",
     "name": "idx_profiles_role",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_profiles_role ON public.profiles USING btree (role)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6650, \"is_unused\": false, \"tuples_read\": 14128, \"tuples_fetched\": 13373}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_profiles_role ON public.profiles USING btree (role)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 6746, \"is_unused\": false, \"tuples_read\": 14680, \"tuples_fetched\": 13373}}"
   },
   {
     "section": "11_INDEX",
@@ -3123,7 +3129,7 @@
     "section": "11_INDEX",
     "table_name": "profiles",
     "name": "profiles_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 27334, \"is_unused\": false, \"tuples_read\": 27359, \"tuples_fetched\": 27266}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 31679, \"is_unused\": false, \"tuples_read\": 31704, \"tuples_fetched\": 31611}}"
   },
   {
     "section": "11_INDEX",
@@ -3135,7 +3141,7 @@
     "section": "11_INDEX",
     "table_name": "question_bank_attempts",
     "name": "question_bank_attempts_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX question_bank_attempts_pkey ON public.question_bank_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 3, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX question_bank_attempts_pkey ON public.question_bank_attempts USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 9, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3171,7 +3177,7 @@
     "section": "11_INDEX",
     "table_name": "quiz_questions",
     "name": "quiz_questions_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX quiz_questions_pkey ON public.quiz_questions USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 40, \"is_unused\": false, \"tuples_read\": 17, \"tuples_fetched\": 17}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX quiz_questions_pkey ON public.quiz_questions USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 45, \"is_unused\": false, \"tuples_read\": 22, \"tuples_fetched\": 22}}"
   },
   {
     "section": "11_INDEX",
@@ -3183,7 +3189,7 @@
     "section": "11_INDEX",
     "table_name": "site_settings",
     "name": "site_settings_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX site_settings_pkey ON public.site_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 15, \"is_unused\": false, \"tuples_read\": 60, \"tuples_fetched\": 60}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX site_settings_pkey ON public.site_settings USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 24, \"is_unused\": false, \"tuples_read\": 96, \"tuples_fetched\": 96}}"
   },
   {
     "section": "11_INDEX",
@@ -3195,7 +3201,7 @@
     "section": "11_INDEX",
     "table_name": "subject_stages",
     "name": "idx_subject_stages_stage",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_subject_stages_stage ON public.subject_stages USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1192, \"is_unused\": false, \"tuples_read\": 6852, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_subject_stages_stage ON public.subject_stages USING btree (stage_id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 1228, \"is_unused\": false, \"tuples_read\": 7068, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3207,7 +3213,7 @@
     "section": "11_INDEX",
     "table_name": "subject_stages",
     "name": "subject_stages_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subject_stages_pkey ON public.subject_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 16, \"is_unused\": false, \"tuples_read\": 304, \"tuples_fetched\": 294}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX subject_stages_pkey ON public.subject_stages USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 23, \"is_unused\": false, \"tuples_read\": 437, \"tuples_fetched\": 427}}"
   },
   {
     "section": "11_INDEX",
@@ -3231,7 +3237,7 @@
     "section": "11_INDEX",
     "table_name": "support_chats",
     "name": "support_chats_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX support_chats_pkey ON public.support_chats USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 12, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX support_chats_pkey ON public.support_chats USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 21, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3321,7 +3327,7 @@
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "idx_testimonials_status",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 822, \"is_unused\": false, \"tuples_read\": 814, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_testimonials_status ON public.testimonials USING btree (status)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 844, \"is_unused\": false, \"tuples_read\": 836, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3333,7 +3339,7 @@
     "section": "11_INDEX",
     "table_name": "testimonials",
     "name": "testimonials_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX testimonials_pkey ON public.testimonials USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 9, \"is_unused\": false, \"tuples_read\": 10, \"tuples_fetched\": 9}}"
+    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX testimonials_pkey ON public.testimonials USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 15, \"tuples_fetched\": 14}}"
   },
   {
     "section": "11_INDEX",
@@ -3357,7 +3363,7 @@
     "section": "11_INDEX",
     "table_name": "user_lesson_likes",
     "name": "user_lesson_likes_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_likes_pkey ON public.user_lesson_likes USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 14, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_likes_pkey ON public.user_lesson_likes USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 17, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3369,7 +3375,7 @@
     "section": "11_INDEX",
     "table_name": "user_lesson_progress",
     "name": "user_lesson_progress_pkey",
-    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_progress_pkey ON public.user_lesson_progress USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 13, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"8192 bytes\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX user_lesson_progress_pkey ON public.user_lesson_progress USING btree (id)\", \"size_bytes\": 8192, \"usage_stats\": {\"scans\": 18, \"is_unused\": false, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
@@ -3417,19 +3423,31 @@
     "section": "11_INDEX",
     "table_name": "word_bank",
     "name": "idx_word_bank_lang",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_word_bank_lang ON public.word_bank USING btree (language_code)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 119, \"is_unused\": false, \"tuples_read\": 957, \"tuples_fetched\": 928}}"
+    "details": "{\"size\": \"3424 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_word_bank_lang ON public.word_bank USING btree (language_code)\", \"size_bytes\": 3506176, \"usage_stats\": {\"scans\": 193, \"is_unused\": false, \"tuples_read\": 11479062, \"tuples_fetched\": 6913377}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "word_bank",
+    "name": "idx_word_bank_meaning_id",
+    "details": "{\"size\": \"13 MB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_word_bank_meaning_id ON public.word_bank USING btree (meaning_id)\", \"size_bytes\": 14106624, \"usage_stats\": {\"scans\": 4210, \"is_unused\": false, \"tuples_read\": 5473, \"tuples_fetched\": 5462}}"
+  },
+  {
+    "section": "11_INDEX",
+    "table_name": "word_bank",
+    "name": "idx_word_bank_word_norm",
+    "details": "{\"size\": \"34 MB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": false, \"columns\": null, \"primary\": false, \"condition\": null, \"definition\": \"CREATE INDEX idx_word_bank_word_norm ON public.word_bank USING btree (word_norm)\", \"size_bytes\": 35389440, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "word_bank",
     "name": "word_bank_language_code_word_text_key",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"word_text\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX word_bank_language_code_word_text_key ON public.word_bank USING btree (language_code, word_text)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 0, \"is_unused\": true, \"tuples_read\": 0, \"tuples_fetched\": 0}}"
+    "details": "{\"size\": \"38 MB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"word_text\"], \"primary\": false, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX word_bank_language_code_word_text_key ON public.word_bank USING btree (language_code, word_text)\", \"size_bytes\": 39641088, \"usage_stats\": {\"scans\": 1049093, \"is_unused\": false, \"tuples_read\": 526222, \"tuples_fetched\": 524874}}"
   },
   {
     "section": "11_INDEX",
     "table_name": "word_bank",
     "name": "word_bank_pkey",
-    "details": "{\"size\": \"16 kB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX word_bank_pkey ON public.word_bank USING btree (id)\", \"size_bytes\": 16384, \"usage_stats\": {\"scans\": 34, \"is_unused\": false, \"tuples_read\": 32, \"tuples_fetched\": 32}}"
+    "details": "{\"size\": \"19 MB\", \"ready\": true, \"valid\": true, \"method\": \"btree\", \"unique\": true, \"columns\": [\"id\"], \"primary\": true, \"condition\": null, \"definition\": \"CREATE UNIQUE INDEX word_bank_pkey ON public.word_bank USING btree (id)\", \"size_bytes\": 20414464, \"usage_stats\": {\"scans\": 55, \"is_unused\": false, \"tuples_read\": 10990, \"tuples_fetched\": 10932}}"
   },
   {
     "section": "05_COLUMN",
@@ -3531,7 +3549,7 @@
     "section": "05_COLUMN",
     "table_name": "word_bank",
     "name": "updated_at",
-    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": 0.0000, \"avg_width_bytes\": 0, \"distinct_values\": 0.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+    "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 12, \"generated\": null, \"statistics\": {\"correlation\": 0.9999, \"avg_width_bytes\": 8, \"distinct_values\": 211.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"2026-01-31 11:48:13.267545+00\\\",\\\"2026-01-31 11:48:17.293701+00\\\",\\\"2026-01-31 11:48:20.133615+00\\\",\\\"20\"}, \"description\": null}"
   },
   {
     "section": "12_RLS_POLICY",
@@ -4386,6 +4404,12 @@
     "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 1, \"distinct_values\": 1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"\\\"}\"}, \"description\": null}"
   },
   {
+    "section": "05_COLUMN",
+    "table_name": "word_bank",
+    "name": "meaning_id",
+    "details": "{\"type\": {\"udt_name\": \"int8\", \"data_type\": \"bigint\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 64}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 13, \"generated\": null, \"statistics\": {\"correlation\": -0.1240, \"avg_width_bytes\": 8, \"distinct_values\": -0.50, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
     "section": "13_TRIGGER",
     "table_name": "comprehensive_exams",
     "name": "trg_prevent_published_exam_edit",
@@ -4552,6 +4576,12 @@
     "table_name": "visitor_devices",
     "name": "first_seen_at",
     "details": "{\"type\": {\"udt_name\": \"timestamptz\", \"data_type\": \"timestamp with time zone\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"now()\", \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": 0.2953, \"avg_width_bytes\": 8, \"distinct_values\": -1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
+  },
+  {
+    "section": "05_COLUMN",
+    "table_name": "word_bank",
+    "name": "word_norm",
+    "details": "{\"type\": {\"udt_name\": \"text\", \"data_type\": \"text\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": null, \"identity\": null, \"nullable\": true, \"position\": 14, \"generated\": null, \"statistics\": {\"correlation\": -0.5040, \"avg_width_bytes\": 24, \"distinct_values\": -0.75, \"null_fraction_pct\": 0.00, \"most_common_values\": null}, \"description\": null}"
   },
   {
     "section": "14_FUNCTION",
@@ -5991,175 +6021,175 @@
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "app_settings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 18, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 591, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 20, \"read\": 2, \"hit_ratio\": 90.91}, \"index_blocks\": {\"hit\": 619, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "chat_messages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 22, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 26, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 2768, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 2923, \"read\": 12}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "comprehensive_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4927, \"read\": 4, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 5139, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5104, \"read\": 10, \"hit_ratio\": 99.80}, \"index_blocks\": {\"hit\": 5298, \"read\": 17}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "educational_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 4320, \"read\": 1, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 6255, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 4401, \"read\": 2, \"hit_ratio\": 99.95}, \"index_blocks\": {\"hit\": 6395, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "lessons",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 22131, \"read\": 13, \"hit_ratio\": 99.94}, \"index_blocks\": {\"hit\": 15495, \"read\": 10}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 22945, \"read\": 31, \"hit_ratio\": 99.87}, \"index_blocks\": {\"hit\": 15819, \"read\": 23}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "messages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 47, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 52, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notification_preferences",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 84, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 92, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "notifications",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 5470, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 15516, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 5470, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 15720, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "profiles",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 54758, \"read\": 1, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 48682, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 59325, \"read\": 12, \"hit_ratio\": 99.98}, \"index_blocks\": {\"hit\": 53610, \"read\": 19}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "question_bank_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 432, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 450, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "question_banks",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 218, \"read\": 1, \"hit_ratio\": 99.54}, \"index_blocks\": {\"hit\": 442, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 223, \"read\": 3, \"hit_ratio\": 98.67}, \"index_blocks\": {\"hit\": 457, \"read\": 11}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "quiz_questions",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 342, \"read\": 3, \"hit_ratio\": 99.13}, \"index_blocks\": {\"hit\": 322, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 345, \"read\": 5, \"hit_ratio\": 98.57}, \"index_blocks\": {\"hit\": 331, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "site_settings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 17, \"read\": 1, \"hit_ratio\": 94.44}, \"index_blocks\": {\"hit\": 70, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 24, \"read\": 3, \"hit_ratio\": 88.89}, \"index_blocks\": {\"hit\": 91, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subject_stages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1353, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 4560, \"read\": 5}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1394, \"read\": 2, \"hit_ratio\": 99.86}, \"index_blocks\": {\"hit\": 4735, \"read\": 18}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "subjects",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 7494, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 9481, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 7664, \"read\": 3, \"hit_ratio\": 99.96}, \"index_blocks\": {\"hit\": 9551, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "support_chats",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 51, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 67, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "supported_languages",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1290, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 690, \"read\": 1}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1574032, \"read\": 3, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 738, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exam_attempts",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 394, \"read\": 1, \"hit_ratio\": 99.75}, \"index_blocks\": {\"hit\": 1674, \"read\": 10}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 434, \"read\": 3, \"hit_ratio\": 99.31}, \"index_blocks\": {\"hit\": 1804, \"read\": 20}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_exams",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1327, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 788, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1342, \"read\": 3, \"hit_ratio\": 99.78}, \"index_blocks\": {\"hit\": 818, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_ratings",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 1253, \"read\": 1, \"hit_ratio\": 99.92}, \"index_blocks\": {\"hit\": 1326, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 1292, \"read\": 3, \"hit_ratio\": 99.77}, \"index_blocks\": {\"hit\": 1372, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "teacher_subscriptions",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 458, \"read\": 1, \"hit_ratio\": 99.78}, \"index_blocks\": {\"hit\": 1408, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 472, \"read\": 3, \"hit_ratio\": 99.37}, \"index_blocks\": {\"hit\": 1452, \"read\": 16}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "testimonials",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 851, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 3250, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 876, \"read\": 2, \"hit_ratio\": 99.77}, \"index_blocks\": {\"hit\": 3362, \"read\": 15}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 11867, \"read\": 1, \"hit_ratio\": 99.99}, \"index_blocks\": {\"hit\": 3756, \"read\": 4}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 12052, \"read\": 4, \"hit_ratio\": 99.97}, \"index_blocks\": {\"hit\": 3786, \"read\": 8}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_lesson_likes",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 102, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 108, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_lesson_progress",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 815, \"read\": 2}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 0, \"read\": 0, \"hit_ratio\": 100.0}, \"index_blocks\": {\"hit\": 826, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "user_word_highlights",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 410, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 1004, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 481, \"read\": 2, \"hit_ratio\": 99.59}, \"index_blocks\": {\"hit\": 1148, \"read\": 9}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "visitor_devices",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 3964, \"read\": 5, \"hit_ratio\": 99.87}, \"index_blocks\": {\"hit\": 4649, \"read\": 6}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 3979, \"read\": 15, \"hit_ratio\": 99.62}, \"index_blocks\": {\"hit\": 4658, \"read\": 12}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "19_STORAGE_ANALYSIS",
     "table_name": "word_bank",
     "name": "io_stats",
-    "details": "{\"heap_blocks\": {\"hit\": 746, \"read\": 0, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 1387, \"read\": 3}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
+    "details": "{\"heap_blocks\": {\"hit\": 2332944, \"read\": 2, \"hit_ratio\": 100.00}, \"index_blocks\": {\"hit\": 10117401, \"read\": 11}, \"toast_blocks\": {\"hit\": 0, \"read\": 0}}"
   },
   {
     "section": "05_COLUMN",
@@ -6444,256 +6474,10 @@
     "details": "{\"type\": {\"udt_name\": \"bool\", \"data_type\": \"boolean\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"false\", \"identity\": null, \"nullable\": true, \"position\": 25, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 1, \"distinct_values\": 1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{f}\"}, \"description\": \"هل الملف الشخصي ظاهر للعامة\"}"
   },
   {
-    "section": "25_ALL_PUBLICATIONS",
-    "table_name": "supabase_realtime",
-    "name": "configuration",
-    "details": "{\"oid\": \"16426\", \"owner\": \"postgres\", \"delete\": true, \"insert\": true, \"tables\": null, \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 0}"
-  },
-  {
-    "section": "25_ALL_PUBLICATIONS",
-    "table_name": "supabase_realtime_messages_publication",
-    "name": "configuration",
-    "details": "{\"oid\": \"28229\", \"owner\": \"supabase_admin\", \"delete\": true, \"insert\": true, \"tables\": [{\"table\": \"messages_2026_01_27\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_28\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_29\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_30\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_01_31\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_02_01\", \"schema\": \"realtime\"}, {\"table\": \"messages_2026_02_02\", \"schema\": \"realtime\"}], \"update\": true, \"truncate\": true, \"via_root\": false, \"all_tables\": false, \"table_count\": 7}"
-  },
-  {
     "section": "05_COLUMN",
     "table_name": "profiles",
     "name": "social_links",
     "details": "{\"type\": {\"udt_name\": \"jsonb\", \"data_type\": \"jsonb\", \"numeric_scale\": null, \"char_max_length\": null, \"numeric_precision\": null}, \"default\": \"'{}'::jsonb\", \"identity\": null, \"nullable\": true, \"position\": 26, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 39, \"distinct_values\": -0.20, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{\\\"{}\\\"}\"}, \"description\": \"روابط التواصل الاجتماعي\"}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "cleanup_translation_cache",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"cleanup_translation_cache()\", \"return_type\": \"integer\", \"source_length\": 210, \"source_preview\": \"\\nDECLARE\\n    deleted_count INTEGER;\\nBEGIN\\n    DELETE FROM translation_cache\\n    WHERE created_at < NOW() - INTERVAL '30 days';\\n    \\n    GET DIAGNOSTICS deleted_count = ROW_COUNT;\\n    RETURN deleted_count;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.cleanup_translation_cache()\\n RETURNS integer\\n LANGUAGE plpgsql\\nAS $function$\\nDECLARE\\n    deleted_count INTEGER;\\nBEGIN\\n    DELETE FROM translation_cache\\n    WHERE created_at < NOW() - INTERVAL '30 days';\\n    \\n    GET DIAGNOSTICS deleted_count = ROW_COUNT;\\n    RETURN deleted_count;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "decrement_exam_count",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"decrement_exam_count()\", \"return_type\": \"trigger\", \"source_length\": 226, \"source_preview\": \"\\nBEGIN\\n    -- تقليل عدد الاختبارات للمعلم (لا يقل عن صفر)\\n    UPDATE profiles \\n    SET exam_count = GREATEST(COALESCE(exam_count, 0) - 1, 0),\\n        updated_at = NOW()\\n    WHERE id = OLD.created_by;\\n    \\n    RETURN OLD;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.decrement_exam_count()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    -- تقليل عدد الاختبارات للمعلم (لا يقل عن صفر)\\n    UPDATE profiles \\n    SET exam_count = GREATEST(COALESCE(exam_count, 0) - 1, 0),\\n        updated_at = NOW()\\n    WHERE id = OLD.created_by;\\n    \\n    RETURN OLD;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "decrement_subscriber_count",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"decrement_subscriber_count()\", \"return_type\": \"trigger\", \"source_length\": 182, \"source_preview\": \"\\nBEGIN\\n    UPDATE profiles \\n    SET subscriber_count = GREATEST(COALESCE(subscriber_count, 0) - 1, 0),\\n        updated_at = NOW()\\n    WHERE id = OLD.teacher_id;\\n    RETURN OLD;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.decrement_subscriber_count()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE profiles \\n    SET subscriber_count = GREATEST(COALESCE(subscriber_count, 0) - 1, 0),\\n        updated_at = NOW()\\n    WHERE id = OLD.teacher_id;\\n    RETURN OLD;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "decrement_teacher_subscribers",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"decrement_teacher_subscribers()\", \"return_type\": \"trigger\", \"source_length\": 145, \"source_preview\": \"\\nBEGIN\\n    UPDATE profiles\\n    SET subscriber_count = GREATEST(subscriber_count - 1, 0)\\n    WHERE id = OLD.teacher_id;\\n    \\n    RETURN OLD;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.decrement_teacher_subscribers()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    UPDATE profiles\\n    SET subscriber_count = GREATEST(subscriber_count - 1, 0)\\n    WHERE id = OLD.teacher_id;\\n    \\n    RETURN OLD;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_cached_translation",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"get_cached_translation(p_source_text text, p_source_lang character varying, p_target_lang character varying)\", \"return_type\": \"text\", \"source_length\": 260, \"source_preview\": \"\\nDECLARE\\n    v_result TEXT;\\nBEGIN\\n    SELECT translated_text INTO v_result\\n    FROM translation_cache\\n    WHERE source_text = p_source_text\\n      AND source_lang = p_source_lang\\n      AND target_lang = p_target_lang\\n    LIMIT 1;\\n    \\n    RETURN v_result;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_cached_translation(p_source_text text, p_source_lang character varying, p_target_lang character varying)\\n RETURNS text\\n LANGUAGE plpgsql\\nAS $function$\\nDECLARE\\n    v_result TEXT;\\nBEGIN\\n    SELECT translated_text INTO v_result\\n    FROM translation_cache\\n    WHERE source_text = p_source_text\\n      AND source_lang = p_source_lang\\n      AND target_lang = p_target_lang\\n    LIMIT 1;\\n    \\n    RETURN v_result;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_or_create_question_bank_attempt",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"get_or_create_question_bank_attempt(p_question_bank_id uuid)\", \"return_type\": \"jsonb\", \"source_length\": 1361, \"source_preview\": \"\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_attempt RECORD;\\n  v_bank RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- جلب بيانات البنك\\n  SELECT id, total_questions, questions INTO v_bank\\n  FROM question_banks\\n  WHERE id = p_question_bank_id AND is_published = true;\\n  \\n  IF v_bank.id IS NULL THEN\\n    RAISE EXCEPTION 'Question bank not found or not published';\\n  END IF;\\n\\n  -- جلب أو إنشاء المحاولة\\n  INSERT INTO question_bank_attempts (\\n    question_bank_id, \\n    student_id, \\n    total_questions,\\n    first_answered_at\\n  )\\n  VALUES (\\n    p_question_bank_id, \\n    v_student_id, \\n    v_bank.total_questions,\\n    NULL\\n  )\\n  ON CONFLICT (question_bank_id, student_id) DO NOTHING;\\n  \\n  -- جلب المحاولة\\n  SELECT * INTO v_attempt\\n  FROM question_bank_attempts\\n  WHERE question_bank_id = p_question_bank_id AND student_id = v_student_id;\\n\\n  RETURN jsonb_build_object(\\n    'attempt_id', v_attempt.id,\\n    'status', v_\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_or_create_question_bank_attempt(p_question_bank_id uuid)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_attempt RECORD;\\n  v_bank RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- جلب بيانات البنك\\n  SELECT id, total_questions, questions INTO v_bank\\n  FROM question_banks\\n  WHERE id = p_question_bank_id AND is_published = true;\\n  \\n  IF v_bank.id IS NULL THEN\\n    RAISE EXCEPTION 'Question bank not found or not published';\\n  END IF;\\n\\n  -- جلب أو إنشاء المحاولة\\n  INSERT INTO question_bank_attempts (\\n    question_bank_id, \\n    student_id, \\n    total_questions,\\n    first_answered_at\\n  )\\n  VALUES (\\n    p_question_bank_id, \\n    v_student_id, \\n    v_bank.total_questions,\\n    NULL\\n  )\\n  ON CONFLICT (question_bank_id, student_id) DO NOTHING;\\n  \\n  -- جلب المحاولة\\n  SELECT * INTO v_attempt\\n  FROM question_bank_attempts\\n  WHERE question_bank_id = p_question_bank_id AND student_id = v_student_id;\\n\\n  RETURN jsonb_build_object(\\n    'attempt_id', v_attempt.id,\\n    'status', v_attempt.status,\\n    'answers', v_attempt.answers,\\n    'answered_count', v_attempt.answered_count,\\n    'correct_count', v_attempt.correct_count,\\n    'total_questions', v_attempt.total_questions,\\n    'score_percentage', v_attempt.score_percentage,\\n    'first_answered_at', v_attempt.first_answered_at,\\n    'last_answered_at', v_attempt.last_answered_at\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_page_words_with_highlights_v2",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"get_page_words_with_highlights_v2(p_user_id uuid, p_page_id character varying, p_language_code character varying)\", \"return_type\": \"TABLE(word_uuid uuid, word_id character varying, word_text text, word_context text, word_position integer, is_highlighted boolean, highlighted_at timestamp with time zone)\", \"source_length\": 764, \"source_preview\": \"\\nDECLARE\\n    v_page_data JSONB;\\nBEGIN\\n    -- جلب بيانات الصفحة للمستخدم\\n    SELECT COALESCE(\\n        highlighted_words->p_language_code->p_page_id,\\n        '{}'::jsonb\\n    )\\n    INTO v_page_data\\n    FROM user_word_highlights\\n    WHERE user_id = p_user_id;\\n    \\n    v_page_data := COALESCE(v_page_data, '{}'::jsonb);\\n    \\n    RETURN QUERY\\n    SELECT \\n        pw.id AS word_uuid,\\n        pw.word_id,\\n        pw.word_text,\\n        pw.word_context,\\n        pw.word_position,\\n        (v_page_data ? pw.word_id) AS is_highlighted,\\n        (v_page_data->pw.word_id->>'at')::TIMESTAMPTZ AS highlighted_at\\n    FROM page_words pw\\n    WHERE pw.page_id = p_page_id\\n      AND pw.language_code = p_language_code\\n      AND pw.is_active = true\\n    ORDER BY pw.word_position;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_page_words_with_highlights_v2(p_user_id uuid, p_page_id character varying, p_language_code character varying)\\n RETURNS TABLE(word_uuid uuid, word_id character varying, word_text text, word_context text, word_position integer, is_highlighted boolean, highlighted_at timestamp with time zone)\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    v_page_data JSONB;\\nBEGIN\\n    -- جلب بيانات الصفحة للمستخدم\\n    SELECT COALESCE(\\n        highlighted_words->p_language_code->p_page_id,\\n        '{}'::jsonb\\n    )\\n    INTO v_page_data\\n    FROM user_word_highlights\\n    WHERE user_id = p_user_id;\\n    \\n    v_page_data := COALESCE(v_page_data, '{}'::jsonb);\\n    \\n    RETURN QUERY\\n    SELECT \\n        pw.id AS word_uuid,\\n        pw.word_id,\\n        pw.word_text,\\n        pw.word_context,\\n        pw.word_position,\\n        (v_page_data ? pw.word_id) AS is_highlighted,\\n        (v_page_data->pw.word_id->>'at')::TIMESTAMPTZ AS highlighted_at\\n    FROM page_words pw\\n    WHERE pw.page_id = p_page_id\\n      AND pw.language_code = p_language_code\\n      AND pw.is_active = true\\n    ORDER BY pw.word_position;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_student_exam_attempts",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"get_student_exam_attempts(p_student_id uuid DEFAULT NULL::uuid)\", \"return_type\": \"jsonb\", \"source_length\": 2297, \"source_preview\": \"\\nDECLARE\\n  v_target_student_id UUID;\\n  v_student_stage_id UUID;\\n  v_comprehensive JSONB;\\n  v_teacher JSONB;\\nBEGIN\\n  v_target_student_id := COALESCE(p_student_id, auth.uid());\\n  \\n  IF v_target_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- Get the student's educational stage\\n  SELECT educational_stage_id INTO v_student_stage_id\\n  FROM profiles\\n  WHERE id = v_target_student_id;\\n\\n  -- Fetch site exams (comprehensive_exams) - filtered by stage\\n  SELECT COALESCE(jsonb_agg(\\n    jsonb_build_object(\\n      'attempt_id', ca.id,\\n      'exam_id', ca.exam_id,\\n      'exam_title', ce.exam_title,\\n      'stage_id', ce.stage_id,\\n      'total_score', ca.total_score,\\n      'max_score', ca.max_score,\\n      'percentage', ca.percentage,\\n      'status', ca.status,\\n      'completed_at', ca.completed_at,\\n      'answered_count', ca.answered_count\\n    ) ORDER BY ca.completed_at DESC NULLS LAST\\n  ), '[]'::jsonb) INTO v_comprehensive\\n  FROM comprehensive_exam_attempts ca\\n  JOI\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_student_exam_attempts(p_student_id uuid DEFAULT NULL::uuid)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_target_student_id UUID;\\n  v_student_stage_id UUID;\\n  v_comprehensive JSONB;\\n  v_teacher JSONB;\\nBEGIN\\n  v_target_student_id := COALESCE(p_student_id, auth.uid());\\n  \\n  IF v_target_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- Get the student's educational stage\\n  SELECT educational_stage_id INTO v_student_stage_id\\n  FROM profiles\\n  WHERE id = v_target_student_id;\\n\\n  -- Fetch site exams (comprehensive_exams) - filtered by stage\\n  SELECT COALESCE(jsonb_agg(\\n    jsonb_build_object(\\n      'attempt_id', ca.id,\\n      'exam_id', ca.exam_id,\\n      'exam_title', ce.exam_title,\\n      'stage_id', ce.stage_id,\\n      'total_score', ca.total_score,\\n      'max_score', ca.max_score,\\n      'percentage', ca.percentage,\\n      'status', ca.status,\\n      'completed_at', ca.completed_at,\\n      'answered_count', ca.answered_count\\n    ) ORDER BY ca.completed_at DESC NULLS LAST\\n  ), '[]'::jsonb) INTO v_comprehensive\\n  FROM comprehensive_exam_attempts ca\\n  JOIN comprehensive_exams ce ON ce.id = ca.exam_id\\n  WHERE ca.student_id = v_target_student_id\\n    -- Filter by stage: show if exam has no stage OR matches student's stage\\n    AND (ce.stage_id IS NULL OR v_student_stage_id IS NULL OR ce.stage_id = v_student_stage_id);\\n\\n  -- Fetch teacher exams - filtered by stage\\n  SELECT COALESCE(jsonb_agg(\\n    jsonb_build_object(\\n      'attempt_id', ta.id,\\n      'exam_id', ta.exam_id,\\n      'exam_title', te.exam_title,\\n      'stage_id', te.stage_id,\\n      'teacher_id', te.created_by,\\n      'teacher_name', p.name,\\n      'total_score', ta.total_score,\\n      'max_score', ta.max_score,\\n      'percentage', ta.percentage,\\n      'status', ta.status,\\n      'completed_at', ta.completed_at,\\n      'answered_count', ta.answered_count\\n    ) ORDER BY ta.completed_at DESC NULLS LAST\\n  ), '[]'::jsonb) INTO v_teacher\\n  FROM teacher_exam_attempts ta\\n  JOIN teacher_exams te ON te.id = ta.exam_id\\n  JOIN profiles p ON p.id = te.created_by\\n  WHERE ta.student_id = v_target_student_id\\n    -- Filter by stage: show if exam has no stage OR matches student's stage\\n    AND (te.stage_id IS NULL OR v_student_stage_id IS NULL OR te.stage_id = v_student_stage_id);\\n\\n  RETURN jsonb_build_object(\\n    'comprehensive_exams', v_comprehensive,\\n    'teacher_exams', v_teacher\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::uuid\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_student_question_bank_progress",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"get_student_question_bank_progress(p_student_id uuid DEFAULT NULL::uuid)\", \"return_type\": \"TABLE(attempt_id uuid, question_bank_id uuid, bank_title jsonb, lesson_id uuid, lesson_title text, answered_count integer, total_questions integer, correct_count integer, score_percentage numeric, status text, last_answered_at timestamp with time zone)\", \"source_length\": 777, \"source_preview\": \"\\nDECLARE\\n  v_target_student_id UUID;\\nBEGIN\\n  v_target_student_id := COALESCE(p_student_id, auth.uid());\\n  \\n  IF v_target_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  RETURN QUERY\\n  SELECT \\n    qba.id AS attempt_id,\\n    qba.question_bank_id,\\n    qb.title AS bank_title,\\n    qb.lesson_id,\\n    l.title AS lesson_title,\\n    qba.answered_count,\\n    COALESCE(qba.total_questions, qb.total_questions) AS total_questions,\\n    qba.correct_count,\\n    qba.score_percentage,\\n    qba.status,\\n    qba.last_answered_at\\n  FROM question_bank_attempts qba\\n  JOIN question_banks qb ON qb.id = qba.question_bank_id\\n  LEFT JOIN lessons l ON l.id = qb.lesson_id\\n  WHERE qba.student_id = v_target_student_id\\n  ORDER BY qba.last_answered_at DESC NULLS LAST;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_student_question_bank_progress(p_student_id uuid DEFAULT NULL::uuid)\\n RETURNS TABLE(attempt_id uuid, question_bank_id uuid, bank_title jsonb, lesson_id uuid, lesson_title text, answered_count integer, total_questions integer, correct_count integer, score_percentage numeric, status text, last_answered_at timestamp with time zone)\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_target_student_id UUID;\\nBEGIN\\n  v_target_student_id := COALESCE(p_student_id, auth.uid());\\n  \\n  IF v_target_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  RETURN QUERY\\n  SELECT \\n    qba.id AS attempt_id,\\n    qba.question_bank_id,\\n    qb.title AS bank_title,\\n    qb.lesson_id,\\n    l.title AS lesson_title,\\n    qba.answered_count,\\n    COALESCE(qba.total_questions, qb.total_questions) AS total_questions,\\n    qba.correct_count,\\n    qba.score_percentage,\\n    qba.status,\\n    qba.last_answered_at\\n  FROM question_bank_attempts qba\\n  JOIN question_banks qb ON qb.id = qba.question_bank_id\\n  LEFT JOIN lessons l ON l.id = qb.lesson_id\\n  WHERE qba.student_id = v_target_student_id\\n  ORDER BY qba.last_answered_at DESC NULLS LAST;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::uuid\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_teacher_exam_results",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"get_teacher_exam_results(p_exam_id uuid)\", \"return_type\": \"TABLE(attempt_id uuid, student_id uuid, student_name text, student_email text, total_score integer, max_score integer, percentage numeric, status text, started_at timestamp with time zone, completed_at timestamp with time zone, answered_count integer)\", \"source_length\": 742, \"source_preview\": \"\\nBEGIN\\n  -- التحقق من أن المستخدم هو صاحب الامتحان أو أدمن\\n  IF NOT EXISTS (\\n    SELECT 1 FROM teacher_exams \\n    WHERE id = p_exam_id AND created_by = auth.uid()\\n  ) AND NOT EXISTS (\\n    SELECT 1 FROM profiles\\n    WHERE id = auth.uid() AND role = 'admin'\\n  ) THEN\\n    RAISE EXCEPTION 'Unauthorized';\\n  END IF;\\n  \\n  RETURN QUERY\\n  SELECT \\n    tea.id AS attempt_id,\\n    tea.student_id,\\n    p.name AS student_name,\\n    p.email AS student_email,\\n    tea.total_score,\\n    tea.max_score,\\n    tea.percentage,\\n    tea.status,\\n    tea.started_at,\\n    tea.completed_at,\\n    tea.answered_count\\n  FROM teacher_exam_attempts tea\\n  JOIN profiles p ON p.id = tea.student_id\\n  WHERE tea.exam_id = p_exam_id\\n  ORDER BY tea.completed_at DESC NULLS LAST;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_teacher_exam_results(p_exam_id uuid)\\n RETURNS TABLE(attempt_id uuid, student_id uuid, student_name text, student_email text, total_score integer, max_score integer, percentage numeric, status text, started_at timestamp with time zone, completed_at timestamp with time zone, answered_count integer)\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nBEGIN\\n  -- التحقق من أن المستخدم هو صاحب الامتحان أو أدمن\\n  IF NOT EXISTS (\\n    SELECT 1 FROM teacher_exams \\n    WHERE id = p_exam_id AND created_by = auth.uid()\\n  ) AND NOT EXISTS (\\n    SELECT 1 FROM profiles\\n    WHERE id = auth.uid() AND role = 'admin'\\n  ) THEN\\n    RAISE EXCEPTION 'Unauthorized';\\n  END IF;\\n  \\n  RETURN QUERY\\n  SELECT \\n    tea.id AS attempt_id,\\n    tea.student_id,\\n    p.name AS student_name,\\n    p.email AS student_email,\\n    tea.total_score,\\n    tea.max_score,\\n    tea.percentage,\\n    tea.status,\\n    tea.started_at,\\n    tea.completed_at,\\n    tea.answered_count\\n  FROM teacher_exam_attempts tea\\n  JOIN profiles p ON p.id = tea.student_id\\n  WHERE tea.exam_id = p_exam_id\\n  ORDER BY tea.completed_at DESC NULLS LAST;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_unread_notification_count",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"get_unread_notification_count()\", \"return_type\": \"integer\", \"source_length\": 804, \"source_preview\": \"\\nDECLARE\\n    unread_count INTEGER;\\n    user_role TEXT;\\nBEGIN\\n    -- Get user role\\n    SELECT role::text INTO user_role\\n    FROM profiles\\n    WHERE id = auth.uid();\\n\\n    -- Count unread notifications (both direct and role-targeted)\\n    -- Map plural target_role to singular user_role\\n    SELECT COUNT(*) INTO unread_count\\n    FROM notifications\\n    WHERE is_read = false\\n    AND (\\n        user_id = auth.uid()\\n        OR (\\n            user_id IS NULL \\n            AND (\\n                target_role::text = 'all' \\n                OR (target_role::text = 'students' AND user_role = 'student')\\n                OR (target_role::text = 'teachers' AND user_role = 'teacher')\\n                OR (target_role::text = 'admins' AND user_role = 'admin')\\n            )\\n        )\\n    );\\n\\n    RETURN unread_count;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_unread_notification_count()\\n RETURNS integer\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    unread_count INTEGER;\\n    user_role TEXT;\\nBEGIN\\n    -- Get user role\\n    SELECT role::text INTO user_role\\n    FROM profiles\\n    WHERE id = auth.uid();\\n\\n    -- Count unread notifications (both direct and role-targeted)\\n    -- Map plural target_role to singular user_role\\n    SELECT COUNT(*) INTO unread_count\\n    FROM notifications\\n    WHERE is_read = false\\n    AND (\\n        user_id = auth.uid()\\n        OR (\\n            user_id IS NULL \\n            AND (\\n                target_role::text = 'all' \\n                OR (target_role::text = 'students' AND user_role = 'student')\\n                OR (target_role::text = 'teachers' AND user_role = 'teacher')\\n                OR (target_role::text = 'admins' AND user_role = 'admin')\\n            )\\n        )\\n    );\\n\\n    RETURN unread_count;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_user_highlight_stats",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"get_user_highlight_stats(p_user_id uuid)\", \"return_type\": \"TABLE(lang_code character varying, pages_count bigint, words_count bigint)\", \"source_length\": 536, \"source_preview\": \"\\nBEGIN\\n    RETURN QUERY\\n    SELECT \\n        lang_key::VARCHAR(10) AS lang_code,\\n        (SELECT COUNT(*) FROM jsonb_object_keys(lang_value))::BIGINT AS pages_count,\\n        (\\n            SELECT COALESCE(SUM(\\n                (SELECT COUNT(*) FROM jsonb_object_keys(page_value))\\n            ), 0)::BIGINT\\n            FROM jsonb_each(lang_value) AS pages(page_key, page_value)\\n        ) AS words_count\\n    FROM user_word_highlights,\\n         jsonb_each(highlighted_words) AS langs(lang_key, lang_value)\\n    WHERE user_id = p_user_id;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_user_highlight_stats(p_user_id uuid)\\n RETURNS TABLE(lang_code character varying, pages_count bigint, words_count bigint)\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    RETURN QUERY\\n    SELECT \\n        lang_key::VARCHAR(10) AS lang_code,\\n        (SELECT COUNT(*) FROM jsonb_object_keys(lang_value))::BIGINT AS pages_count,\\n        (\\n            SELECT COALESCE(SUM(\\n                (SELECT COUNT(*) FROM jsonb_object_keys(page_value))\\n            ), 0)::BIGINT\\n            FROM jsonb_each(lang_value) AS pages(page_key, page_value)\\n        ) AS words_count\\n    FROM user_word_highlights,\\n         jsonb_each(highlighted_words) AS langs(lang_key, lang_value)\\n    WHERE user_id = p_user_id;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_user_role",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"sql\", \"signature\": \"get_user_role()\", \"return_type\": \"user_role\", \"source_length\": 54, \"source_preview\": \"\\n    SELECT role FROM profiles WHERE id = auth.uid();\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_user_role()\\n RETURNS user_role\\n LANGUAGE sql\\n STABLE SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\n    SELECT role FROM profiles WHERE id = auth.uid();\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "get_user_role_safe",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"sql\", \"signature\": \"get_user_role_safe()\", \"return_type\": \"text\", \"source_length\": 63, \"source_preview\": \" SELECT role::text FROM public.profiles WHERE id = auth.uid(); \", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.get_user_role_safe()\\n RETURNS text\\n LANGUAGE sql\\n STABLE SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$ SELECT role::text FROM public.profiles WHERE id = auth.uid(); $function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "grade_essay_answer",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"grade_essay_answer(p_attempt_id uuid, p_question_id text, p_points_earned integer, p_comment text DEFAULT NULL::text)\", \"return_type\": \"jsonb\", \"source_length\": 2590, \"source_preview\": \"\\nDECLARE\\n  v_teacher_id UUID := auth.uid();\\n  v_attempt RECORD;\\n  v_max_points INTEGER;\\n  v_current_answer JSONB;\\nBEGIN\\n  IF v_teacher_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- التحقق من وجود المحاولة وصلاحية المدرس\\n  SELECT ta.*, te.blocks INTO v_attempt\\n  FROM teacher_exam_attempts ta\\n  JOIN teacher_exams te ON te.id = ta.exam_id\\n  WHERE ta.id = p_attempt_id\\n    AND (te.created_by = v_teacher_id OR EXISTS (\\n      SELECT 1 FROM profiles WHERE id = v_teacher_id AND role = 'admin'\\n    ))\\n    AND ta.status IN ('submitted', 'graded');\\n\\n  IF v_attempt.id IS NULL THEN\\n    RAISE EXCEPTION 'Attempt not found or unauthorized';\\n  END IF;\\n\\n  -- جلب السؤال للحصول على max_points\\n  SELECT q INTO v_current_answer\\n  FROM jsonb_array_elements(v_attempt.blocks) AS block,\\n       jsonb_array_elements(block->'questions') AS q\\n  WHERE q->>'id' = p_question_id;\\n\\n  IF v_current_answer IS NULL THEN\\n    RAISE EXCEPTION 'Question not found';\\n  END IF;\\n\\n  v_max_points := COALE\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.grade_essay_answer(p_attempt_id uuid, p_question_id text, p_points_earned integer, p_comment text DEFAULT NULL::text)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_teacher_id UUID := auth.uid();\\n  v_attempt RECORD;\\n  v_max_points INTEGER;\\n  v_current_answer JSONB;\\nBEGIN\\n  IF v_teacher_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- التحقق من وجود المحاولة وصلاحية المدرس\\n  SELECT ta.*, te.blocks INTO v_attempt\\n  FROM teacher_exam_attempts ta\\n  JOIN teacher_exams te ON te.id = ta.exam_id\\n  WHERE ta.id = p_attempt_id\\n    AND (te.created_by = v_teacher_id OR EXISTS (\\n      SELECT 1 FROM profiles WHERE id = v_teacher_id AND role = 'admin'\\n    ))\\n    AND ta.status IN ('submitted', 'graded');\\n\\n  IF v_attempt.id IS NULL THEN\\n    RAISE EXCEPTION 'Attempt not found or unauthorized';\\n  END IF;\\n\\n  -- جلب السؤال للحصول على max_points\\n  SELECT q INTO v_current_answer\\n  FROM jsonb_array_elements(v_attempt.blocks) AS block,\\n       jsonb_array_elements(block->'questions') AS q\\n  WHERE q->>'id' = p_question_id;\\n\\n  IF v_current_answer IS NULL THEN\\n    RAISE EXCEPTION 'Question not found';\\n  END IF;\\n\\n  v_max_points := COALESCE((v_current_answer->>'points')::int, 1);\\n\\n  IF p_points_earned > v_max_points OR p_points_earned < 0 THEN\\n    RAISE EXCEPTION 'Points must be between 0 and %', v_max_points;\\n  END IF;\\n\\n  -- تحديث التصحيح اليدوي\\n  UPDATE teacher_exam_attempts\\n  SET answers = jsonb_set(\\n    answers,\\n    ARRAY[p_question_id, 'manual'],\\n    jsonb_build_object(\\n      'is_correct', p_points_earned = v_max_points,\\n      'points_earned', p_points_earned,\\n      'max_points', v_max_points,\\n      'comment', p_comment,\\n      'graded_by', v_teacher_id,\\n      'graded_at', NOW()\\n    )\\n  )\\n  WHERE id = p_attempt_id;\\n\\n  -- إعادة حساب الدرجة الكلية\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM teacher_exam_attempts ta,\\n         jsonb_each(ta.answers)\\n    WHERE ta.id = p_attempt_id\\n  )\\n  UPDATE teacher_exam_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.max_score,\\n    percentage = CASE \\n      WHEN scores.max_score > 0 \\n      THEN ROUND((scores.total_score::numeric / scores.max_score) * 100, 2)\\n      ELSE 0\\n    END,\\n    status = 'graded'\\n  FROM scores\\n  WHERE teacher_exam_attempts.id = p_attempt_id;\\n\\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'points_earned', p_points_earned,\\n    'max_points', v_max_points\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::text\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "handle_new_user",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"handle_new_user()\", \"return_type\": \"trigger\", \"source_length\": 542, \"source_preview\": \"\\nBEGIN\\n    INSERT INTO public.profiles (id, email, name, role, role_selected)\\n    VALUES (\\n        NEW.id,\\n        NEW.email,\\n        COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),\\n        COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'student'),\\n        COALESCE((NEW.raw_user_meta_data->>'role_selected')::boolean, FALSE)\\n    )\\n    ON CONFLICT (id) DO UPDATE SET\\n        email = EXCLUDED.email,\\n        name = COALESCE(EXCLUDED.name, profiles.name),\\n        updated_at = NOW();\\n    \\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.handle_new_user()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nBEGIN\\n    INSERT INTO public.profiles (id, email, name, role, role_selected)\\n    VALUES (\\n        NEW.id,\\n        NEW.email,\\n        COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),\\n        COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'student'),\\n        COALESCE((NEW.raw_user_meta_data->>'role_selected')::boolean, FALSE)\\n    )\\n    ON CONFLICT (id) DO UPDATE SET\\n        email = EXCLUDED.email,\\n        name = COALESCE(EXCLUDED.name, profiles.name),\\n        updated_at = NOW();\\n    \\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "increment_exam_count",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"increment_exam_count()\", \"return_type\": \"trigger\", \"source_length\": 197, \"source_preview\": \"\\nBEGIN\\n    -- زيادة عدد الاختبارات للمعلم\\n    UPDATE profiles \\n    SET exam_count = COALESCE(exam_count, 0) + 1,\\n        updated_at = NOW()\\n    WHERE id = NEW.created_by;\\n    \\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.increment_exam_count()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    -- زيادة عدد الاختبارات للمعلم\\n    UPDATE profiles \\n    SET exam_count = COALESCE(exam_count, 0) + 1,\\n        updated_at = NOW()\\n    WHERE id = NEW.created_by;\\n    \\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "increment_subscriber_count",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"increment_subscriber_count()\", \"return_type\": \"trigger\", \"source_length\": 169, \"source_preview\": \"\\nBEGIN\\n    UPDATE profiles \\n    SET subscriber_count = COALESCE(subscriber_count, 0) + 1,\\n        updated_at = NOW()\\n    WHERE id = NEW.teacher_id;\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.increment_subscriber_count()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE profiles \\n    SET subscriber_count = COALESCE(subscriber_count, 0) + 1,\\n        updated_at = NOW()\\n    WHERE id = NEW.teacher_id;\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "increment_teacher_subscribers",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"increment_teacher_subscribers()\", \"return_type\": \"trigger\", \"source_length\": 132, \"source_preview\": \"\\nBEGIN\\n    UPDATE profiles\\n    SET subscriber_count = subscriber_count + 1\\n    WHERE id = NEW.teacher_id;\\n    \\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.increment_teacher_subscribers()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    UPDATE profiles\\n    SET subscriber_count = subscriber_count + 1\\n    WHERE id = NEW.teacher_id;\\n    \\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "is_admin",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"sql\", \"signature\": \"is_admin()\", \"return_type\": \"boolean\", \"source_length\": 118, \"source_preview\": \"\\n    SELECT EXISTS (\\n        SELECT 1 FROM profiles \\n        WHERE id = auth.uid() \\n        AND role = 'admin'\\n    );\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.is_admin()\\n RETURNS boolean\\n LANGUAGE sql\\n STABLE SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\n    SELECT EXISTS (\\n        SELECT 1 FROM profiles \\n        WHERE id = auth.uid() \\n        AND role = 'admin'\\n    );\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "mark_all_notifications_read",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_all_notifications_read()\", \"return_type\": \"void\", \"source_length\": 136, \"source_preview\": \"\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE user_id = auth.uid()\\n    AND is_read = false;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_all_notifications_read()\\n RETURNS void\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE user_id = auth.uid()\\n    AND is_read = false;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "mark_notification_read",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_notification_read(p_notification_id uuid)\", \"return_type\": \"boolean\", \"source_length\": 166, \"source_preview\": \"\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE id = p_notification_id\\n    AND user_id = auth.uid();\\n    \\n    RETURN FOUND;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_notification_read(p_notification_id uuid)\\n RETURNS boolean\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nBEGIN\\n    UPDATE notifications\\n    SET is_read = true, updated_at = NOW()\\n    WHERE id = p_notification_id\\n    AND user_id = auth.uid();\\n    \\n    RETURN FOUND;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "mark_notifications_read_bulk",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"mark_notifications_read_bulk(p_notification_ids uuid[] DEFAULT NULL::uuid[], p_mark_all boolean DEFAULT false)\", \"return_type\": \"integer\", \"source_length\": 561, \"source_preview\": \"\\nDECLARE\\n    affected_count INTEGER;\\nBEGIN\\n    IF p_mark_all THEN\\n        -- Mark all user's notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE user_id = auth.uid()\\n        AND is_read = false;\\n    ELSE\\n        -- Mark specific notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE id = ANY(p_notification_ids)\\n        AND user_id = auth.uid();\\n    END IF;\\n    \\n    GET DIAGNOSTICS affected_count = ROW_COUNT;\\n    RETURN affected_count;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.mark_notifications_read_bulk(p_notification_ids uuid[] DEFAULT NULL::uuid[], p_mark_all boolean DEFAULT false)\\n RETURNS integer\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    affected_count INTEGER;\\nBEGIN\\n    IF p_mark_all THEN\\n        -- Mark all user's notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE user_id = auth.uid()\\n        AND is_read = false;\\n    ELSE\\n        -- Mark specific notifications as read\\n        UPDATE notifications\\n        SET is_read = true, updated_at = NOW()\\n        WHERE id = ANY(p_notification_ids)\\n        AND user_id = auth.uid();\\n    END IF;\\n    \\n    GET DIAGNOSTICS affected_count = ROW_COUNT;\\n    RETURN affected_count;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::uuid[]\", \"false\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "prevent_published_question_edit",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"prevent_published_question_edit()\", \"return_type\": \"trigger\", \"source_length\": 855, \"source_preview\": \"\\nBEGIN\\n  -- Check if is_published column exists and is true\\n  IF TG_TABLE_NAME = 'question_banks' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.questions IS DISTINCT FROM OLD.questions THEN\\n      RAISE EXCEPTION 'Cannot modify questions of a published question bank. Unpublish first.';\\n    END IF;\\n  ELSIF TG_TABLE_NAME = 'comprehensive_exams' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.blocks IS DISTINCT FROM OLD.blocks THEN\\n      RAISE EXCEPTION 'Cannot modify blocks of a published exam. Unpublish first.';\\n    END IF;\\n  ELSIF TG_TABLE_NAME = 'teacher_exams' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.blocks IS DISTINCT FROM OLD.blocks THEN\\n      RAISE EXCEPTION 'Cannot modify blocks of a published exam. Unpublish first.';\\n    END IF;\\n  END IF;\\n  RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.prevent_published_question_edit()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SET search_path TO 'public'\\nAS $function$\\nBEGIN\\n  -- Check if is_published column exists and is true\\n  IF TG_TABLE_NAME = 'question_banks' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.questions IS DISTINCT FROM OLD.questions THEN\\n      RAISE EXCEPTION 'Cannot modify questions of a published question bank. Unpublish first.';\\n    END IF;\\n  ELSIF TG_TABLE_NAME = 'comprehensive_exams' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.blocks IS DISTINCT FROM OLD.blocks THEN\\n      RAISE EXCEPTION 'Cannot modify blocks of a published exam. Unpublish first.';\\n    END IF;\\n  ELSIF TG_TABLE_NAME = 'teacher_exams' THEN\\n    IF OLD.is_published = true AND NEW.is_published = true AND NEW.blocks IS DISTINCT FROM OLD.blocks THEN\\n      RAISE EXCEPTION 'Cannot modify blocks of a published exam. Unpublish first.';\\n    END IF;\\n  END IF;\\n  RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "prevent_role_change",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"prevent_role_change()\", \"return_type\": \"trigger\", \"source_length\": 350, \"source_preview\": \"\\nBEGIN\\n    -- Allow role change during onboarding\\n    IF OLD.role_selected = FALSE THEN\\n        RETURN NEW;\\n    END IF;\\n    \\n    -- Prevent role change for regular users after selection\\n    IF OLD.role <> NEW.role AND get_user_role() <> 'admin' THEN\\n        RAISE EXCEPTION 'You are not allowed to change role';\\n    END IF;\\n    \\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.prevent_role_change()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    -- Allow role change during onboarding\\n    IF OLD.role_selected = FALSE THEN\\n        RETURN NEW;\\n    END IF;\\n    \\n    -- Prevent role change for regular users after selection\\n    IF OLD.role <> NEW.role AND get_user_role() <> 'admin' THEN\\n        RAISE EXCEPTION 'You are not allowed to change role';\\n    END IF;\\n    \\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "save_translation_cache",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"save_translation_cache(p_source_text text, p_source_lang character varying, p_target_lang character varying, p_translated_text text, p_provider text DEFAULT 'mymemory'::text)\", \"return_type\": \"void\", \"source_length\": 338, \"source_preview\": \"\\nBEGIN\\n    INSERT INTO translation_cache (source_text, source_lang, target_lang, translated_text, provider_name)\\n    VALUES (p_source_text, p_source_lang, p_target_lang, p_translated_text, p_provider)\\n    ON CONFLICT (source_text, source_lang, target_lang) \\n    DO UPDATE SET translated_text = p_translated_text, created_at = NOW();\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.save_translation_cache(p_source_text text, p_source_lang character varying, p_target_lang character varying, p_translated_text text, p_provider text DEFAULT 'mymemory'::text)\\n RETURNS void\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    INSERT INTO translation_cache (source_text, source_lang, target_lang, translated_text, provider_name)\\n    VALUES (p_source_text, p_source_lang, p_target_lang, p_translated_text, p_provider)\\n    ON CONFLICT (source_text, source_lang, target_lang) \\n    DO UPDATE SET translated_text = p_translated_text, created_at = NOW();\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"'mymemory'::text\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "submit_comprehensive_exam_attempt",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"submit_comprehensive_exam_attempt(p_attempt_id uuid)\", \"return_type\": \"jsonb\", \"source_length\": 1608, \"source_preview\": \"\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  IF NOT EXISTS (\\n    SELECT 1 FROM comprehensive_exam_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM comprehensive_exam_attempts ca,\\n         jsonb_each(ca.answers)\\n    WHERE ca.id = p_attempt_id\\n  )\\n  UPDATE comprehensive_exam_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.ma\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.submit_comprehensive_exam_attempt(p_attempt_id uuid)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  IF NOT EXISTS (\\n    SELECT 1 FROM comprehensive_exam_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM comprehensive_exam_attempts ca,\\n         jsonb_each(ca.answers)\\n    WHERE ca.id = p_attempt_id\\n  )\\n  UPDATE comprehensive_exam_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.max_score,\\n    percentage = CASE \\n      WHEN scores.max_score > 0 \\n      THEN ROUND((scores.total_score::numeric / scores.max_score) * 100, 2)\\n      ELSE 0\\n    END,\\n    status = 'submitted',\\n    completed_at = NOW()\\n  FROM scores\\n  WHERE comprehensive_exam_attempts.id = p_attempt_id\\n  RETURNING comprehensive_exam_attempts.total_score, comprehensive_exam_attempts.max_score, comprehensive_exam_attempts.percentage \\n  INTO v_result;\\n\\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'total_score', v_result.total_score,\\n    'max_score', v_result.max_score,\\n    'percentage', v_result.percentage\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "submit_question_bank_attempt",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"submit_question_bank_attempt(p_attempt_id uuid)\", \"return_type\": \"jsonb\", \"source_length\": 1691, \"source_preview\": \"\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- التحقق من الملكية والحالة\\n  IF NOT EXISTS (\\n    SELECT 1 FROM question_bank_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  -- حساب الدرجات باستخدام CTE ثم UPDATE\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM question_bank_attempts qa,\\n         jsonb_each(qa.answers)\\n    WHERE qa.id = p_attempt_id\\n  )\\n  UPDATE question\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.submit_question_bank_attempt(p_attempt_id uuid)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- التحقق من الملكية والحالة\\n  IF NOT EXISTS (\\n    SELECT 1 FROM question_bank_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  -- حساب الدرجات باستخدام CTE ثم UPDATE\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM question_bank_attempts qa,\\n         jsonb_each(qa.answers)\\n    WHERE qa.id = p_attempt_id\\n  )\\n  UPDATE question_bank_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.max_score,\\n    score_percentage = CASE \\n      WHEN scores.max_score > 0 \\n      THEN ROUND((scores.total_score::numeric / scores.max_score) * 100, 2)\\n      ELSE 0\\n    END,\\n    status = 'completed',\\n    completed_at = NOW()\\n  FROM scores\\n  WHERE question_bank_attempts.id = p_attempt_id\\n  RETURNING question_bank_attempts.total_score, question_bank_attempts.max_score, question_bank_attempts.score_percentage \\n  INTO v_result;\\n\\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'total_score', v_result.total_score,\\n    'max_score', v_result.max_score,\\n    'percentage', v_result.score_percentage\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "submit_teacher_exam_attempt",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"submit_teacher_exam_attempt(p_attempt_id uuid)\", \"return_type\": \"jsonb\", \"source_length\": 1566, \"source_preview\": \"\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  IF NOT EXISTS (\\n    SELECT 1 FROM teacher_exam_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM teacher_exam_attempts ta,\\n         jsonb_each(ta.answers)\\n    WHERE ta.id = p_attempt_id\\n  )\\n  UPDATE teacher_exam_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.max_score,\\n    perce\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.submit_teacher_exam_attempt(p_attempt_id uuid)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_student_id UUID := auth.uid();\\n  v_result RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  IF NOT EXISTS (\\n    SELECT 1 FROM teacher_exam_attempts \\n    WHERE id = p_attempt_id \\n      AND student_id = v_student_id \\n      AND status = 'in_progress'\\n  ) THEN\\n    RAISE EXCEPTION 'Invalid attempt or already submitted';\\n  END IF;\\n\\n  WITH scores AS (\\n    SELECT \\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'points_earned')::int, 0) +\\n        COALESCE((value->'manual'->>'points_earned')::int, 0)\\n      ), 0)::integer AS total_score,\\n      COALESCE(SUM(\\n        COALESCE((value->'auto'->>'max_points')::int, 0) +\\n        COALESCE((value->'manual'->>'max_points')::int, 0)\\n      ), 0)::integer AS max_score\\n    FROM teacher_exam_attempts ta,\\n         jsonb_each(ta.answers)\\n    WHERE ta.id = p_attempt_id\\n  )\\n  UPDATE teacher_exam_attempts\\n  SET \\n    total_score = scores.total_score,\\n    max_score = scores.max_score,\\n    percentage = CASE \\n      WHEN scores.max_score > 0 \\n      THEN ROUND((scores.total_score::numeric / scores.max_score) * 100, 2)\\n      ELSE 0\\n    END,\\n    status = 'submitted',\\n    completed_at = NOW()\\n  FROM scores\\n  WHERE teacher_exam_attempts.id = p_attempt_id\\n  RETURNING teacher_exam_attempts.total_score, teacher_exam_attempts.max_score, teacher_exam_attempts.percentage \\n  INTO v_result;\\n\\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'total_score', v_result.total_score,\\n    'max_score', v_result.max_score,\\n    'percentage', v_result.percentage\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "toggle_word_highlight_v2",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"toggle_word_highlight_v2(p_user_id uuid, p_language_code character varying, p_page_id character varying, p_word_id character varying)\", \"return_type\": \"jsonb\", \"source_length\": 1676, \"source_preview\": \"\\nDECLARE\\n    v_current JSONB;\\n    v_lang_pages JSONB;\\n    v_page_words JSONB;\\n    v_result JSONB;\\n    v_is_highlighted BOOLEAN;\\nBEGIN\\n    -- إنشاء صف إذا لم يوجد\\n    INSERT INTO user_word_highlights (user_id, highlighted_words)\\n    VALUES (p_user_id, '{}'::jsonb)\\n    ON CONFLICT (user_id) DO NOTHING;\\n    \\n    -- جلب البيانات مع قفل\\n    SELECT highlighted_words INTO v_current\\n    FROM user_word_highlights\\n    WHERE user_id = p_user_id\\n    FOR UPDATE;\\n    \\n    v_current := COALESCE(v_current, '{}'::jsonb);\\n    v_lang_pages := COALESCE(v_current->p_language_code, '{}'::jsonb);\\n    v_page_words := COALESCE(v_lang_pages->p_page_id, '{}'::jsonb);\\n    \\n    -- Toggle\\n    IF v_page_words ? p_word_id THEN\\n        v_page_words := v_page_words - p_word_id;\\n        v_is_highlighted := false;\\n    ELSE\\n        v_page_words := jsonb_set(\\n            v_page_words,\\n            ARRAY[p_word_id],\\n            jsonb_build_object('at', NOW())\\n        );\\n        v_is_highlighted := true;\\n    END IF;\\n    \\n    \", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.toggle_word_highlight_v2(p_user_id uuid, p_language_code character varying, p_page_id character varying, p_word_id character varying)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\nAS $function$\\nDECLARE\\n    v_current JSONB;\\n    v_lang_pages JSONB;\\n    v_page_words JSONB;\\n    v_result JSONB;\\n    v_is_highlighted BOOLEAN;\\nBEGIN\\n    -- إنشاء صف إذا لم يوجد\\n    INSERT INTO user_word_highlights (user_id, highlighted_words)\\n    VALUES (p_user_id, '{}'::jsonb)\\n    ON CONFLICT (user_id) DO NOTHING;\\n    \\n    -- جلب البيانات مع قفل\\n    SELECT highlighted_words INTO v_current\\n    FROM user_word_highlights\\n    WHERE user_id = p_user_id\\n    FOR UPDATE;\\n    \\n    v_current := COALESCE(v_current, '{}'::jsonb);\\n    v_lang_pages := COALESCE(v_current->p_language_code, '{}'::jsonb);\\n    v_page_words := COALESCE(v_lang_pages->p_page_id, '{}'::jsonb);\\n    \\n    -- Toggle\\n    IF v_page_words ? p_word_id THEN\\n        v_page_words := v_page_words - p_word_id;\\n        v_is_highlighted := false;\\n    ELSE\\n        v_page_words := jsonb_set(\\n            v_page_words,\\n            ARRAY[p_word_id],\\n            jsonb_build_object('at', NOW())\\n        );\\n        v_is_highlighted := true;\\n    END IF;\\n    \\n    -- تحديث البنية\\n    IF v_page_words = '{}'::jsonb THEN\\n        v_lang_pages := v_lang_pages - p_page_id;\\n    ELSE\\n        v_lang_pages := jsonb_set(v_lang_pages, ARRAY[p_page_id], v_page_words);\\n    END IF;\\n    \\n    IF v_lang_pages = '{}'::jsonb THEN\\n        v_result := v_current - p_language_code;\\n    ELSE\\n        v_result := jsonb_set(v_current, ARRAY[p_language_code], v_lang_pages);\\n    END IF;\\n    \\n    -- حفظ\\n    UPDATE user_word_highlights\\n    SET highlighted_words = v_result\\n    WHERE user_id = p_user_id;\\n    \\n    RETURN jsonb_build_object(\\n        'success', true,\\n        'is_now_highlighted', v_is_highlighted,\\n        'highlighted_words', v_result\\n    );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "update_question_banks_updated_at",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"update_question_banks_updated_at()\", \"return_type\": \"trigger\", \"source_length\": 344, \"source_preview\": \"\\nBEGIN\\n    NEW.updated_at = now();\\n    -- تحديث عدد الأسئلة والنقاط تلقائياً\\n    NEW.total_questions = jsonb_array_length(COALESCE(NEW.questions, '[]'::jsonb));\\n    NEW.total_points = (\\n        SELECT COALESCE(SUM((q->>'points')::int), 0)\\n        FROM jsonb_array_elements(COALESCE(NEW.questions, '[]'::jsonb)) AS q\\n    );\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.update_question_banks_updated_at()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    NEW.updated_at = now();\\n    -- تحديث عدد الأسئلة والنقاط تلقائياً\\n    NEW.total_questions = jsonb_array_length(COALESCE(NEW.questions, '[]'::jsonb));\\n    NEW.total_points = (\\n        SELECT COALESCE(SUM((q->>'points')::int), 0)\\n        FROM jsonb_array_elements(COALESCE(NEW.questions, '[]'::jsonb)) AS q\\n    );\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "update_testimonials_updated_at",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"update_testimonials_updated_at()\", \"return_type\": \"trigger\", \"source_length\": 56, \"source_preview\": \"\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.update_testimonials_updated_at()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "update_timestamp_column",
-    "name": "source_code",
-    "details": "{\"config\": null, \"language\": \"plpgsql\", \"signature\": \"update_timestamp_column()\", \"return_type\": \"trigger\", \"source_length\": 56, \"source_preview\": \"\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.update_timestamp_column()\\n RETURNS trigger\\n LANGUAGE plpgsql\\nAS $function$\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "update_updated_at_column",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"update_updated_at_column()\", \"return_type\": \"trigger\", \"source_length\": 56, \"source_preview\": \"\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.update_updated_at_column()\\n RETURNS trigger\\n LANGUAGE plpgsql\\n SET search_path TO 'public'\\nAS $function$\\nBEGIN\\n    NEW.updated_at = NOW();\\n    RETURN NEW;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "upsert_comprehensive_exam_answer",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_comprehensive_exam_answer(p_exam_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\", \"return_type\": \"jsonb\", \"source_length\": 3483, \"source_preview\": \"\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_exam RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  SELECT id, blocks INTO v_exam\\n  FROM comprehensive_exams\\n  WHERE id = p_exam_id AND is_published = true;\\n  \\n  IF v_exam.id IS NULL THEN\\n    RAISE EXCEPTION 'Exam not found or not published';\\n  END IF;\\n\\n  INSERT INTO comprehensive_exam_attempts (exam_id, student_id)\\n  VALUES (p_exam_id, v_student_id)\\n  ON CONFLICT (exam_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM comprehensive_exam_attempts \\n    WHERE exam_id = p_exam_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  IF v_status IS NOT NULL AND v_status != 'in_progress' THEN\\n    RAISE EXCEPTION 'Cannot mo\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_comprehensive_exam_answer(p_exam_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_exam RECORD;\\nBEGIN\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  SELECT id, blocks INTO v_exam\\n  FROM comprehensive_exams\\n  WHERE id = p_exam_id AND is_published = true;\\n  \\n  IF v_exam.id IS NULL THEN\\n    RAISE EXCEPTION 'Exam not found or not published';\\n  END IF;\\n\\n  INSERT INTO comprehensive_exam_attempts (exam_id, student_id)\\n  VALUES (p_exam_id, v_student_id)\\n  ON CONFLICT (exam_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM comprehensive_exam_attempts \\n    WHERE exam_id = p_exam_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  IF v_status IS NOT NULL AND v_status != 'in_progress' THEN\\n    RAISE EXCEPTION 'Cannot modify submitted attempt';\\n  END IF;\\n  \\n  SELECT q INTO v_question\\n  FROM jsonb_array_elements(v_exam.blocks) AS block,\\n       jsonb_array_elements(block->'questions') AS q\\n  WHERE q->>'id' = p_question_id;\\n  \\n  IF v_question IS NULL THEN\\n    RAISE EXCEPTION 'Question not found in exam: %', p_question_id;\\n  END IF;\\n  \\n  v_max_points := COALESCE((v_question->>'points')::int, 1);\\n  \\n  IF v_question->>'type' IN ('mcq', 'true_false', 'multi_select', 'single_choice', 'multiple_choice') THEN\\n    IF v_question ? 'correctAnswer' THEN\\n      v_is_correct := (p_answer = v_question->'correctAnswer');\\n    ELSIF v_question ? 'correct_answer' THEN\\n      v_is_correct := (p_answer = v_question->'correct_answer');\\n    ELSIF v_question ? 'correctOptionId' THEN\\n      v_is_correct := (p_answer = v_question->'correctOptionId');\\n    ELSE\\n      v_is_correct := NULL;\\n    END IF;\\n    v_points_earned := CASE WHEN v_is_correct THEN v_max_points ELSE 0 END;\\n  ELSE\\n    v_is_correct := NULL;\\n    v_points_earned := NULL;\\n  END IF;\\n  \\n  UPDATE comprehensive_exam_attempts\\n  SET \\n    answers = jsonb_set(\\n      COALESCE(answers, '{}'::jsonb),\\n      ARRAY[p_question_id],\\n      jsonb_build_object(\\n        'answer', p_answer,\\n        'answered_at', NOW(),\\n        'time_spent_seconds', p_time_spent_seconds,\\n        'flagged', p_flagged,\\n        'auto', CASE \\n          WHEN v_is_correct IS NOT NULL THEN\\n            jsonb_build_object(\\n              'is_correct', v_is_correct,\\n              'points_earned', v_points_earned,\\n              'max_points', v_max_points\\n            )\\n          ELSE NULL\\n        END,\\n        'manual', NULL\\n      )\\n    )\\n  WHERE id = v_attempt_id\\n  RETURNING answers INTO v_new_answers;\\n  \\n  WITH stats AS (\\n    SELECT \\n      COUNT(*)::integer AS answered,\\n      COALESCE(SUM((value->'auto'->>'points_earned')::int), 0)::integer AS earned,\\n      COALESCE(SUM((value->'auto'->>'max_points')::int), 0)::integer AS max_pts\\n    FROM jsonb_each(v_new_answers)\\n  )\\n  UPDATE comprehensive_exam_attempts\\n  SET \\n    answered_count = stats.answered,\\n    total_score = stats.earned,\\n    max_score = stats.max_pts,\\n    percentage = CASE \\n      WHEN stats.max_pts > 0 THEN ROUND((stats.earned::numeric / stats.max_pts) * 100, 2)\\n      ELSE 0\\n    END\\n  FROM stats\\n  WHERE id = v_attempt_id;\\n  \\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'attempt_id', v_attempt_id,\\n    'is_correct', v_is_correct,\\n    'points_earned', v_points_earned,\\n    'max_points', v_max_points\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::integer\", \"false\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "upsert_question_bank_answer",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_question_bank_answer(p_question_bank_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\", \"return_type\": \"jsonb\", \"source_length\": 3945, \"source_preview\": \"\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_total_questions INTEGER;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- 1) جلب أو إنشاء المحاولة\\n  INSERT INTO question_bank_attempts (question_bank_id, student_id, first_answered_at)\\n  VALUES (p_question_bank_id, v_student_id, NOW())\\n  ON CONFLICT (question_bank_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM question_bank_attempts \\n    WHERE question_bank_id = p_question_bank_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  -- 2) منع التعديل بعد الإكمال\\n  IF v_status IS NOT NULL AND v_status != 'in_progress' THEN\\n    RAISE EXCEPTION 'Cannot modify completed attempt';\\n  END IF;\\n  \\n  -\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_question_bank_answer(p_question_bank_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_total_questions INTEGER;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- 1) جلب أو إنشاء المحاولة\\n  INSERT INTO question_bank_attempts (question_bank_id, student_id, first_answered_at)\\n  VALUES (p_question_bank_id, v_student_id, NOW())\\n  ON CONFLICT (question_bank_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM question_bank_attempts \\n    WHERE question_bank_id = p_question_bank_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  -- 2) منع التعديل بعد الإكمال\\n  IF v_status IS NOT NULL AND v_status != 'in_progress' THEN\\n    RAISE EXCEPTION 'Cannot modify completed attempt';\\n  END IF;\\n  \\n  -- 3) جلب السؤال من البنك لحساب التصحيح\\n  SELECT q, qb.total_questions INTO v_question, v_total_questions\\n  FROM question_banks qb,\\n       jsonb_array_elements(qb.questions) AS q\\n  WHERE qb.id = p_question_bank_id\\n    AND q->>'id' = p_question_id;\\n  \\n  IF v_question IS NULL THEN\\n    RAISE EXCEPTION 'Question not found in bank: %', p_question_id;\\n  END IF;\\n  \\n  -- 4) حساب التصحيح على السيرفر\\n  v_max_points := COALESCE((v_question->>'points')::int, 1);\\n  \\n  -- التصحيح التلقائي للأسئلة الموضوعية\\n  IF v_question->>'type' IN ('mcq', 'true_false', 'multi_select', 'single_choice', 'multiple_choice') THEN\\n    -- مقارنة الإجابة مع الإجابة الصحيحة\\n    IF v_question ? 'correctAnswer' THEN\\n      v_is_correct := (p_answer = v_question->'correctAnswer');\\n    ELSIF v_question ? 'correct_answer' THEN\\n      v_is_correct := (p_answer = v_question->'correct_answer');\\n    ELSIF v_question ? 'correctOptionId' THEN\\n      v_is_correct := (p_answer = v_question->'correctOptionId');\\n    ELSE\\n      v_is_correct := NULL;\\n    END IF;\\n    v_points_earned := CASE WHEN v_is_correct THEN v_max_points ELSE 0 END;\\n  ELSE\\n    -- أسئلة مقالية: لا تصحيح تلقائي\\n    v_is_correct := NULL;\\n    v_points_earned := NULL;\\n  END IF;\\n  \\n  -- 5) تحديث الإجابة\\n  UPDATE question_bank_attempts\\n  SET \\n    answers = jsonb_set(\\n      COALESCE(answers, '{}'::jsonb),\\n      ARRAY[p_question_id],\\n      jsonb_build_object(\\n        'answer', p_answer,\\n        'answered_at', NOW(),\\n        'time_spent_seconds', p_time_spent_seconds,\\n        'flagged', p_flagged,\\n        'auto', CASE \\n          WHEN v_is_correct IS NOT NULL THEN\\n            jsonb_build_object(\\n              'is_correct', v_is_correct,\\n              'points_earned', v_points_earned,\\n              'max_points', v_max_points\\n            )\\n          ELSE NULL\\n        END,\\n        'manual', NULL\\n      )\\n    ),\\n    last_answered_at = NOW(),\\n    total_questions = v_total_questions\\n  WHERE id = v_attempt_id\\n  RETURNING answers INTO v_new_answers;\\n  \\n  -- 6) تحديث counters باستخدام subquery صحيحة\\n  WITH stats AS (\\n    SELECT \\n      COUNT(*)::integer AS answered,\\n      COUNT(*) FILTER (WHERE (value->'auto'->>'is_correct')::boolean = true)::integer AS correct,\\n      COALESCE(SUM((value->'auto'->>'points_earned')::int), 0)::integer AS earned,\\n      COALESCE(SUM((value->'auto'->>'max_points')::int), 0)::integer AS max_pts\\n    FROM jsonb_each(v_new_answers)\\n  )\\n  UPDATE question_bank_attempts\\n  SET \\n    answered_count = stats.answered,\\n    correct_count = stats.correct,\\n    total_score = stats.earned,\\n    max_score = stats.max_pts,\\n    score_percentage = CASE \\n      WHEN stats.max_pts > 0 THEN ROUND((stats.earned::numeric / stats.max_pts) * 100, 2)\\n      ELSE 0\\n    END\\n  FROM stats\\n  WHERE id = v_attempt_id;\\n  \\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'attempt_id', v_attempt_id,\\n    'is_correct', v_is_correct,\\n    'points_earned', v_points_earned,\\n    'max_points', v_max_points\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::integer\", \"false\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "upsert_teacher_exam_answer",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_teacher_exam_answer(p_exam_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\", \"return_type\": \"jsonb\", \"source_length\": 3699, \"source_preview\": \"\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_exam RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- جلب بيانات الامتحان\\n  SELECT id, blocks INTO v_exam\\n  FROM teacher_exams\\n  WHERE id = p_exam_id AND is_published = true;\\n  \\n  IF v_exam.id IS NULL THEN\\n    RAISE EXCEPTION 'Exam not found or not published';\\n  END IF;\\n\\n  -- 1) جلب أو إنشاء المحاولة\\n  INSERT INTO teacher_exam_attempts (exam_id, student_id, started_at)\\n  VALUES (p_exam_id, v_student_id, NOW())\\n  ON CONFLICT (exam_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM teacher_exam_attempts \\n    WHERE exam_id = p_exam_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  -- 2)\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_teacher_exam_answer(p_exam_id uuid, p_question_id text, p_answer jsonb, p_time_spent_seconds integer DEFAULT NULL::integer, p_flagged boolean DEFAULT false)\\n RETURNS jsonb\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n  v_attempt_id UUID;\\n  v_status TEXT;\\n  v_student_id UUID := auth.uid();\\n  v_question JSONB;\\n  v_is_correct BOOLEAN;\\n  v_points_earned INTEGER;\\n  v_max_points INTEGER;\\n  v_new_answers JSONB;\\n  v_exam RECORD;\\nBEGIN\\n  -- التحقق من تسجيل الدخول\\n  IF v_student_id IS NULL THEN\\n    RAISE EXCEPTION 'User not authenticated';\\n  END IF;\\n\\n  -- جلب بيانات الامتحان\\n  SELECT id, blocks INTO v_exam\\n  FROM teacher_exams\\n  WHERE id = p_exam_id AND is_published = true;\\n  \\n  IF v_exam.id IS NULL THEN\\n    RAISE EXCEPTION 'Exam not found or not published';\\n  END IF;\\n\\n  -- 1) جلب أو إنشاء المحاولة\\n  INSERT INTO teacher_exam_attempts (exam_id, student_id, started_at)\\n  VALUES (p_exam_id, v_student_id, NOW())\\n  ON CONFLICT (exam_id, student_id) DO NOTHING\\n  RETURNING id, status INTO v_attempt_id, v_status;\\n  \\n  IF v_attempt_id IS NULL THEN\\n    SELECT id, status INTO v_attempt_id, v_status\\n    FROM teacher_exam_attempts \\n    WHERE exam_id = p_exam_id AND student_id = v_student_id;\\n  END IF;\\n  \\n  -- 2) منع التعديل بعد التسليم\\n  IF v_status IS NOT NULL AND v_status != 'in_progress' THEN\\n    RAISE EXCEPTION 'Cannot modify submitted attempt';\\n  END IF;\\n  \\n  -- 3) البحث عن السؤال في blocks\\n  SELECT q INTO v_question\\n  FROM jsonb_array_elements(v_exam.blocks) AS block,\\n       jsonb_array_elements(block->'questions') AS q\\n  WHERE q->>'id' = p_question_id;\\n  \\n  IF v_question IS NULL THEN\\n    RAISE EXCEPTION 'Question not found in exam: %', p_question_id;\\n  END IF;\\n  \\n  -- 4) حساب التصحيح على السيرفر\\n  v_max_points := COALESCE((v_question->>'points')::int, 1);\\n  \\n  IF v_question->>'type' IN ('mcq', 'true_false', 'multi_select', 'single_choice', 'multiple_choice') THEN\\n    IF v_question ? 'correctAnswer' THEN\\n      v_is_correct := (p_answer = v_question->'correctAnswer');\\n    ELSIF v_question ? 'correct_answer' THEN\\n      v_is_correct := (p_answer = v_question->'correct_answer');\\n    ELSIF v_question ? 'correctOptionId' THEN\\n      v_is_correct := (p_answer = v_question->'correctOptionId');\\n    ELSE\\n      v_is_correct := NULL;\\n    END IF;\\n    v_points_earned := CASE WHEN v_is_correct THEN v_max_points ELSE 0 END;\\n  ELSE\\n    v_is_correct := NULL;\\n    v_points_earned := NULL;\\n  END IF;\\n  \\n  -- 5) تحديث الإجابة\\n  UPDATE teacher_exam_attempts\\n  SET \\n    answers = jsonb_set(\\n      COALESCE(answers, '{}'::jsonb),\\n      ARRAY[p_question_id],\\n      jsonb_build_object(\\n        'answer', p_answer,\\n        'answered_at', NOW(),\\n        'time_spent_seconds', p_time_spent_seconds,\\n        'flagged', p_flagged,\\n        'auto', CASE \\n          WHEN v_is_correct IS NOT NULL THEN\\n            jsonb_build_object(\\n              'is_correct', v_is_correct,\\n              'points_earned', v_points_earned,\\n              'max_points', v_max_points\\n            )\\n          ELSE NULL\\n        END,\\n        'manual', NULL\\n      )\\n    )\\n  WHERE id = v_attempt_id\\n  RETURNING answers INTO v_new_answers;\\n  \\n  -- 6) تحديث counters\\n  WITH stats AS (\\n    SELECT \\n      COUNT(*)::integer AS answered,\\n      COALESCE(SUM((value->'auto'->>'points_earned')::int), 0)::integer AS earned,\\n      COALESCE(SUM((value->'auto'->>'max_points')::int), 0)::integer AS max_pts\\n    FROM jsonb_each(v_new_answers)\\n  )\\n  UPDATE teacher_exam_attempts\\n  SET \\n    answered_count = stats.answered,\\n    total_score = stats.earned,\\n    max_score = stats.max_pts,\\n    percentage = CASE \\n      WHEN stats.max_pts > 0 THEN ROUND((stats.earned::numeric / stats.max_pts) * 100, 2)\\n      ELSE 0\\n    END\\n  FROM stats\\n  WHERE id = v_attempt_id;\\n  \\n  RETURN jsonb_build_object(\\n    'success', true,\\n    'attempt_id', v_attempt_id,\\n    'is_correct', v_is_correct,\\n    'points_earned', v_points_earned,\\n    'max_points', v_max_points\\n  );\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::integer\", \"false\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "upsert_user_device",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_user_device(p_user_id uuid, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_country text DEFAULT NULL::text, p_city text DEFAULT NULL::text)\", \"return_type\": \"text\", \"source_length\": 3243, \"source_preview\": \"\\nDECLARE\\n    v_device_id UUID;\\n    v_fingerprint TEXT;\\n    v_ip INET;\\n    v_device_type device_type;\\nBEGIN\\n    -- Validate user_id\\n    IF p_user_id IS NULL THEN\\n        RAISE EXCEPTION 'user_id cannot be null';\\n    END IF;\\n    \\n    -- Convert device type string to enum\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP string to INET\\n    IF p_ip_address IS NULL OR p_ip_address = '' OR p_ip_address = '0.0.0.0' THEN\\n        v_ip := NULL;\\n    ELSE\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    END IF;\\n\\n    -- Create fingerprint for matching\\n    v_fingerprint := md5(\\n        COALESCE(p_os_name, '') || \\n        COALESCE(p_browser, '') || \\n        COALESCE(LEFT(p_user_agent, 200), '')\\n    );\\n    \\n    -- Try to find existing device\\n    SELECT id INTO v_device_id\\n    FROM user_devices\\n    WHERE user_id = \", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_user_device(p_user_id uuid, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_country text DEFAULT NULL::text, p_city text DEFAULT NULL::text)\\n RETURNS text\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n    v_device_id UUID;\\n    v_fingerprint TEXT;\\n    v_ip INET;\\n    v_device_type device_type;\\nBEGIN\\n    -- Validate user_id\\n    IF p_user_id IS NULL THEN\\n        RAISE EXCEPTION 'user_id cannot be null';\\n    END IF;\\n    \\n    -- Convert device type string to enum\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP string to INET\\n    IF p_ip_address IS NULL OR p_ip_address = '' OR p_ip_address = '0.0.0.0' THEN\\n        v_ip := NULL;\\n    ELSE\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    END IF;\\n\\n    -- Create fingerprint for matching\\n    v_fingerprint := md5(\\n        COALESCE(p_os_name, '') || \\n        COALESCE(p_browser, '') || \\n        COALESCE(LEFT(p_user_agent, 200), '')\\n    );\\n    \\n    -- Try to find existing device\\n    SELECT id INTO v_device_id\\n    FROM user_devices\\n    WHERE user_id = p_user_id\\n      AND md5(\\n          COALESCE(os_name, '') || \\n          COALESCE(browser, '') || \\n          COALESCE(LEFT(user_agent, 200), '')\\n      ) = v_fingerprint\\n    LIMIT 1;\\n\\n    IF v_device_id IS NOT NULL THEN\\n        -- Update existing device\\n        UPDATE user_devices\\n        SET \\n            device_type = COALESCE(v_device_type, device_type),\\n            os_name = COALESCE(NULLIF(p_os_name, ''), os_name),\\n            os_version = COALESCE(NULLIF(p_os_version, ''), os_version),\\n            browser = COALESCE(NULLIF(p_browser, ''), browser),\\n            browser_version = COALESCE(NULLIF(p_browser_version, ''), browser_version),\\n            ip_address = COALESCE(v_ip, ip_address),\\n            user_agent = COALESCE(NULLIF(p_user_agent, ''), user_agent),\\n            country = COALESCE(p_country, country),\\n            city = COALESCE(p_city, city),\\n            last_seen_at = NOW(),\\n            login_count = login_count + 1,\\n            is_current_device = TRUE\\n        WHERE id = v_device_id;\\n        \\n        -- Mark other devices as not current\\n        UPDATE user_devices \\n        SET is_current_device = FALSE \\n        WHERE user_id = p_user_id AND id != v_device_id;\\n        \\n        RETURN v_device_id::TEXT;\\n    ELSE\\n        -- Insert new device\\n        INSERT INTO user_devices (\\n            user_id, device_type, os_name, os_version, \\n            browser, browser_version, ip_address, user_agent, \\n            country, city, first_seen_at, last_seen_at, \\n            login_count, is_current_device\\n        ) VALUES (\\n            p_user_id, COALESCE(v_device_type, 'unknown'),\\n            NULLIF(p_os_name, ''), NULLIF(p_os_version, ''),\\n            NULLIF(p_browser, ''), NULLIF(p_browser_version, ''),\\n            v_ip, NULLIF(p_user_agent, ''),\\n            p_country, p_city,\\n            NOW(), NOW(),\\n            1, TRUE\\n        )\\n        RETURNING id INTO v_device_id;\\n        \\n        -- Mark other devices as not current\\n        UPDATE user_devices \\n        SET is_current_device = FALSE \\n        WHERE user_id = p_user_id AND id != v_device_id;\\n        \\n        RETURN v_device_id::TEXT;\\n    END IF;\\n\\nEXCEPTION WHEN OTHERS THEN\\n    RAISE WARNING 'upsert_user_device error: %', SQLERRM;\\n    RETURN NULL;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": [\"NULL::text\", \"NULL::text\"]}"
-  },
-  {
-    "section": "26_FUNCTION_SOURCE",
-    "table_name": "upsert_visitor_device",
-    "name": "source_code",
-    "details": "{\"config\": [\"search_path=public\"], \"language\": \"plpgsql\", \"signature\": \"upsert_visitor_device(p_visitor_id text, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_page_url text, p_referrer text, p_country text, p_city text)\", \"return_type\": \"uuid\", \"source_length\": 2157, \"source_preview\": \"\\nDECLARE\\n    v_device_id UUID;\\n    v_device_type device_type;\\n    v_ip INET;\\nBEGIN\\n    IF p_visitor_id IS NULL OR length(p_visitor_id) < 10 THEN\\n        RAISE EXCEPTION 'Invalid visitor_id';\\n    END IF;\\n    \\n    -- Convert device type\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP\\n    IF p_ip_address IS NOT NULL AND p_ip_address != '' THEN\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    ELSE\\n        v_ip := NULL;\\n    END IF;\\n\\n    -- Find existing device\\n    SELECT id INTO v_device_id\\n    FROM visitor_devices\\n    WHERE visitor_id = p_visitor_id\\n    LIMIT 1;\\n\\n    IF v_device_id IS NOT NULL THEN\\n        UPDATE visitor_devices\\n        SET \\n            device_type = COALESCE(v_device_type, device_type),\\n            os_name = COALESCE(p_os_name, os_name),\\n            os_version = COALESCE(p_os_versio\", \"full_definition\": \"CREATE OR REPLACE FUNCTION public.upsert_visitor_device(p_visitor_id text, p_device_type text, p_os_name text, p_os_version text, p_browser text, p_browser_version text, p_ip_address text, p_user_agent text, p_page_url text, p_referrer text, p_country text, p_city text)\\n RETURNS uuid\\n LANGUAGE plpgsql\\n SECURITY DEFINER\\n SET search_path TO 'public'\\nAS $function$\\nDECLARE\\n    v_device_id UUID;\\n    v_device_type device_type;\\n    v_ip INET;\\nBEGIN\\n    IF p_visitor_id IS NULL OR length(p_visitor_id) < 10 THEN\\n        RAISE EXCEPTION 'Invalid visitor_id';\\n    END IF;\\n    \\n    -- Convert device type\\n    BEGIN\\n        v_device_type := p_device_type::device_type;\\n    EXCEPTION WHEN OTHERS THEN\\n        v_device_type := 'unknown';\\n    END;\\n\\n    -- Convert IP\\n    IF p_ip_address IS NOT NULL AND p_ip_address != '' THEN\\n        BEGIN\\n            v_ip := p_ip_address::INET;\\n        EXCEPTION WHEN OTHERS THEN\\n            v_ip := NULL;\\n        END;\\n    ELSE\\n        v_ip := NULL;\\n    END IF;\\n\\n    -- Find existing device\\n    SELECT id INTO v_device_id\\n    FROM visitor_devices\\n    WHERE visitor_id = p_visitor_id\\n    LIMIT 1;\\n\\n    IF v_device_id IS NOT NULL THEN\\n        UPDATE visitor_devices\\n        SET \\n            device_type = COALESCE(v_device_type, device_type),\\n            os_name = COALESCE(p_os_name, os_name),\\n            os_version = COALESCE(p_os_version, os_version),\\n            browser = COALESCE(p_browser, browser),\\n            browser_version = COALESCE(p_browser_version, browser_version),\\n            ip_address = COALESCE(v_ip, ip_address),\\n            user_agent = COALESCE(p_user_agent, user_agent),\\n            page_url = COALESCE(p_page_url, page_url),\\n            referrer = COALESCE(p_referrer, referrer),\\n            country = COALESCE(p_country, country),\\n            city = COALESCE(p_city, city),\\n            last_seen_at = NOW()\\n        WHERE id = v_device_id;\\n    ELSE\\n        INSERT INTO visitor_devices (\\n            visitor_id, device_type, os_name, os_version,\\n            browser, browser_version, ip_address, user_agent,\\n            page_url, referrer, country, city,\\n            first_seen_at, last_seen_at\\n        ) VALUES (\\n            p_visitor_id, COALESCE(v_device_type, 'unknown'),\\n            p_os_name, p_os_version,\\n            p_browser, p_browser_version,\\n            v_ip, p_user_agent,\\n            p_page_url, p_referrer,\\n            p_country, p_city,\\n            NOW(), NOW()\\n        )\\n        RETURNING id INTO v_device_id;\\n    END IF;\\n\\n    RETURN v_device_id;\\nEND;\\n$function$\\n\", \"transform_types\": null, \"argument_defaults\": null}"
   },
   {
     "section": "05_COLUMN",
@@ -6702,64 +6486,10 @@
     "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"0\", \"identity\": null, \"nullable\": true, \"position\": 27, \"generated\": null, \"statistics\": {\"correlation\": 1.0000, \"avg_width_bytes\": 4, \"distinct_values\": 1.00, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{0}\"}, \"description\": \"إجمالي مشاهدات الملف الشخصي\"}"
   },
   {
-    "section": "27_DATABASE_CONFIG",
-    "table_name": "postgres",
-    "name": "settings",
-    "details": "{\"ctype\": \"en_US.UTF-8\", \"owner\": \"postgres\", \"schemas\": [{\"name\": \"realtime\", \"owner\": \"supabase_admin\"}, {\"name\": \"extensions\", \"owner\": \"postgres\"}, {\"name\": \"vault\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql_public\", \"owner\": \"supabase_admin\"}, {\"name\": \"graphql\", \"owner\": \"supabase_admin\"}, {\"name\": \"auth\", \"owner\": \"supabase_admin\"}, {\"name\": \"storage\", \"owner\": \"supabase_admin\"}, {\"name\": \"supabase_migrations\", \"owner\": \"postgres\"}, {\"name\": \"public\", \"owner\": \"postgres\"}], \"encoding\": \"UTF8\", \"collation\": \"en_US.UTF-8\", \"tablespace\": \"pg_default\", \"is_template\": false, \"database_name\": \"postgres\", \"database_size\": \"15 MB\", \"server_version\": \"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit\", \"connection_limit\": -1, \"last_stats_reset\": null, \"allow_connections\": true, \"active_connections\": 8, \"important_settings\": {\"timezone\": \"UTC\", \"work_mem\": \"2184kB\", \"log_statement\": \"ddl\", \"shared_buffers\": \"224MB\", \"max_connections\": \"60\", \"statement_timeout\": \"2min\", \"effective_cache_size\": \"384MB\", \"maintenance_work_mem\": \"32MB\", \"default_transaction_isolation\": \"read committed\"}, \"database_size_bytes\": 16223379}"
-  },
-  {
     "section": "05_COLUMN",
     "table_name": "profiles",
     "name": "exam_count",
     "details": "{\"type\": {\"udt_name\": \"int4\", \"data_type\": \"integer\", \"numeric_scale\": 0, \"char_max_length\": null, \"numeric_precision\": 32}, \"default\": \"0\", \"identity\": null, \"nullable\": true, \"position\": 28, \"generated\": null, \"statistics\": {\"correlation\": 0.4545, \"avg_width_bytes\": 4, \"distinct_values\": -0.30, \"null_fraction_pct\": 0.00, \"most_common_values\": \"{0}\"}, \"description\": null}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "graphql_watch_ddl",
-    "name": "configuration",
-    "details": "{\"tags\": null, \"event\": \"ddl_command_end\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"graphql.increment_schema_version\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "graphql_watch_drop",
-    "name": "configuration",
-    "details": "{\"tags\": null, \"event\": \"sql_drop\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"graphql.increment_schema_version\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "issue_graphql_placeholder",
-    "name": "configuration",
-    "details": "{\"tags\": [\"DROP EXTENSION\"], \"event\": \"sql_drop\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"set_graphql_placeholder\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "issue_pg_cron_access",
-    "name": "configuration",
-    "details": "{\"tags\": [\"CREATE EXTENSION\"], \"event\": \"ddl_command_end\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"grant_pg_cron_access\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "issue_pg_graphql_access",
-    "name": "configuration",
-    "details": "{\"tags\": [\"CREATE FUNCTION\"], \"event\": \"ddl_command_end\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"grant_pg_graphql_access\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "issue_pg_net_access",
-    "name": "configuration",
-    "details": "{\"tags\": [\"CREATE EXTENSION\"], \"event\": \"ddl_command_end\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"grant_pg_net_access\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "pgrst_ddl_watch",
-    "name": "configuration",
-    "details": "{\"tags\": null, \"event\": \"ddl_command_end\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"pgrst_ddl_watch\"}"
-  },
-  {
-    "section": "28_EVENT_TRIGGER",
-    "table_name": "pgrst_drop_watch",
-    "name": "configuration",
-    "details": "{\"tags\": null, \"event\": \"sql_drop\", \"owner\": \"supabase_admin\", \"enabled\": \"ORIGIN\", \"function\": \"pgrst_drop_watch\"}"
   },
   {
     "section": "05_COLUMN",

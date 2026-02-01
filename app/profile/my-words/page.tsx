@@ -48,7 +48,7 @@ interface GroupedWords {
     };
 }
 
-// TTS Helper
+// TTS Helper with improved voice selection
 function speakText(text: string, langCode: string): void {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
@@ -66,6 +66,22 @@ function speakText(text: string, langCode: string): void {
         ko: "ko-KR",
     };
     utterance.lang = localeMap[langCode] || langCode;
+    
+    // Improved TTS settings for better pronunciation
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    
+    // Try to find a native voice for the language
+    const voices = speechSynthesis.getVoices();
+    const targetLang = localeMap[langCode] || langCode;
+    let voice = voices.find(v => v.lang === targetLang);
+    if (!voice) {
+        voice = voices.find(v => v.lang.startsWith(langCode));
+    }
+    if (voice) {
+        utterance.voice = voice;
+    }
+    
     speechSynthesis.speak(utterance);
 }
 

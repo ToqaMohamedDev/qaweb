@@ -1,0 +1,533 @@
+{
+  "book": [
+    { "def": "A written or printed work consisting of pages", "pos": "noun", "domains": ["Education", "Literature"], "ar": "كتاب", "fr": "livre", "de": "Buch" },
+    { "def": "To reserve accommodation or a place", "pos": "verb", "domains": ["Travel", "Business"], "ar": "يحجز", "fr": "réserver", "de": "buchen" }
+  ],
+  "bank": [
+    { "def": "A financial institution", "pos": "noun", "domains": ["Finance"], "ar": "بنك", "fr": "banque", "de": "Bank" },
+    { "def": "The land alongside a river", "pos": "noun", "domains": ["Geography"], "ar": "ضفة", "fr": "rive", "de": "Ufer" }
+  ],
+  "run": [
+    { "def": "To move swiftly on foot", "pos": "verb", "domains": ["Sports", "Movement"], "ar": "يركض", "fr": "courir", "de": "laufen" },
+    { "def": "To operate or manage", "pos": "verb", "domains": ["Business"], "ar": "يدير", "fr": "gérer", "de": "betreiben" }
+  ],
+  "light": [
+    { "def": "Electromagnetic radiation visible to the eye", "pos": "noun", "domains": ["Physics"], "ar": "ضوء", "fr": "lumière", "de": "Licht" },
+    { "def": "Having little weight", "pos": "adjective", "domains": ["General"], "ar": "خفيف", "fr": "léger", "de": "leicht" },
+    { "def": "To ignite or illuminate", "pos": "verb", "domains": ["General"], "ar": "يضيء", "fr": "allumer", "de": "anzünden" }
+  ],
+  "set": [
+    { "def": "A group of related items", "pos": "noun", "domains": ["General", "Mathematics"], "ar": "مجموعة", "fr": "ensemble", "de": "Menge" },
+    { "def": "To put in a specified position", "pos": "verb", "domains": ["General"], "ar": "يضع", "fr": "mettre", "de": "setzen" }
+  ],
+  "play": [
+    { "def": "To engage in activity for enjoyment", "pos": "verb", "domains": ["Entertainment"], "ar": "يلعب", "fr": "jouer", "de": "spielen" },
+    { "def": "A dramatic work for theater", "pos": "noun", "domains": ["Theater"], "ar": "مسرحية", "fr": "pièce", "de": "Theaterstück" }
+  ],
+  "match": [
+    { "def": "A competitive game or contest", "pos": "noun", "domains": ["Sports"], "ar": "مباراة", "fr": "match", "de": "Spiel" },
+    { "def": "A small stick for lighting fire", "pos": "noun", "domains": ["General"], "ar": "عود ثقاب", "fr": "allumette", "de": "Streichholz" },
+    { "def": "To correspond or be equal", "pos": "verb", "domains": ["General"], "ar": "يطابق", "fr": "correspondre", "de": "übereinstimmen" }
+  ],
+  "right": [
+    { "def": "Correct or true", "pos": "adjective", "domains": ["General"], "ar": "صحيح", "fr": "correct", "de": "richtig" },
+    { "def": "The opposite of left", "pos": "noun", "domains": ["Direction"], "ar": "يمين", "fr": "droite", "de": "rechts" },
+    { "def": "A moral or legal entitlement", "pos": "noun", "domains": ["Law"], "ar": "حق", "fr": "droit", "de": "Recht" }
+  ],
+  "charge": [
+    { "def": "To demand payment", "pos": "verb", "domains": ["Finance"], "ar": "يحاسب", "fr": "facturer", "de": "berechnen" },
+    { "def": "Electrical energy storage", "pos": "noun", "domains": ["Physics"], "ar": "شحنة", "fr": "charge", "de": "Ladung" }
+  ],
+  "spring": [
+    { "def": "The season after winter", "pos": "noun", "domains": ["Time"], "ar": "ربيع", "fr": "printemps", "de": "Frühling" },
+    { "def": "A natural source of water", "pos": "noun", "domains": ["Geography"], "ar": "نبع", "fr": "source", "de": "Quelle" },
+    { "def": "An elastic coiled device", "pos": "noun", "domains": ["Mechanics"], "ar": "زنبرك", "fr": "ressort", "de": "Feder" }
+  ],
+  "fall": [
+    { "def": "To drop down from higher position", "pos": "verb", "domains": ["Movement"], "ar": "يسقط", "fr": "tomber", "de": "fallen" },
+    { "def": "The season after summer", "pos": "noun", "domains": ["Time"], "ar": "خريف", "fr": "automne", "de": "Herbst" }
+  ],
+  "break": [
+    { "def": "To separate into pieces", "pos": "verb", "domains": ["General"], "ar": "يكسر", "fr": "casser", "de": "brechen" },
+    { "def": "A pause or interruption", "pos": "noun", "domains": ["General"], "ar": "استراحة", "fr": "pause", "de": "Pause" }
+  ],
+  "watch": [
+    { "def": "A portable timepiece", "pos": "noun", "domains": ["Fashion"], "ar": "ساعة يد", "fr": "montre", "de": "Armbanduhr" },
+    { "def": "To observe or look at", "pos": "verb", "domains": ["General"], "ar": "يشاهد", "fr": "regarder", "de": "beobachten" }
+  ],
+  "point": [
+    { "def": "A specific location", "pos": "noun", "domains": ["General"], "ar": "نقطة", "fr": "point", "de": "Punkt" },
+    { "def": "To indicate direction", "pos": "verb", "domains": ["General"], "ar": "يشير", "fr": "pointer", "de": "zeigen" }
+  ],
+  "fire": [
+    { "def": "Combustion producing heat and light", "pos": "noun", "domains": ["General"], "ar": "نار", "fr": "feu", "de": "Feuer" },
+    { "def": "To discharge a weapon", "pos": "verb", "domains": ["Military"], "ar": "يطلق النار", "fr": "tirer", "de": "feuern" },
+    { "def": "To dismiss from employment", "pos": "verb", "domains": ["Business"], "ar": "يفصل", "fr": "licencier", "de": "entlassen" }
+  ],
+  "class": [
+    { "def": "A group of students", "pos": "noun", "domains": ["Education"], "ar": "صف", "fr": "classe", "de": "Klasse" },
+    { "def": "A social stratum", "pos": "noun", "domains": ["Sociology"], "ar": "طبقة", "fr": "classe", "de": "Klasse" }
+  ],
+  "lead": [
+    { "def": "To guide or show the way", "pos": "verb", "domains": ["Leadership"], "ar": "يقود", "fr": "diriger", "de": "führen" },
+    { "def": "A heavy metallic element", "pos": "noun", "domains": ["Chemistry"], "ar": "رصاص", "fr": "plomb", "de": "Blei" }
+  ],
+  "type": [
+    { "def": "A category or kind", "pos": "noun", "domains": ["General"], "ar": "نوع", "fr": "type", "de": "Typ" },
+    { "def": "To write using a keyboard", "pos": "verb", "domains": ["Computing"], "ar": "يطبع", "fr": "taper", "de": "tippen" }
+  ],
+  "address": [
+    { "def": "The location of a building", "pos": "noun", "domains": ["General"], "ar": "عنوان", "fr": "adresse", "de": "Adresse" },
+    { "def": "To speak to an audience", "pos": "verb", "domains": ["Communication"], "ar": "يخاطب", "fr": "adresser", "de": "ansprechen" }
+  ],
+  "date": [
+    { "def": "A specific day on the calendar", "pos": "noun", "domains": ["Time"], "ar": "تاريخ", "fr": "date", "de": "Datum" },
+    { "def": "A romantic appointment", "pos": "noun", "domains": ["Social"], "ar": "موعد غرامي", "fr": "rendez-vous", "de": "Verabredung" },
+    { "def": "The fruit of a palm tree", "pos": "noun", "domains": ["Food"], "ar": "تمر", "fr": "datte", "de": "Dattel" }
+  ],
+  "record": [
+    { "def": "A documented account", "pos": "noun", "domains": ["General"], "ar": "سجل", "fr": "registre", "de": "Aufzeichnung" },
+    { "def": "To capture audio or video", "pos": "verb", "domains": ["Media"], "ar": "يسجل", "fr": "enregistrer", "de": "aufnehmen" }
+  ],
+  "back": [
+    { "def": "The rear surface of body", "pos": "noun", "domains": ["Anatomy"], "ar": "ظهر", "fr": "dos", "de": "Rücken" },
+    { "def": "To support or endorse", "pos": "verb", "domains": ["General"], "ar": "يدعم", "fr": "soutenir", "de": "unterstützen" }
+  ],
+  "case": [
+    { "def": "A container or covering", "pos": "noun", "domains": ["General"], "ar": "حافظة", "fr": "étui", "de": "Hülle" },
+    { "def": "An instance or example", "pos": "noun", "domains": ["General"], "ar": "حالة", "fr": "cas", "de": "Fall" },
+    { "def": "A legal matter", "pos": "noun", "domains": ["Law"], "ar": "قضية", "fr": "affaire", "de": "Rechtssache" }
+  ],
+  "line": [
+    { "def": "A long narrow mark", "pos": "noun", "domains": ["General"], "ar": "خط", "fr": "ligne", "de": "Linie" },
+    { "def": "A row of people waiting", "pos": "noun", "domains": ["General"], "ar": "طابور", "fr": "file", "de": "Schlange" }
+  ],
+  "state": [
+    { "def": "A nation or territory", "pos": "noun", "domains": ["Politics"], "ar": "دولة", "fr": "état", "de": "Staat" },
+    { "def": "A condition or situation", "pos": "noun", "domains": ["General"], "ar": "حالة", "fr": "état", "de": "Zustand" },
+    { "def": "To express in words", "pos": "verb", "domains": ["Communication"], "ar": "يصرح", "fr": "déclarer", "de": "erklären" }
+  ],
+  "letter": [
+    { "def": "A written message", "pos": "noun", "domains": ["Communication"], "ar": "رسالة", "fr": "lettre", "de": "Brief" },
+    { "def": "A character of alphabet", "pos": "noun", "domains": ["Language"], "ar": "حرف", "fr": "lettre", "de": "Buchstabe" }
+  ],
+  "interest": [
+    { "def": "Curiosity or attention", "pos": "noun", "domains": ["Psychology"], "ar": "اهتمام", "fr": "intérêt", "de": "Interesse" },
+    { "def": "Money paid for borrowing", "pos": "noun", "domains": ["Finance"], "ar": "فائدة", "fr": "intérêt", "de": "Zinsen" }
+  ],
+  "figure": [
+    { "def": "A numerical symbol", "pos": "noun", "domains": ["Mathematics"], "ar": "رقم", "fr": "chiffre", "de": "Zahl" },
+    { "def": "The shape of a body", "pos": "noun", "domains": ["General"], "ar": "قوام", "fr": "silhouette", "de": "Figur" }
+  ],
+  "order": [
+    { "def": "An arrangement or sequence", "pos": "noun", "domains": ["General"], "ar": "ترتيب", "fr": "ordre", "de": "Ordnung" },
+    { "def": "A request for goods", "pos": "noun", "domains": ["Commerce"], "ar": "طلب", "fr": "commande", "de": "Bestellung" },
+    { "def": "To give a command", "pos": "verb", "domains": ["General"], "ar": "يأمر", "fr": "ordonner", "de": "befehlen" }
+  ],
+  "check": [
+    { "def": "To examine or verify", "pos": "verb", "domains": ["General"], "ar": "يفحص", "fr": "vérifier", "de": "prüfen" },
+    { "def": "A written order for payment", "pos": "noun", "domains": ["Finance"], "ar": "شيك", "fr": "chèque", "de": "Scheck" }
+  ],
+  "mind": [
+    { "def": "The faculty of consciousness", "pos": "noun", "domains": ["Psychology"], "ar": "عقل", "fr": "esprit", "de": "Geist" },
+    { "def": "To object or care", "pos": "verb", "domains": ["General"], "ar": "يمانع", "fr": "déranger", "de": "stören" }
+  ],
+  "close": [
+    { "def": "Near in distance", "pos": "adjective", "domains": ["General"], "ar": "قريب", "fr": "proche", "de": "nah" },
+    { "def": "To shut or seal", "pos": "verb", "domains": ["General"], "ar": "يغلق", "fr": "fermer", "de": "schließen" }
+  ],
+  "subject": [
+    { "def": "A topic or theme", "pos": "noun", "domains": ["Education"], "ar": "موضوع", "fr": "sujet", "de": "Thema" },
+    { "def": "To expose to something", "pos": "verb", "domains": ["General"], "ar": "يخضع", "fr": "soumettre", "de": "unterwerfen" }
+  ],
+  "present": [
+    { "def": "A gift", "pos": "noun", "domains": ["Social"], "ar": "هدية", "fr": "cadeau", "de": "Geschenk" },
+    { "def": "The current time", "pos": "noun", "domains": ["Time"], "ar": "الحاضر", "fr": "présent", "de": "Gegenwart" },
+    { "def": "To show or introduce", "pos": "verb", "domains": ["General"], "ar": "يقدم", "fr": "présenter", "de": "präsentieren" }
+  ],
+  "form": [
+    { "def": "The shape or structure", "pos": "noun", "domains": ["General"], "ar": "شكل", "fr": "forme", "de": "Form" },
+    { "def": "A document to fill out", "pos": "noun", "domains": ["Administration"], "ar": "استمارة", "fr": "formulaire", "de": "Formular" },
+    { "def": "To create or establish", "pos": "verb", "domains": ["General"], "ar": "يشكل", "fr": "former", "de": "bilden" }
+  ],
+  "note": [
+    { "def": "A brief written record", "pos": "noun", "domains": ["General"], "ar": "ملاحظة", "fr": "note", "de": "Notiz" },
+    { "def": "A musical tone", "pos": "noun", "domains": ["Music"], "ar": "نغمة", "fr": "note", "de": "Note" }
+  ],
+  "object": [
+    { "def": "A material thing", "pos": "noun", "domains": ["General"], "ar": "شيء", "fr": "objet", "de": "Gegenstand" },
+    { "def": "To express disapproval", "pos": "verb", "domains": ["General"], "ar": "يعترض", "fr": "objecter", "de": "einwenden" }
+  ],
+  "project": [
+    { "def": "A planned undertaking", "pos": "noun", "domains": ["Business"], "ar": "مشروع", "fr": "projet", "de": "Projekt" },
+    { "def": "To display on a screen", "pos": "verb", "domains": ["Technology"], "ar": "يعرض", "fr": "projeter", "de": "projizieren" }
+  ],
+  "content": [
+    { "def": "The material contained", "pos": "noun", "domains": ["Media"], "ar": "محتوى", "fr": "contenu", "de": "Inhalt" },
+    { "def": "Satisfied or pleased", "pos": "adjective", "domains": ["Emotion"], "ar": "راضٍ", "fr": "content", "de": "zufrieden" }
+  ],
+  "current": [
+    { "def": "The flow of water or electricity", "pos": "noun", "domains": ["Physics"], "ar": "تيار", "fr": "courant", "de": "Strom" },
+    { "def": "Belonging to the present time", "pos": "adjective", "domains": ["Time"], "ar": "حالي", "fr": "actuel", "de": "aktuell" }
+  ],
+  "mean": [
+    { "def": "To intend or signify", "pos": "verb", "domains": ["Language"], "ar": "يعني", "fr": "signifier", "de": "bedeuten" },
+    { "def": "The average value", "pos": "noun", "domains": ["Mathematics"], "ar": "متوسط", "fr": "moyenne", "de": "Durchschnitt" },
+    { "def": "Unkind or cruel", "pos": "adjective", "domains": ["Behavior"], "ar": "قاسٍ", "fr": "méchant", "de": "gemein" }
+  ],
+  "kind": [
+    { "def": "A type or category", "pos": "noun", "domains": ["General"], "ar": "نوع", "fr": "genre", "de": "Art" },
+    { "def": "Gentle and caring", "pos": "adjective", "domains": ["Behavior"], "ar": "لطيف", "fr": "gentil", "de": "freundlich" }
+  ],
+  "change": [
+    { "def": "To make different", "pos": "verb", "domains": ["General"], "ar": "يغير", "fr": "changer", "de": "ändern" },
+    { "def": "Coins of small denomination", "pos": "noun", "domains": ["Finance"], "ar": "فكة", "fr": "monnaie", "de": "Kleingeld" }
+  ],
+  "sound": [
+    { "def": "Vibrations traveling through air", "pos": "noun", "domains": ["Physics"], "ar": "صوت", "fr": "son", "de": "Klang" },
+    { "def": "In good condition", "pos": "adjective", "domains": ["General"], "ar": "سليم", "fr": "sain", "de": "gesund" }
+  ],
+  "act": [
+    { "def": "To perform an action", "pos": "verb", "domains": ["General"], "ar": "يتصرف", "fr": "agir", "de": "handeln" },
+    { "def": "A law passed by legislature", "pos": "noun", "domains": ["Law"], "ar": "قانون", "fr": "loi", "de": "Gesetz" },
+    { "def": "A division of a play", "pos": "noun", "domains": ["Theater"], "ar": "فصل", "fr": "acte", "de": "Akt" }
+  ],
+  "model": [
+    { "def": "A representation or copy", "pos": "noun", "domains": ["Science"], "ar": "نموذج", "fr": "modèle", "de": "Modell" },
+    { "def": "A person who poses", "pos": "noun", "domains": ["Fashion"], "ar": "عارض", "fr": "mannequin", "de": "Model" }
+  ],
+  "course": [
+    { "def": "A series of lessons", "pos": "noun", "domains": ["Education"], "ar": "دورة", "fr": "cours", "de": "Kurs" },
+    { "def": "The direction of movement", "pos": "noun", "domains": ["Navigation"], "ar": "مسار", "fr": "trajectoire", "de": "Kurs" }
+  ],
+  "power": [
+    { "def": "The ability to do something", "pos": "noun", "domains": ["General"], "ar": "قوة", "fr": "pouvoir", "de": "Macht" },
+    { "def": "Electrical energy", "pos": "noun", "domains": ["Physics"], "ar": "طاقة", "fr": "électricité", "de": "Strom" }
+  ],
+  "drive": [
+    { "def": "To operate a vehicle", "pos": "verb", "domains": ["Transportation"], "ar": "يقود", "fr": "conduire", "de": "fahren" },
+    { "def": "A storage device", "pos": "noun", "domains": ["Computing"], "ar": "محرك أقراص", "fr": "disque", "de": "Laufwerk" },
+    { "def": "Strong motivation", "pos": "noun", "domains": ["Psychology"], "ar": "دافع", "fr": "motivation", "de": "Antrieb" }
+  ],
+  "bit": [
+    { "def": "A small piece or amount", "pos": "noun", "domains": ["General"], "ar": "قطعة صغيرة", "fr": "morceau", "de": "Stück" },
+    { "def": "A binary digit", "pos": "noun", "domains": ["Computing"], "ar": "بت", "fr": "bit", "de": "Bit" }
+  ],
+  "press": [
+    { "def": "To push against firmly", "pos": "verb", "domains": ["General"], "ar": "يضغط", "fr": "appuyer", "de": "drücken" },
+    { "def": "News media collectively", "pos": "noun", "domains": ["Media"], "ar": "صحافة", "fr": "presse", "de": "Presse" }
+  ],
+  "plant": [
+    { "def": "A living organism that grows", "pos": "noun", "domains": ["Biology"], "ar": "نبات", "fr": "plante", "de": "Pflanze" },
+    { "def": "A factory or facility", "pos": "noun", "domains": ["Industry"], "ar": "مصنع", "fr": "usine", "de": "Fabrik" },
+    { "def": "To put seeds in ground", "pos": "verb", "domains": ["Agriculture"], "ar": "يزرع", "fr": "planter", "de": "pflanzen" }
+  ],
+  "train": [
+    { "def": "A connected series of rail cars", "pos": "noun", "domains": ["Transportation"], "ar": "قطار", "fr": "train", "de": "Zug" },
+    { "def": "To teach skills through practice", "pos": "verb", "domains": ["Education"], "ar": "يدرب", "fr": "entraîner", "de": "trainieren" }
+  ],
+  "rest": [
+    { "def": "To relax or sleep", "pos": "verb", "domains": ["General"], "ar": "يرتاح", "fr": "se reposer", "de": "ruhen" },
+    { "def": "The remaining part", "pos": "noun", "domains": ["General"], "ar": "الباقي", "fr": "le reste", "de": "der Rest" }
+  ],
+  "cell": [
+    { "def": "The basic unit of life", "pos": "noun", "domains": ["Biology"], "ar": "خلية", "fr": "cellule", "de": "Zelle" },
+    { "def": "A small room in prison", "pos": "noun", "domains": ["Law"], "ar": "زنزانة", "fr": "cellule", "de": "Zelle" },
+    { "def": "A mobile phone", "pos": "noun", "domains": ["Technology"], "ar": "هاتف محمول", "fr": "portable", "de": "Handy" }
+  ],
+  "organ": [
+    { "def": "A body part with function", "pos": "noun", "domains": ["Biology"], "ar": "عضو", "fr": "organe", "de": "Organ" },
+    { "def": "A keyboard musical instrument", "pos": "noun", "domains": ["Music"], "ar": "أرغن", "fr": "orgue", "de": "Orgel" }
+  ],
+  "pool": [
+    { "def": "A body of water for swimming", "pos": "noun", "domains": ["Sports"], "ar": "مسبح", "fr": "piscine", "de": "Schwimmbad" },
+    { "def": "A shared resource", "pos": "noun", "domains": ["Business"], "ar": "مجموعة مشتركة", "fr": "pool", "de": "Pool" }
+  ],
+  "file": [
+    { "def": "A folder for documents", "pos": "noun", "domains": ["Office"], "ar": "ملف", "fr": "dossier", "de": "Akte" },
+    { "def": "A computer data unit", "pos": "noun", "domains": ["Computing"], "ar": "ملف", "fr": "fichier", "de": "Datei" },
+    { "def": "To submit officially", "pos": "verb", "domains": ["Administration"], "ar": "يقدم", "fr": "déposer", "de": "einreichen" }
+  ],
+  "rock": [
+    { "def": "A hard mineral mass", "pos": "noun", "domains": ["Geology"], "ar": "صخرة", "fr": "rocher", "de": "Fels" },
+    { "def": "A music genre", "pos": "noun", "domains": ["Music"], "ar": "روك", "fr": "rock", "de": "Rock" }
+  ],
+  "staff": [
+    { "def": "Employees of an organization", "pos": "noun", "domains": ["Business"], "ar": "موظفون", "fr": "personnel", "de": "Personal" },
+    { "def": "A long stick or rod", "pos": "noun", "domains": ["General"], "ar": "عصا", "fr": "bâton", "de": "Stab" }
+  ],
+  "scale": [
+    { "def": "A measuring device", "pos": "noun", "domains": ["Measurement"], "ar": "ميزان", "fr": "balance", "de": "Waage" },
+    { "def": "The size or extent", "pos": "noun", "domains": ["General"], "ar": "مقياس", "fr": "échelle", "de": "Maßstab" },
+    { "def": "To climb up", "pos": "verb", "domains": ["Movement"], "ar": "يتسلق", "fr": "escalader", "de": "erklimmen" }
+  ],
+  "network": [
+    { "def": "An interconnected system", "pos": "noun", "domains": ["Computing"], "ar": "شبكة", "fr": "réseau", "de": "Netzwerk" },
+    { "def": "To establish connections", "pos": "verb", "domains": ["Business"], "ar": "يتواصل", "fr": "réseauter", "de": "netzwerken" }
+  ],
+  "board": [
+    { "def": "A flat piece of wood", "pos": "noun", "domains": ["General"], "ar": "لوح", "fr": "planche", "de": "Brett" },
+    { "def": "A group of directors", "pos": "noun", "domains": ["Business"], "ar": "مجلس إدارة", "fr": "conseil", "de": "Vorstand" },
+    { "def": "To get on a vehicle", "pos": "verb", "domains": ["Transportation"], "ar": "يصعد", "fr": "embarquer", "de": "einsteigen" }
+  ],
+  "firm": [
+    { "def": "A business company", "pos": "noun", "domains": ["Business"], "ar": "شركة", "fr": "entreprise", "de": "Firma" },
+    { "def": "Solid and unyielding", "pos": "adjective", "domains": ["General"], "ar": "صلب", "fr": "ferme", "de": "fest" }
+  ],
+  "capital": [
+    { "def": "A city as seat of government", "pos": "noun", "domains": ["Politics"], "ar": "عاصمة", "fr": "capitale", "de": "Hauptstadt" },
+    { "def": "Financial assets", "pos": "noun", "domains": ["Finance"], "ar": "رأس مال", "fr": "capital", "de": "Kapital" }
+  ],
+  "issue": [
+    { "def": "A topic for debate", "pos": "noun", "domains": ["General"], "ar": "قضية", "fr": "question", "de": "Thema" },
+    { "def": "A copy of a publication", "pos": "noun", "domains": ["Publishing"], "ar": "عدد", "fr": "numéro", "de": "Ausgabe" },
+    { "def": "To distribute officially", "pos": "verb", "domains": ["Administration"], "ar": "يصدر", "fr": "émettre", "de": "ausgeben" }
+  ],
+  "track": [
+    { "def": "A path or course", "pos": "noun", "domains": ["General"], "ar": "مسار", "fr": "piste", "de": "Bahn" },
+    { "def": "A recorded song", "pos": "noun", "domains": ["Music"], "ar": "أغنية", "fr": "piste", "de": "Titel" },
+    { "def": "To follow or monitor", "pos": "verb", "domains": ["General"], "ar": "يتتبع", "fr": "suivre", "de": "verfolgen" }
+  ],
+  "band": [
+    { "def": "A group of musicians", "pos": "noun", "domains": ["Music"], "ar": "فرقة", "fr": "groupe", "de": "Band" },
+    { "def": "A strip or ring", "pos": "noun", "domains": ["General"], "ar": "شريط", "fr": "bande", "de": "Band" }
+  ],
+  "draft": [
+    { "def": "A preliminary version", "pos": "noun", "domains": ["Writing"], "ar": "مسودة", "fr": "brouillon", "de": "Entwurf" },
+    { "def": "A current of air", "pos": "noun", "domains": ["General"], "ar": "تيار هواء", "fr": "courant d'air", "de": "Luftzug" }
+  ],
+  "flat": [
+    { "def": "Level and smooth", "pos": "adjective", "domains": ["General"], "ar": "مسطح", "fr": "plat", "de": "flach" },
+    { "def": "An apartment", "pos": "noun", "domains": ["Housing"], "ar": "شقة", "fr": "appartement", "de": "Wohnung" }
+  ],
+  "key": [
+    { "def": "A device for opening locks", "pos": "noun", "domains": ["General"], "ar": "مفتاح", "fr": "clé", "de": "Schlüssel" },
+    { "def": "A button on keyboard", "pos": "noun", "domains": ["Computing"], "ar": "مفتاح", "fr": "touche", "de": "Taste" },
+    { "def": "Essential or crucial", "pos": "adjective", "domains": ["General"], "ar": "أساسي", "fr": "clé", "de": "Schlüssel-" }
+  ],
+  "post": [
+    { "def": "A piece of mail", "pos": "noun", "domains": ["Communication"], "ar": "بريد", "fr": "courrier", "de": "Post" },
+    { "def": "A job position", "pos": "noun", "domains": ["Employment"], "ar": "منصب", "fr": "poste", "de": "Stelle" },
+    { "def": "To publish online", "pos": "verb", "domains": ["Internet"], "ar": "ينشر", "fr": "publier", "de": "posten" }
+  ],
+  "term": [
+    { "def": "A word or phrase", "pos": "noun", "domains": ["Language"], "ar": "مصطلح", "fr": "terme", "de": "Begriff" },
+    { "def": "A period of time", "pos": "noun", "domains": ["Time"], "ar": "فترة", "fr": "trimestre", "de": "Semester" }
+  ],
+  "save": [
+    { "def": "To rescue from danger", "pos": "verb", "domains": ["General"], "ar": "ينقذ", "fr": "sauver", "de": "retten" },
+    { "def": "To store data", "pos": "verb", "domains": ["Computing"], "ar": "يحفظ", "fr": "enregistrer", "de": "speichern" },
+    { "def": "To keep money aside", "pos": "verb", "domains": ["Finance"], "ar": "يدخر", "fr": "économiser", "de": "sparen" }
+  ],
+  "value": [
+    { "def": "The worth of something", "pos": "noun", "domains": ["Finance"], "ar": "قيمة", "fr": "valeur", "de": "Wert" },
+    { "def": "To consider important", "pos": "verb", "domains": ["General"], "ar": "يقدر", "fr": "valoriser", "de": "schätzen" }
+  ],
+  "function": [
+    { "def": "The purpose or role", "pos": "noun", "domains": ["General"], "ar": "وظيفة", "fr": "fonction", "de": "Funktion" },
+    { "def": "To work or operate", "pos": "verb", "domains": ["General"], "ar": "يعمل", "fr": "fonctionner", "de": "funktionieren" }
+  ],
+  "store": [
+    { "def": "A retail shop", "pos": "noun", "domains": ["Commerce"], "ar": "متجر", "fr": "magasin", "de": "Geschäft" },
+    { "def": "To keep for future use", "pos": "verb", "domains": ["General"], "ar": "يخزن", "fr": "stocker", "de": "lagern" }
+  ],
+  "wave": [
+    { "def": "A moving water ridge", "pos": "noun", "domains": ["Nature"], "ar": "موجة", "fr": "vague", "de": "Welle" },
+    { "def": "To move hand in greeting", "pos": "verb", "domains": ["Social"], "ar": "يلوح", "fr": "saluer", "de": "winken" }
+  ],
+  "space": [
+    { "def": "An empty area", "pos": "noun", "domains": ["General"], "ar": "مساحة", "fr": "espace", "de": "Raum" },
+    { "def": "The universe beyond Earth", "pos": "noun", "domains": ["Astronomy"], "ar": "فضاء", "fr": "espace", "de": "Weltraum" }
+  ],
+  "degree": [
+    { "def": "A unit of temperature", "pos": "noun", "domains": ["Physics"], "ar": "درجة", "fr": "degré", "de": "Grad" },
+    { "def": "An academic qualification", "pos": "noun", "domains": ["Education"], "ar": "شهادة", "fr": "diplôme", "de": "Abschluss" }
+  ],
+  "view": [
+    { "def": "What is seen from a place", "pos": "noun", "domains": ["General"], "ar": "منظر", "fr": "vue", "de": "Aussicht" },
+    { "def": "An opinion or perspective", "pos": "noun", "domains": ["General"], "ar": "رأي", "fr": "point de vue", "de": "Ansicht" },
+    { "def": "To look at or watch", "pos": "verb", "domains": ["General"], "ar": "يشاهد", "fr": "voir", "de": "ansehen" }
+  ],
+  "base": [
+    { "def": "The bottom support", "pos": "noun", "domains": ["General"], "ar": "قاعدة", "fr": "base", "de": "Basis" },
+    { "def": "A military installation", "pos": "noun", "domains": ["Military"], "ar": "قاعدة", "fr": "base", "de": "Stützpunkt" }
+  ],
+  "cross": [
+    { "def": "A shape of two lines", "pos": "noun", "domains": ["Religion"], "ar": "صليب", "fr": "croix", "de": "Kreuz" },
+    { "def": "To go from one side to other", "pos": "verb", "domains": ["Movement"], "ar": "يعبر", "fr": "traverser", "de": "überqueren" }
+  ],
+  "ring": [
+    { "def": "A circular band for finger", "pos": "noun", "domains": ["Jewelry"], "ar": "خاتم", "fr": "bague", "de": "Ring" },
+    { "def": "To make a sound", "pos": "verb", "domains": ["Sound"], "ar": "يرن", "fr": "sonner", "de": "klingeln" }
+  ],
+  "table": [
+    { "def": "A piece of furniture", "pos": "noun", "domains": ["Furniture"], "ar": "طاولة", "fr": "table", "de": "Tisch" },
+    { "def": "An arrangement of data", "pos": "noun", "domains": ["Data"], "ar": "جدول", "fr": "tableau", "de": "Tabelle" }
+  ],
+  "bear": [
+    { "def": "A large mammal", "pos": "noun", "domains": ["Animals"], "ar": "دب", "fr": "ours", "de": "Bär" },
+    { "def": "To carry or support", "pos": "verb", "domains": ["General"], "ar": "يحمل", "fr": "porter", "de": "tragen" }
+  ],
+  "fair": [
+    { "def": "Just and equitable", "pos": "adjective", "domains": ["Ethics"], "ar": "عادل", "fr": "juste", "de": "fair" },
+    { "def": "A public exhibition", "pos": "noun", "domains": ["Events"], "ar": "معرض", "fr": "foire", "de": "Messe" }
+  ],
+  "sign": [
+    { "def": "A display board", "pos": "noun", "domains": ["General"], "ar": "لافتة", "fr": "panneau", "de": "Schild" },
+    { "def": "To write signature", "pos": "verb", "domains": ["Administration"], "ar": "يوقع", "fr": "signer", "de": "unterschreiben" }
+  ],
+  "stand": [
+    { "def": "To be in upright position", "pos": "verb", "domains": ["Movement"], "ar": "يقف", "fr": "se tenir debout", "de": "stehen" },
+    { "def": "A supporting structure", "pos": "noun", "domains": ["General"], "ar": "حامل", "fr": "support", "de": "Ständer" }
+  ],
+  "park": [
+    { "def": "A public green area", "pos": "noun", "domains": ["Urban"], "ar": "حديقة", "fr": "parc", "de": "Park" },
+    { "def": "To leave a vehicle", "pos": "verb", "domains": ["Transportation"], "ar": "يركن", "fr": "garer", "de": "parken" }
+  ],
+  "draw": [
+    { "def": "To create a picture", "pos": "verb", "domains": ["Art"], "ar": "يرسم", "fr": "dessiner", "de": "zeichnen" },
+    { "def": "A tie in competition", "pos": "noun", "domains": ["Sports"], "ar": "تعادل", "fr": "match nul", "de": "Unentschieden" }
+  ],
+  "pass": [
+    { "def": "To go by or through", "pos": "verb", "domains": ["Movement"], "ar": "يمر", "fr": "passer", "de": "vorbeigehen" },
+    { "def": "A document for entry", "pos": "noun", "domains": ["Travel"], "ar": "تصريح", "fr": "laissez-passer", "de": "Pass" }
+  ],
+  "head": [
+    { "def": "The upper body part", "pos": "noun", "domains": ["Anatomy"], "ar": "رأس", "fr": "tête", "de": "Kopf" },
+    { "def": "The leader of organization", "pos": "noun", "domains": ["Business"], "ar": "رئيس", "fr": "chef", "de": "Leiter" }
+  ],
+  "hold": [
+    { "def": "To grasp or carry", "pos": "verb", "domains": ["General"], "ar": "يمسك", "fr": "tenir", "de": "halten" },
+    { "def": "A cargo area in ship", "pos": "noun", "domains": ["Shipping"], "ar": "عنبر", "fr": "cale", "de": "Frachtraum" }
+  ],
+  "part": [
+    { "def": "A piece or portion", "pos": "noun", "domains": ["General"], "ar": "جزء", "fr": "partie", "de": "Teil" },
+    { "def": "To separate or divide", "pos": "verb", "domains": ["General"], "ar": "يفصل", "fr": "séparer", "de": "trennen" }
+  ],
+  "show": [
+    { "def": "A performance or display", "pos": "noun", "domains": ["Entertainment"], "ar": "عرض", "fr": "spectacle", "de": "Show" },
+    { "def": "To display or present", "pos": "verb", "domains": ["General"], "ar": "يعرض", "fr": "montrer", "de": "zeigen" }
+  ],
+  "share": [
+    { "def": "To divide with others", "pos": "verb", "domains": ["General"], "ar": "يشارك", "fr": "partager", "de": "teilen" },
+    { "def": "A unit of stock", "pos": "noun", "domains": ["Finance"], "ar": "سهم", "fr": "action", "de": "Aktie" }
+  ],
+  "turn": [
+    { "def": "To rotate or spin", "pos": "verb", "domains": ["Movement"], "ar": "يدور", "fr": "tourner", "de": "drehen" },
+    { "def": "A chance in sequence", "pos": "noun", "domains": ["General"], "ar": "دور", "fr": "tour", "de": "Runde" }
+  ],
+  "move": [
+    { "def": "To change position", "pos": "verb", "domains": ["Movement"], "ar": "يتحرك", "fr": "bouger", "de": "bewegen" },
+    { "def": "An action in a game", "pos": "noun", "domains": ["Games"], "ar": "حركة", "fr": "coup", "de": "Zug" }
+  ],
+  "face": [
+    { "def": "The front of the head", "pos": "noun", "domains": ["Anatomy"], "ar": "وجه", "fr": "visage", "de": "Gesicht" },
+    { "def": "To confront or encounter", "pos": "verb", "domains": ["General"], "ar": "يواجه", "fr": "faire face", "de": "gegenüberstehen" }
+  ],
+  "cover": [
+    { "def": "Something that protects", "pos": "noun", "domains": ["General"], "ar": "غطاء", "fr": "couverture", "de": "Abdeckung" },
+    { "def": "To place over", "pos": "verb", "domains": ["General"], "ar": "يغطي", "fr": "couvrir", "de": "bedecken" }
+  ],
+  "leave": [
+    { "def": "To go away from", "pos": "verb", "domains": ["Movement"], "ar": "يغادر", "fr": "partir", "de": "verlassen" },
+    { "def": "Time off from work", "pos": "noun", "domains": ["Employment"], "ar": "إجازة", "fr": "congé", "de": "Urlaub" }
+  ],
+  "field": [
+    { "def": "An open area of land", "pos": "noun", "domains": ["Agriculture"], "ar": "حقل", "fr": "champ", "de": "Feld" },
+    { "def": "An area of study", "pos": "noun", "domains": ["Education"], "ar": "مجال", "fr": "domaine", "de": "Fachgebiet" }
+  ],
+  "ground": [
+    { "def": "The surface of Earth", "pos": "noun", "domains": ["General"], "ar": "أرض", "fr": "sol", "de": "Boden" },
+    { "def": "Crushed to powder", "pos": "adjective", "domains": ["Food"], "ar": "مطحون", "fr": "moulu", "de": "gemahlen" }
+  ],
+  "return": [
+    { "def": "To go or come back", "pos": "verb", "domains": ["Movement"], "ar": "يعود", "fr": "revenir", "de": "zurückkehren" },
+    { "def": "A financial gain", "pos": "noun", "domains": ["Finance"], "ar": "عائد", "fr": "rendement", "de": "Rendite" }
+  ],
+  "hard": [
+    { "def": "Solid and firm", "pos": "adjective", "domains": ["General"], "ar": "صلب", "fr": "dur", "de": "hart" },
+    { "def": "Difficult or challenging", "pos": "adjective", "domains": ["General"], "ar": "صعب", "fr": "difficile", "de": "schwer" }
+  ],
+  "free": [
+    { "def": "Not costing anything", "pos": "adjective", "domains": ["Commerce"], "ar": "مجاني", "fr": "gratuit", "de": "kostenlos" },
+    { "def": "Not imprisoned", "pos": "adjective", "domains": ["General"], "ar": "حر", "fr": "libre", "de": "frei" }
+  ],
+  "long": [
+    { "def": "Of great length", "pos": "adjective", "domains": ["Measurement"], "ar": "طويل", "fr": "long", "de": "lang" },
+    { "def": "To yearn or desire", "pos": "verb", "domains": ["Emotion"], "ar": "يتوق", "fr": "désirer", "de": "sich sehnen" }
+  ],
+  "second": [
+    { "def": "Coming after first", "pos": "adjective", "domains": ["General"], "ar": "ثانٍ", "fr": "deuxième", "de": "zweiter" },
+    { "def": "A unit of time", "pos": "noun", "domains": ["Time"], "ar": "ثانية", "fr": "seconde", "de": "Sekunde" }
+  ],
+  "last": [
+    { "def": "Coming after all others", "pos": "adjective", "domains": ["General"], "ar": "أخير", "fr": "dernier", "de": "letzter" },
+    { "def": "To continue in time", "pos": "verb", "domains": ["Time"], "ar": "يدوم", "fr": "durer", "de": "dauern" }
+  ],
+  "well": [
+    { "def": "In good health", "pos": "adjective", "domains": ["Health"], "ar": "بصحة جيدة", "fr": "en bonne santé", "de": "gesund" },
+    { "def": "A source of water", "pos": "noun", "domains": ["Geography"], "ar": "بئر", "fr": "puits", "de": "Brunnen" }
+  ],
+  "live": [
+    { "def": "To be alive", "pos": "verb", "domains": ["Biology"], "ar": "يعيش", "fr": "vivre", "de": "leben" },
+    { "def": "Happening in real time", "pos": "adjective", "domains": ["Media"], "ar": "مباشر", "fr": "en direct", "de": "live" }
+  ],
+  "down": [
+    { "def": "Toward lower position", "pos": "adverb", "domains": ["Direction"], "ar": "للأسفل", "fr": "en bas", "de": "hinunter" },
+    { "def": "Soft feathers", "pos": "noun", "domains": ["General"], "ar": "ريش ناعم", "fr": "duvet", "de": "Daunen" }
+  ],
+  "even": [
+    { "def": "Flat and level", "pos": "adjective", "domains": ["General"], "ar": "مستوٍ", "fr": "plat", "de": "eben" },
+    { "def": "Divisible by two", "pos": "adjective", "domains": ["Mathematics"], "ar": "زوجي", "fr": "pair", "de": "gerade" }
+  ],
+  "still": [
+    { "def": "Not moving", "pos": "adjective", "domains": ["General"], "ar": "ساكن", "fr": "immobile", "de": "still" },
+    { "def": "Continuing until now", "pos": "adverb", "domains": ["Time"], "ar": "لا يزال", "fr": "encore", "de": "noch" }
+  ],
+  "just": [
+    { "def": "Fair and reasonable", "pos": "adjective", "domains": ["Ethics"], "ar": "عادل", "fr": "juste", "de": "gerecht" },
+    { "def": "Only or simply", "pos": "adverb", "domains": ["General"], "ar": "فقط", "fr": "juste", "de": "nur" }
+  ],
+  "like": [
+    { "def": "To enjoy or prefer", "pos": "verb", "domains": ["Emotion"], "ar": "يحب", "fr": "aimer", "de": "mögen" },
+    { "def": "Similar to", "pos": "preposition", "domains": ["General"], "ar": "مثل", "fr": "comme", "de": "wie" }
+  ],
+  "most": [
+    { "def": "Greatest in amount", "pos": "adjective", "domains": ["General"], "ar": "أكثر", "fr": "le plus", "de": "am meisten" },
+    { "def": "Almost all", "pos": "determiner", "domains": ["General"], "ar": "معظم", "fr": "la plupart", "de": "die meisten" }
+  ],
+  "only": [
+    { "def": "Single or solitary", "pos": "adjective", "domains": ["General"], "ar": "وحيد", "fr": "seul", "de": "einzig" },
+    { "def": "No more than", "pos": "adverb", "domains": ["General"], "ar": "فقط", "fr": "seulement", "de": "nur" }
+  ],
+  "same": [
+    { "def": "Identical or similar", "pos": "adjective", "domains": ["General"], "ar": "نفس", "fr": "même", "de": "gleich" },
+    { "def": "The identical thing", "pos": "pronoun", "domains": ["General"], "ar": "ذاته", "fr": "le même", "de": "dasselbe" }
+  ],
+  "own": [
+    { "def": "Belonging to oneself", "pos": "adjective", "domains": ["General"], "ar": "خاص", "fr": "propre", "de": "eigen" },
+    { "def": "To possess legally", "pos": "verb", "domains": ["Law"], "ar": "يمتلك", "fr": "posséder", "de": "besitzen" }
+  ],
+  "such": [
+    { "def": "Of that kind", "pos": "determiner", "domains": ["General"], "ar": "مثل هذا", "fr": "tel", "de": "solch" },
+    { "def": "To such a degree", "pos": "adverb", "domains": ["General"], "ar": "لهذه الدرجة", "fr": "tellement", "de": "so" }
+  ],
+  "miss": [
+    { "def": "To fail to hit or catch", "pos": "verb", "domains": ["General"], "ar": "يخطئ", "fr": "manquer", "de": "verfehlen" },
+    { "def": "An unmarried woman", "pos": "noun", "domains": ["Social"], "ar": "آنسة", "fr": "mademoiselle", "de": "Fräulein" },
+    { "def": "To feel absence of", "pos": "verb", "domains": ["Emotion"], "ar": "يفتقد", "fr": "manquer", "de": "vermissen" }
+  ],
+  "suit": [
+    { "def": "A set of clothes", "pos": "noun", "domains": ["Fashion"], "ar": "بدلة", "fr": "costume", "de": "Anzug" },
+    { "def": "To be appropriate for", "pos": "verb", "domains": ["General"], "ar": "يناسب", "fr": "convenir", "de": "passen" },
+    { "def": "A legal case", "pos": "noun", "domains": ["Law"], "ar": "دعوى", "fr": "procès", "de": "Klage" }
+  ],
+  "minute": [
+    { "def": "60 seconds", "pos": "noun", "domains": ["Time"], "ar": "دقيقة", "fr": "minute", "de": "Minute" },
+    { "def": "Extremely small", "pos": "adjective", "domains": ["Size"], "ar": "دقيق", "fr": "minuscule", "de": "winzig" }
+  ],
+  "patient": [
+    { "def": "A person receiving medical care", "pos": "noun", "domains": ["Medicine"], "ar": "مريض", "fr": "patient", "de": "Patient" },
+    { "def": "Able to wait calmly", "pos": "adjective", "domains": ["Behavior"], "ar": "صبور", "fr": "patient", "de": "geduldig" }
+  ]
+}

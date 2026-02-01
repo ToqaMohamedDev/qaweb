@@ -794,6 +794,87 @@ export type Database = {
           },
         ]
       }
+      dictionary: {
+        Row: {
+          concept_id: string
+          word_family_root: string
+          definition: string | null
+          part_of_speech: string | null
+          domains: Json | null
+          lexical_entries: Json | null
+          relations: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          concept_id: string
+          word_family_root: string
+          definition?: string | null
+          part_of_speech?: string | null
+          domains?: Json | null
+          lexical_entries?: Json | null
+          relations?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          concept_id?: string
+          word_family_root?: string
+          definition?: string | null
+          part_of_speech?: string | null
+          domains?: Json | null
+          lexical_entries?: Json | null
+          relations?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      my_words: {
+        Row: {
+          id: string
+          user_id: string
+          concept_id: string
+          notes: string | null
+          is_favorite: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          concept_id: string
+          notes?: string | null
+          is_favorite?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          concept_id?: string
+          notes?: string | null
+          is_favorite?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "my_words_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "my_words_concept_id_fkey"
+            columns: ["concept_id"]
+            isOneToOne: false
+            referencedRelation: "dictionary"
+            referencedColumns: ["concept_id"]
+          },
+        ]
+      }
       page_words: {
         Row: {
           created_at: string | null
