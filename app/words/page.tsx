@@ -84,18 +84,18 @@ function speakText(text: string, langCode: string): void {
         ar: "ar-SA", en: "en-US", fr: "fr-FR", de: "de-DE",
     };
     utterance.lang = localeMap[langCode] || langCode;
-    
+
     // Improved TTS settings for better pronunciation
     utterance.rate = 0.9; // Slightly slower for clarity
     utterance.pitch = 1.0;
-    
+
     // Try to find a native voice for the language
     const voices = speechSynthesis.getVoices();
     const langVoice = voices.find(v => v.lang.startsWith(langCode) || v.lang === localeMap[langCode]);
     if (langVoice) {
         utterance.voice = langVoice;
     }
-    
+
     speechSynthesis.speak(utterance);
 }
 
@@ -191,7 +191,7 @@ export default function WordsPage() {
                     totalPages: data.pagination.totalPages,
                 }));
                 // Update saved word IDs
-                const ids = new Set(data.words?.map((w: MyWord) => w.concept_id) || []);
+                const ids = new Set<string>(data.words?.map((w: MyWord) => w.concept_id) || []);
                 setSavedWordIds(ids);
             }
         } catch (error) {
@@ -221,7 +221,7 @@ export default function WordsPage() {
                 .then((res) => res.json())
                 .then((data) => {
                     if (data.success) {
-                        const ids = new Set(data.words?.map((w: MyWord) => w.concept_id) || []);
+                        const ids = new Set<string>(data.words?.map((w: MyWord) => w.concept_id) || []);
                         setSavedWordIds(ids);
                     }
                 })
@@ -309,11 +309,10 @@ export default function WordsPage() {
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setActiveTab("dictionary")}
-                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${
-                                    activeTab === "dictionary"
+                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "dictionary"
                                         ? "text-white"
                                         : "text-zinc-500 hover:text-zinc-300"
-                                }`}
+                                    }`}
                             >
                                 <Globe className="w-5 h-5" />
                                 القاموس
@@ -326,11 +325,10 @@ export default function WordsPage() {
                             <span className="text-zinc-700">|</span>
                             <button
                                 onClick={() => setActiveTab("mywords")}
-                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${
-                                    activeTab === "mywords"
+                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "mywords"
                                         ? "text-white"
                                         : "text-zinc-500 hover:text-zinc-300"
-                                }`}
+                                    }`}
                             >
                                 <BookMarked className="w-5 h-5" />
                                 كلماتي
@@ -376,11 +374,10 @@ export default function WordsPage() {
                                             setSelectedLanguage(lang.code);
                                             setPagination((prev) => ({ ...prev, page: 1 }));
                                         }}
-                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                                            selectedLanguage === lang.code
+                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedLanguage === lang.code
                                                 ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
                                                 : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
-                                        }`}
+                                            }`}
                                     >
                                         <span className="text-base">{lang.flag}</span>
                                         <span>{lang.nameAr}</span>
@@ -436,11 +433,10 @@ export default function WordsPage() {
                                                         isSaved ? removeWord(word.concept_id) : saveWord(word.concept_id);
                                                     }}
                                                     disabled={savingWordId === word.concept_id}
-                                                    className={`absolute top-3 left-3 p-2 rounded-lg transition-all ${
-                                                        isSaved
+                                                    className={`absolute top-3 left-3 p-2 rounded-lg transition-all ${isSaved
                                                             ? "bg-green-500/20 text-green-400"
                                                             : "bg-white/5 text-zinc-500 opacity-0 group-hover:opacity-100"
-                                                    } hover:scale-110`}
+                                                        } hover:scale-110`}
                                                 >
                                                     {savingWordId === word.concept_id ? (
                                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -459,7 +455,7 @@ export default function WordsPage() {
                                                             🇸🇦 {arabicLemma}
                                                         </p>
                                                     </div>
-                                                    
+
                                                     {/* Selected language word */}
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm">
@@ -472,19 +468,19 @@ export default function WordsPage() {
                                                             {lemma}
                                                         </p>
                                                     </div>
-                                                    
+
                                                     {ipa && (
                                                         <p className="text-xs text-emerald-400/80 font-mono" dir="ltr">
                                                             /{ipa}/
                                                         </p>
                                                     )}
-                                                    
+
                                                     {word.part_of_speech && (
                                                         <span className="inline-block px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 text-xs font-medium">
                                                             {word.part_of_speech}
                                                         </span>
                                                     )}
-                                                    
+
                                                     {word.definition && (
                                                         <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
                                                             {word.definition}
@@ -636,7 +632,7 @@ export default function WordsPage() {
                                                             🇸🇦 {arabicLemma}
                                                         </p>
                                                     </div>
-                                                    
+
                                                     {/* English word */}
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm">🇬🇧</span>
@@ -644,13 +640,13 @@ export default function WordsPage() {
                                                             {englishLemma}
                                                         </p>
                                                     </div>
-                                                    
+
                                                     {word.part_of_speech && (
                                                         <span className="inline-block px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 text-xs font-medium">
                                                             {word.part_of_speech}
                                                         </span>
                                                     )}
-                                                    
+
                                                     {word.definition && (
                                                         <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
                                                             {word.definition}
