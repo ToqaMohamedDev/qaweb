@@ -144,8 +144,8 @@ export function WordDetailModal({
                             onClick={handleSaveToggle}
                             disabled={isSaving}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isSaved
-                                    ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                                    : "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30"
+                                ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                                : "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30"
                                 }`}
                         >
                             {isSaving ? (
@@ -174,7 +174,7 @@ export function WordDetailModal({
                             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                                 التعريف
                             </h3>
-                            <p className="text-white leading-relaxed">{word.definition}</p>
+                            <p className="text-white leading-relaxed text-left" dir="ltr">{word.definition}</p>
                         </div>
                     )}
 
@@ -201,8 +201,8 @@ export function WordDetailModal({
                                     key={lang}
                                     onClick={() => setActiveTab(lang)}
                                     className={`shrink-0 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap min-w-fit ${activeTab === lang
-                                            ? "bg-purple-600 text-white"
-                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                        ? "bg-purple-600 text-white"
+                                        : "text-zinc-400 hover:text-white hover:bg-white/5"
                                         }`}
                                 >
                                     <span>{config?.flag}</span>

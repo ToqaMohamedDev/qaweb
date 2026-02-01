@@ -310,8 +310,8 @@ export default function WordsPage() {
                             <button
                                 onClick={() => setActiveTab("dictionary")}
                                 className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "dictionary"
-                                        ? "text-white"
-                                        : "text-zinc-500 hover:text-zinc-300"
+                                    ? "text-white"
+                                    : "text-zinc-500 hover:text-zinc-300"
                                     }`}
                             >
                                 <Globe className="w-5 h-5" />
@@ -326,8 +326,8 @@ export default function WordsPage() {
                             <button
                                 onClick={() => setActiveTab("mywords")}
                                 className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "mywords"
-                                        ? "text-white"
-                                        : "text-zinc-500 hover:text-zinc-300"
+                                    ? "text-white"
+                                    : "text-zinc-500 hover:text-zinc-300"
                                     }`}
                             >
                                 <BookMarked className="w-5 h-5" />
@@ -375,8 +375,8 @@ export default function WordsPage() {
                                             setPagination((prev) => ({ ...prev, page: 1 }));
                                         }}
                                         className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedLanguage === lang.code
-                                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
-                                                : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
+                                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
+                                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
                                             }`}
                                     >
                                         <span className="text-base">{lang.flag}</span>
@@ -434,8 +434,8 @@ export default function WordsPage() {
                                                     }}
                                                     disabled={savingWordId === word.concept_id}
                                                     className={`absolute top-3 left-3 p-2 rounded-lg transition-all ${isSaved
-                                                            ? "bg-green-500/20 text-green-400"
-                                                            : "bg-white/5 text-zinc-500 opacity-0 group-hover:opacity-100"
+                                                        ? "bg-green-500/20 text-green-400"
+                                                        : "bg-white/5 text-zinc-500 opacity-0 group-hover:opacity-100"
                                                         } hover:scale-110`}
                                                 >
                                                     {savingWordId === word.concept_id ? (
@@ -482,7 +482,7 @@ export default function WordsPage() {
                                                     )}
 
                                                     {word.definition && (
-                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
+                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed text-left" dir="ltr">
                                                             {word.definition}
                                                         </p>
                                                     )}
@@ -648,7 +648,7 @@ export default function WordsPage() {
                                                     )}
 
                                                     {word.definition && (
-                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
+                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed text-left" dir="ltr">
                                                             {word.definition}
                                                         </p>
                                                     )}
