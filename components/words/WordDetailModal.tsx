@@ -2,24 +2,13 @@
 
 import { X, Volume2, BookmarkPlus, BookmarkCheck, Loader2, Copy, Check } from "lucide-react";
 import { useState, useEffect } from "react";
-
-interface LexicalEntry {
-    lemma: string;
-    pronunciations?: { ipa: string; region: string }[];
-    inflections?: { form: string; features: string[] }[];
-    examples?: string[];
-    gender?: string;
-}
-
-interface DictionaryWord {
-    concept_id: string;
-    word_family_root: string;
-    definition: string | null;
-    part_of_speech: string | null;
-    domains: string[] | null;
-    lexical_entries: Record<string, LexicalEntry> | null;
-    relations: { synonyms?: string[]; antonyms?: string[] } | null;
-}
+import {
+    DictionaryWord,
+    LexicalEntry,
+    LANGUAGES,
+    speakText,
+    translateGender,
+} from "@/lib/utils/words";
 
 interface WordDetailModalProps {
     word: DictionaryWord | null;
@@ -28,42 +17,6 @@ interface WordDetailModalProps {
     isSaved: boolean;
     onSave: (conceptId: string) => Promise<void>;
     onRemove: (conceptId: string) => Promise<void>;
-}
-
-const LANGUAGE_CONFIG = {
-    en: { name: "English", nameAr: "الإنجليزية", flag: "🇬🇧", dir: "ltr" },
-    ar: { name: "Arabic", nameAr: "العربية", flag: "🇸🇦", dir: "rtl" },
-    fr: { name: "French", nameAr: "الفرنسية", flag: "🇫🇷", dir: "ltr" },
-    de: { name: "German", nameAr: "الألمانية", flag: "🇩🇪", dir: "ltr" },
-};
-
-function speakText(text: string, langCode: string): void {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const localeMap: Record<string, string> = {
-        ar: "ar-SA", en: "en-US", fr: "fr-FR", de: "de-DE",
-    };
-    utterance.lang = localeMap[langCode] || langCode;
-
-    // Improved TTS settings for better pronunciation
-    utterance.rate = 0.9; // Slightly slower for clarity
-    utterance.pitch = 1.0;
-
-    // Try to find a native voice for the language
-    const voices = speechSynthesis.getVoices();
-    const targetLang = localeMap[langCode] || langCode;
-
-    // Priority: exact match > starts with lang code > any match
-    let voice = voices.find(v => v.lang === targetLang);
-    if (!voice) {
-        voice = voices.find(v => v.lang.startsWith(langCode));
-    }
-    if (voice) {
-        utterance.voice = voice;
-    }
-
-    speechSynthesis.speak(utterance);
 }
 
 export function WordDetailModal({
@@ -93,10 +46,10 @@ export function WordDetailModal({
 
     const lexicalEntries = word.lexical_entries || {};
     const availableLanguages = Object.keys(lexicalEntries).filter(
-        (lang) => lang in LANGUAGE_CONFIG
+        (lang) => lang in LANGUAGES
     );
     const currentEntry = lexicalEntries[activeTab] as LexicalEntry | undefined;
-    const langConfig = LANGUAGE_CONFIG[activeTab as keyof typeof LANGUAGE_CONFIG];
+    const langConfig = LANGUAGES[activeTab];
 
     const handleSaveToggle = async () => {
         setIsSaving(true);
@@ -195,7 +148,7 @@ export function WordDetailModal({
                     {/* Language Tabs */}
                     <div className="flex gap-2 p-1 rounded-xl bg-white/5 overflow-x-auto scrollbar-hide">
                         {availableLanguages.map((lang) => {
-                            const config = LANGUAGE_CONFIG[lang as keyof typeof LANGUAGE_CONFIG];
+                            const config = LANGUAGES[lang];
                             return (
                                 <button
                                     key={lang}
@@ -226,8 +179,7 @@ export function WordDetailModal({
                                     </p>
                                     {currentEntry.gender && (
                                         <span className="text-xs text-zinc-400">
-                                            ({currentEntry.gender === "masculine" ? "مذكر" :
-                                                currentEntry.gender === "feminine" ? "مؤنث" : currentEntry.gender})
+                                            ({translateGender(currentEntry.gender)})
                                         </span>
                                     )}
                                 </div>

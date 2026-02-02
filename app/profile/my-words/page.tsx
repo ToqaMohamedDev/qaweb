@@ -23,6 +23,8 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { speakText } from "@/lib/utils/words";
+import { fadeInUp, containerVariantsFast } from "@/lib/animations/variants";
 
 // Types
 interface SavedWord {
@@ -30,8 +32,8 @@ interface SavedWord {
     pageId: string;
     languageCode: string;
     savedAt: string;
-    wordText: string; // The actual word text to display
-    source: 'word_bank' | 'translation'; // Source of the word
+    wordText: string;
+    source: 'word_bank' | 'translation';
 }
 
 interface SupportedLanguage {
@@ -47,57 +49,6 @@ interface GroupedWords {
         [pageId: string]: SavedWord[];
     };
 }
-
-// TTS Helper with improved voice selection
-function speakText(text: string, langCode: string): void {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const localeMap: Record<string, string> = {
-        ar: "ar-SA",
-        en: "en-US",
-        fr: "fr-FR",
-        de: "de-DE",
-        es: "es-ES",
-        he: "he-IL",
-        ru: "ru-RU",
-        zh: "zh-CN",
-        ja: "ja-JP",
-        ko: "ko-KR",
-    };
-    utterance.lang = localeMap[langCode] || langCode;
-    
-    // Improved TTS settings for better pronunciation
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    
-    // Try to find a native voice for the language
-    const voices = speechSynthesis.getVoices();
-    const targetLang = localeMap[langCode] || langCode;
-    let voice = voices.find(v => v.lang === targetLang);
-    if (!voice) {
-        voice = voices.find(v => v.lang.startsWith(langCode));
-    }
-    if (voice) {
-        utterance.voice = voice;
-    }
-    
-    speechSynthesis.speak(utterance);
-}
-
-// Animation variants
-const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
-
-const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.05, delayChildren: 0.1 },
-    },
-};
 
 export default function MyWordsPage() {
     const { user, isLoading: authLoading } = useAuth();
@@ -388,7 +339,7 @@ export default function MyWordsPage() {
                         className="space-y-4"
                         initial="hidden"
                         animate="visible"
-                        variants={staggerContainer}
+                        variants={containerVariantsFast}
                     >
                         {Object.entries(groupedWords).map(([langCode, pages]) => {
                             const { name, flag } = getLanguageInfo(langCode);

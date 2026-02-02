@@ -1,103 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import {
-    Search,
-    X,
-    BookOpen,
-    BookMarked,
-    Volume2,
-    Trash2,
-    Loader2,
-    ChevronLeft,
-    ChevronRight,
-    BookmarkPlus,
-    BookmarkCheck,
-    Star,
-    Globe,
-} from "lucide-react";
-
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Search, X, BookMarked, Globe } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { WordDetailModal } from "@/components/words/WordDetailModal";
-
-// Types
-interface LexicalEntry {
-    lemma: string;
-    pronunciations?: { ipa: string; region: string }[];
-    inflections?: { form: string; features: string[] }[];
-    examples?: string[];
-    gender?: string;
-}
-
-interface DictionaryWord {
-    concept_id: string;
-    word_family_root: string;
-    definition: string | null;
-    part_of_speech: string | null;
-    domains: string[] | null;
-    lexical_entries: Record<string, LexicalEntry> | null;
-    relations: { synonyms?: string[]; antonyms?: string[] } | null;
-    // Added by API for current language
-    lemma?: string;
-    pronunciations?: { ipa: string; region: string }[];
-}
-
-interface MyWord {
-    id: string;
-    user_id: string;
-    concept_id: string;
-    notes: string | null;
-    is_favorite: boolean;
-    created_at: string;
-    dictionary: DictionaryWord;
-}
-
-interface Pagination {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-}
-
-// Languages for top filter (without Arabic - Arabic always shown in cards)
-const DISPLAY_LANGUAGES = [
-    { code: "en", name: "English", nameAr: "الإنجليزية", flag: "🇬🇧" },
-    { code: "fr", name: "French", nameAr: "الفرنسية", flag: "🇫🇷" },
-    { code: "de", name: "German", nameAr: "الألمانية", flag: "🇩🇪" },
-];
-
-// All languages including Arabic for card display
-const ALL_LANGUAGES = [
-    { code: "ar", name: "Arabic", nameAr: "العربية", flag: "🇸🇦" },
-    { code: "en", name: "English", nameAr: "الإنجليزية", flag: "🇬🇧" },
-    { code: "fr", name: "French", nameAr: "الفرنسية", flag: "🇫🇷" },
-    { code: "de", name: "German", nameAr: "الألمانية", flag: "🇩🇪" },
-];
-
-function speakText(text: string, langCode: string): void {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const localeMap: Record<string, string> = {
-        ar: "ar-SA", en: "en-US", fr: "fr-FR", de: "de-DE",
-    };
-    utterance.lang = localeMap[langCode] || langCode;
-
-    // Improved TTS settings for better pronunciation
-    utterance.rate = 0.9; // Slightly slower for clarity
-    utterance.pitch = 1.0;
-
-    // Try to find a native voice for the language
-    const voices = speechSynthesis.getVoices();
-    const langVoice = voices.find(v => v.lang.startsWith(langCode) || v.lang === localeMap[langCode]);
-    if (langVoice) {
-        utterance.voice = langVoice;
-    }
-
-    speechSynthesis.speak(utterance);
-}
+import {
+    WordDetailModal,
+    WordsPagination,
+    WordsEmptyState,
+    WordsLoadingState,
+    DictionaryWordCard,
+    MyWordCard,
+} from "@/components/words";
+import {
+    DictionaryWord,
+    MyWord,
+    Pagination,
+    DISPLAY_LANGUAGES,
+} from "@/lib/utils/words";
 
 export default function WordsPage() {
     const { user } = useAuth();
@@ -129,6 +49,27 @@ export default function WordsPage() {
 
     // Saving state
     const [savingWordId, setSavingWordId] = useState<string | null>(null);
+
+    // Filtered my words based on search
+    const filteredMyWords = useMemo(() => {
+        if (!searchQuery.trim()) return myWords;
+        const query = searchQuery.toLowerCase();
+        return myWords.filter((item) => {
+            const word = item.dictionary;
+            if (!word) return false;
+            const entries = word.lexical_entries || {};
+            // Search in all language lemmas
+            for (const lang of Object.keys(entries)) {
+                const entry = entries[lang];
+                if (entry?.lemma?.toLowerCase().includes(query)) return true;
+            }
+            // Search in definition
+            if (word.definition?.toLowerCase().includes(query)) return true;
+            // Search in word_family_root
+            if (word.word_family_root?.toLowerCase().includes(query)) return true;
+            return false;
+        });
+    }, [myWords, searchQuery]);
 
     // Debounce search
     useEffect(() => {
@@ -190,7 +131,6 @@ export default function WordsPage() {
                     total: data.pagination.total,
                     totalPages: data.pagination.totalPages,
                 }));
-                // Update saved word IDs
                 const ids = new Set<string>(data.words?.map((w: MyWord) => w.concept_id) || []);
                 setSavedWordIds(ids);
             }
@@ -214,7 +154,7 @@ export default function WordsPage() {
         }
     }, [activeTab, user, fetchMyWords]);
 
-    // Also fetch saved word IDs when on dictionary tab
+    // Fetch saved word IDs when on dictionary tab
     useEffect(() => {
         if (user && activeTab === "dictionary") {
             fetch("/api/my-words?limit=1000")
@@ -267,7 +207,6 @@ export default function WordsPage() {
                     newSet.delete(conceptId);
                     return newSet;
                 });
-                // Remove from myWords list if on that tab
                 setMyWords((prev) => prev.filter((w) => w.concept_id !== conceptId));
             }
         } catch (error) {
@@ -283,20 +222,6 @@ export default function WordsPage() {
         setIsModalOpen(true);
     };
 
-    // Get lemma for current language
-    const getLemma = (word: DictionaryWord, lang: string) => {
-        const entries = word.lexical_entries || {};
-        const langEntry = entries[lang] as LexicalEntry | undefined;
-        return langEntry?.lemma || word.word_family_root;
-    };
-
-    // Get IPA for current language
-    const getIpa = (word: DictionaryWord, lang: string) => {
-        const entries = word.lexical_entries || {};
-        const langEntry = entries[lang] as LexicalEntry | undefined;
-        return langEntry?.pronunciations?.[0]?.ipa || "";
-    };
-
     return (
         <div className="min-h-screen bg-[#09090b]" dir="rtl">
             <Navbar />
@@ -309,10 +234,9 @@ export default function WordsPage() {
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setActiveTab("dictionary")}
-                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "dictionary"
-                                    ? "text-white"
-                                    : "text-zinc-500 hover:text-zinc-300"
-                                    }`}
+                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${
+                                    activeTab === "dictionary" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                                }`}
                             >
                                 <Globe className="w-5 h-5" />
                                 القاموس
@@ -325,10 +249,9 @@ export default function WordsPage() {
                             <span className="text-zinc-700">|</span>
                             <button
                                 onClick={() => setActiveTab("mywords")}
-                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${activeTab === "mywords"
-                                    ? "text-white"
-                                    : "text-zinc-500 hover:text-zinc-300"
-                                    }`}
+                                className={`flex items-center gap-2 text-lg font-bold transition-colors ${
+                                    activeTab === "mywords" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                                }`}
                             >
                                 <BookMarked className="w-5 h-5" />
                                 كلماتي
@@ -363,7 +286,7 @@ export default function WordsPage() {
                         </div>
                     </div>
 
-                    {/* Language chips - only for dictionary tab (Arabic removed - shown in cards) */}
+                    {/* Language chips */}
                     {activeTab === "dictionary" && (
                         <div className="pb-3 -mx-4 px-4 overflow-x-auto scrollbar-hide">
                             <div className="flex gap-2">
@@ -374,10 +297,11 @@ export default function WordsPage() {
                                             setSelectedLanguage(lang.code);
                                             setPagination((prev) => ({ ...prev, page: 1 }));
                                         }}
-                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedLanguage === lang.code
-                                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
-                                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
-                                            }`}
+                                        className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                            selectedLanguage === lang.code
+                                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
+                                                : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
+                                        }`}
                                     >
                                         <span className="text-base">{lang.flag}</span>
                                         <span>{lang.nameAr}</span>
@@ -395,137 +319,32 @@ export default function WordsPage() {
                 {activeTab === "dictionary" && (
                     <>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-                            </div>
+                            <WordsLoadingState />
                         ) : words.length === 0 ? (
-                            <div className="text-center py-20">
-                                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-                                    <Search className="w-8 h-8 text-zinc-600" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-white mb-2">
-                                    لا توجد نتائج
-                                </h3>
-                                <p className="text-zinc-500 text-sm">
-                                    جرب البحث بكلمات مختلفة
-                                </p>
-                            </div>
+                            <WordsEmptyState type="no-results" searchQuery={searchQuery} />
                         ) : (
                             <>
-                                {/* Words Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {words.map((word) => {
-                                        const isSaved = savedWordIds.has(word.concept_id);
-                                        const lemma = getLemma(word, selectedLanguage);
-                                        const arabicLemma = getLemma(word, "ar");
-                                        const ipa = getIpa(word, selectedLanguage);
-
-                                        return (
-                                            <div
-                                                key={word.concept_id}
-                                                className="group relative p-4 rounded-2xl bg-gradient-to-br from-[#141417] to-[#1a1a1f] border border-white/5 hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
-                                                onClick={() => openWordDetail(word)}
-                                            >
-                                                {/* Save button */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        isSaved ? removeWord(word.concept_id) : saveWord(word.concept_id);
-                                                    }}
-                                                    disabled={savingWordId === word.concept_id}
-                                                    className={`absolute top-3 left-3 p-2 rounded-lg transition-all ${isSaved
-                                                        ? "bg-green-500/20 text-green-400"
-                                                        : "bg-white/5 text-zinc-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-                                                        } hover:scale-110`}
-                                                >
-                                                    {savingWordId === word.concept_id ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                    ) : isSaved ? (
-                                                        <BookmarkCheck className="w-4 h-4" />
-                                                    ) : (
-                                                        <BookmarkPlus className="w-4 h-4" />
-                                                    )}
-                                                </button>
-
-                                                {/* Content */}
-                                                <div className="pr-2 space-y-2">
-                                                    {/* Arabic word - always shown first */}
-                                                    <div className="pb-2 border-b border-white/5">
-                                                        <p className="text-lg font-bold text-amber-400" dir="rtl">
-                                                            🇸🇦 {arabicLemma}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Selected language word */}
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm">
-                                                            {DISPLAY_LANGUAGES.find(l => l.code === selectedLanguage)?.flag}
-                                                        </span>
-                                                        <p
-                                                            className="text-xl font-bold text-white"
-                                                            dir="ltr"
-                                                        >
-                                                            {lemma}
-                                                        </p>
-                                                    </div>
-
-                                                    {ipa && (
-                                                        <p className="text-xs text-emerald-400/80 font-mono" dir="ltr">
-                                                            /{ipa}/
-                                                        </p>
-                                                    )}
-
-                                                    {word.part_of_speech && (
-                                                        <span className="inline-block px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 text-xs font-medium">
-                                                            {word.part_of_speech}
-                                                        </span>
-                                                    )}
-
-                                                    {word.definition && (
-                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed text-left" dir="ltr">
-                                                            {word.definition}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                {/* Speak button */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        speakText(lemma, selectedLanguage);
-                                                    }}
-                                                    className="absolute bottom-3 left-3 p-2.5 rounded-xl bg-white/5 text-zinc-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:bg-purple-500/20 hover:text-purple-400 transition-all"
-                                                    title="استمع للنطق"
-                                                >
-                                                    <Volume2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                    {words.map((word) => (
+                                        <DictionaryWordCard
+                                            key={word.concept_id}
+                                            word={word}
+                                            selectedLanguage={selectedLanguage}
+                                            isSaved={savedWordIds.has(word.concept_id)}
+                                            isSaving={savingWordId === word.concept_id}
+                                            onSave={saveWord}
+                                            onRemove={removeWord}
+                                            onClick={() => openWordDetail(word)}
+                                        />
+                                    ))}
                                 </div>
 
-                                {/* Pagination */}
-                                {pagination.totalPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-8">
-                                        <button
-                                            onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
-                                            disabled={pagination.page === 1}
-                                            className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronRight className="w-5 h-5" />
-                                        </button>
-                                        <span className="px-4 py-2 text-sm text-zinc-400">
-                                            صفحة {pagination.page} من {pagination.totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                                            disabled={pagination.page === pagination.totalPages}
-                                            className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                )}
+                                <WordsPagination
+                                    page={pagination.page}
+                                    totalPages={pagination.totalPages}
+                                    onPageChange={(page) => setPagination((p) => ({ ...p, page }))}
+                                    className="mt-8"
+                                />
                             </>
                         )}
                     </>
@@ -535,167 +354,34 @@ export default function WordsPage() {
                 {activeTab === "mywords" && (
                     <>
                         {!user ? (
-                            <div className="text-center py-20">
-                                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-                                    <BookMarked className="w-8 h-8 text-zinc-600" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-white mb-2">
-                                    سجل دخولك أولاً
-                                </h3>
-                                <p className="text-zinc-500 text-sm mb-4">
-                                    لعرض كلماتك المحفوظة
-                                </p>
-                                <Link
-                                    href="/login?redirect=/words"
-                                    className="inline-block px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
-                                >
-                                    تسجيل الدخول
-                                </Link>
-                            </div>
+                            <WordsEmptyState type="not-logged-in" />
                         ) : myWordsLoading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-                            </div>
+                            <WordsLoadingState />
                         ) : myWords.length === 0 ? (
-                            <div className="text-center py-20">
-                                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-                                    <BookMarked className="w-8 h-8 text-zinc-600" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-white mb-2">
-                                    لم تحفظ أي كلمات بعد
-                                </h3>
-                                <p className="text-zinc-500 text-sm mb-4">
-                                    اذهب للقاموس واحفظ الكلمات التي تريد تعلمها
-                                </p>
-                                <button
-                                    onClick={() => setActiveTab("dictionary")}
-                                    className="inline-block px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
-                                >
-                                    تصفح القاموس
-                                </button>
-                            </div>
+                            <WordsEmptyState type="no-saved-words" onAction={() => setActiveTab("dictionary")} />
+                        ) : filteredMyWords.length === 0 ? (
+                            <WordsEmptyState type="no-results" searchQuery={searchQuery} />
                         ) : (
                             <>
-                                {/* My Words Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {myWords.map((item) => {
-                                        const word = item.dictionary;
-                                        if (!word) return null;
-                                        const arabicLemma = getLemma(word, "ar");
-                                        const englishLemma = getLemma(word, "en");
-
-                                        return (
-                                            <div
-                                                key={item.id}
-                                                className="group relative p-4 rounded-2xl bg-gradient-to-br from-[#141417] to-[#1a1a1f] border border-white/5 hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
-                                                onClick={() => openWordDetail(word)}
-                                            >
-                                                {/* Actions */}
-                                                <div className="absolute top-3 left-3 flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            speakText(englishLemma, "en");
-                                                        }}
-                                                        className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
-                                                        title="استمع للنطق"
-                                                    >
-                                                        <Volume2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            removeWord(word.concept_id);
-                                                        }}
-                                                        disabled={savingWordId === word.concept_id}
-                                                        className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:bg-red-500/20 hover:text-red-400 transition-colors"
-                                                        title="حذف الكلمة"
-                                                    >
-                                                        {savingWordId === word.concept_id ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                        ) : (
-                                                            <Trash2 className="w-4 h-4" />
-                                                        )}
-                                                    </button>
-                                                </div>
-
-                                                {/* Favorite indicator */}
-                                                {item.is_favorite && (
-                                                    <Star className="absolute top-3 right-3 w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                                )}
-
-                                                {/* Content */}
-                                                <div className="space-y-2">
-                                                    {/* Arabic word - always shown first */}
-                                                    <div className="pb-2 border-b border-white/5">
-                                                        <p className="text-lg font-bold text-amber-400" dir="rtl">
-                                                            🇸🇦 {arabicLemma}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* English word */}
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm">🇬🇧</span>
-                                                        <p className="text-xl font-bold text-white" dir="ltr">
-                                                            {englishLemma}
-                                                        </p>
-                                                    </div>
-
-                                                    {word.part_of_speech && (
-                                                        <span className="inline-block px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 text-xs font-medium">
-                                                            {word.part_of_speech}
-                                                        </span>
-                                                    )}
-
-                                                    {word.definition && (
-                                                        <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed text-left" dir="ltr">
-                                                            {word.definition}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                {/* Languages preview */}
-                                                <div className="flex gap-1.5 mt-3 pt-2 border-t border-white/5">
-                                                    {word.lexical_entries &&
-                                                        Object.keys(word.lexical_entries).map((lang) => {
-                                                            const langConfig = ALL_LANGUAGES.find((l) => l.code === lang);
-                                                            return (
-                                                                <span key={lang} className="text-sm opacity-60 hover:opacity-100 transition-opacity" title={langConfig?.name}>
-                                                                    {langConfig?.flag}
-                                                                </span>
-                                                            );
-                                                        })}
-                                                </div>
-
-                                                <p className="text-[10px] text-zinc-600 mt-2">
-                                                    {new Date(item.created_at).toLocaleDateString("ar-EG")}
-                                                </p>
-                                            </div>
-                                        );
-                                    })}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                    {filteredMyWords.map((item) => (
+                                        <MyWordCard
+                                            key={item.id}
+                                            item={item}
+                                            isSaving={savingWordId === item.dictionary?.concept_id}
+                                            onRemove={removeWord}
+                                            onClick={() => item.dictionary && openWordDetail(item.dictionary)}
+                                        />
+                                    ))}
                                 </div>
 
-                                {/* Pagination */}
-                                {myWordsPagination.totalPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-8">
-                                        <button
-                                            onClick={() => setMyWordsPagination((p) => ({ ...p, page: p.page - 1 }))}
-                                            disabled={myWordsPagination.page === 1}
-                                            className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronRight className="w-5 h-5" />
-                                        </button>
-                                        <span className="px-4 py-2 text-sm text-zinc-400">
-                                            صفحة {myWordsPagination.page} من {myWordsPagination.totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setMyWordsPagination((p) => ({ ...p, page: p.page + 1 }))}
-                                            disabled={myWordsPagination.page === myWordsPagination.totalPages}
-                                            className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft className="w-5 h-5" />
-                                        </button>
-                                    </div>
+                                {!searchQuery && (
+                                    <WordsPagination
+                                        page={myWordsPagination.page}
+                                        totalPages={myWordsPagination.totalPages}
+                                        onPageChange={(page) => setMyWordsPagination((p) => ({ ...p, page }))}
+                                        className="mt-8"
+                                    />
                                 )}
                             </>
                         )}
