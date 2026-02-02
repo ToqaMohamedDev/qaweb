@@ -154,7 +154,14 @@ export default function OnboardingPage() {
         try {
             const supabase = createClient();
             addLog("Getting current user...");
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+            // Race condition for getUser to prevent infinite hang
+            const userPromise = supabase.auth.getUser();
+            const timeoutPromise = new Promise<{ data: { user: any }, error: any }>((_, reject) =>
+                setTimeout(() => reject(new Error('Auth check timed out')), 5000)
+            );
+
+            const { data: { user }, error: userError } = await Promise.race([userPromise, timeoutPromise]);
 
             if (userError) {
                 addLog(`User Error: ${userError.message}`);
@@ -247,10 +254,27 @@ export default function OnboardingPage() {
 
             {/* DEBUG CONSOLE */}
             <div className="max-w-2xl mx-auto w-full p-4 mb-4 safe-area-inset-top">
-                <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs dir-ltr overflow-auto max-h-40 border border-green-900 shadow-xl opacity-90">
-                    <div className="font-bold border-b border-green-800 mb-2 pb-1 flex justify-between">
+                <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs dir-ltr overflow-auto max-h-40 border border-green-900 shadow-xl opacity-90 relative">
+                    <div className="font-bold border-b border-green-800 mb-2 pb-1 flex justify-between items-center">
                         <span>🛑 DEBUG CONSOLE</span>
-                        <span className="text-gray-500">Take screenshot if stuck</span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={async () => {
+                                    addLog("♻️ Resetting session...");
+                                    const supabase = createClient();
+                                    await supabase.auth.signOut();
+                                    localStorage.clear();
+                                    document.cookie.split(";").forEach((c) => {
+                                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                                    });
+                                    window.location.reload();
+                                }}
+                                className="bg-red-900 text-white px-2 py-1 rounded hover:bg-red-700 text-[10px]"
+                            >
+                                Fix Stuck
+                            </button>
+                            <span className="text-gray-500">Params: {Object.fromEntries(new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').entries()).welcome ? 'welcome=true' : 'none'}</span>
+                        </div>
                     </div>
                     {debugLogs.length === 0 ? <div className="text-gray-600">Waiting for action...</div> : debugLogs.map((log, i) => <div key={i}>{log}</div>)}
                 </div>
