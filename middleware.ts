@@ -96,7 +96,22 @@ export async function middleware(request: NextRequest) {
 
     // CRITICAL: Always call getUser() to refresh session
     // This updates the auth cookies if they're expired
-    const { data: { user } } = await supabase.auth.getUser();
+    let user = null;
+    try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+            // تجاهل أخطاء التوكن المنتهي، فهي طبيعية وتعني أن المستخدم يحتاج لتسجيل الدخول
+            if (!error.message.includes('Refresh Token Not Found') &&
+                !error.message.includes('Invalid Refresh Token')) {
+                console.error('Middleware Auth Error:', error.message);
+            }
+        }
+        user = data?.user ?? null;
+    } catch (err) {
+        // حماية إضافية ضد أي كراش غير متوقع أثناء التحقق
+        console.error('Middleware Auth Exception:', err);
+        user = null;
+    }
 
     // 2. AUTH ROUTES - REDIRECT LOGGED IN USERS TO HOME
     // =================================================
