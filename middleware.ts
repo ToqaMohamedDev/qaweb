@@ -125,13 +125,23 @@ export async function middleware(request: NextRequest) {
 
     // 5. ONBOARDING CHECK - Redirect new users to complete their profile
     // =================================================
-    // Skip onboarding check for onboarding page itself and API routes
+    // Skip onboarding check for:
+    // 1. The onboarding page itself
+    // 2. API routes
+    // 3. Auth pages (login/signup)
+    // 4. Server Actions (POST requests) - CRITICAL for performance
+    // 5. Users arriving with ?welcome=true flag (Freshly onboarded users, bypassing stale DB checks)
+    const isWelcomeParam = request.nextUrl.searchParams.get('welcome') === 'true';
+
     const skipOnboardingCheck = pathname === '/onboarding' ||
         pathname.startsWith('/api/') ||
         pathname === '/login' ||
-        pathname === '/signup';
+        pathname === '/signup' ||
+        request.method === 'POST' ||
+        isWelcomeParam;
 
     if (user && !skipOnboardingCheck) {
+        // Only verify profile if we really need to
         const { data: profile } = await supabase
             .from('profiles')
             .select('role, role_selected, educational_stage_id')
@@ -139,7 +149,7 @@ export async function middleware(request: NextRequest) {
             .single();
 
         // If user hasn't completed onboarding, redirect to onboarding
-        // Check: role_selected is false (educational_stage_id is now optional)
+        // Check: role_selected is false
         if (!profile?.role_selected) {
             const response = NextResponse.redirect(new URL('/onboarding', request.url));
             supabaseResponse.cookies.getAll().forEach(cookie => {
