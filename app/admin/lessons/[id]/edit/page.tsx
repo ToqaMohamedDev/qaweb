@@ -79,7 +79,7 @@ const t = {
         errorCorrect: 'الرجاء تحديد الإجابة الصحيحة',
         errorLoad: 'حدث خطأ أثناء تحميل السؤال',
         errorNotFound: 'السؤال غير موجود',
-        backToBank: 'العودة لبنك الأسئلة',
+        backToBank: 'العودة للدروس',
     },
     en: {
         pageTitle: 'Edit Question',
@@ -275,7 +275,7 @@ export default function EditQuestionPage() {
 
             setSuccessMessage(labels.success);
             setTimeout(() => {
-                router.push('/admin/question-bank');
+                router.push('/admin/lessons');
             }, 1500);
         } catch (err: any) {
             logger.error('Error saving question', { context: 'EditQuestion', data: err });
@@ -306,7 +306,7 @@ export default function EditQuestionPage() {
                 <AlertTriangle className="h-12 w-12 text-red-400 mb-4" />
                 <p className="text-red-500 font-medium mb-4">{error}</p>
                 <button
-                    onClick={() => router.push('/admin/question-bank')}
+                    onClick={() => router.push('/admin/lessons')}
                     className="text-indigo-600 hover:underline"
                 >
                     {labels.backToBank}
@@ -325,7 +325,7 @@ export default function EditQuestionPage() {
             >
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => router.push('/admin/question-bank')}
+                        onClick={() => router.push('/admin/lessons')}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                     >
                         {isRTL ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
@@ -356,7 +356,7 @@ export default function EditQuestionPage() {
                     </div>
 
                     <button
-                        onClick={() => router.push('/admin/question-bank')}
+                        onClick={() => router.push('/admin/lessons')}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1c1c24] hover:bg-gray-50 text-sm font-medium"
                     >
                         <X className="h-4 w-4" />

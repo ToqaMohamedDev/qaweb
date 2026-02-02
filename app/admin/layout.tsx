@@ -28,9 +28,6 @@ import {
     Smartphone,
     Mail,
     Gamepad2,
-    Languages,
-    BookMarked,
-    Globe,
 } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
@@ -53,18 +50,10 @@ const sidebarItems = [
             { href: "/admin/teachers", label: "المعلمين", icon: GraduationCap },
             { href: "/admin/stages", label: "المراحل الدراسية", icon: Layers },
             { href: "/admin/subjects", label: "المواد", icon: BookOpen },
+            { href: "/admin/units", label: "الوحدات", icon: Layers },
             { href: "/admin/lessons", label: "الدروس", icon: FileText },
             { href: "/admin/exams", label: "الامتحانات", icon: FileText },
-            { href: "/admin/question-bank", label: "بنك الأسئلة", icon: HelpCircle },
             { href: "/admin/quiz-questions", label: "أسئلة الكويز", icon: Gamepad2 },
-        ],
-    },
-    {
-        title: "نظام الكلمات",
-        items: [
-            { href: "/admin/languages", label: "اللغات المدعومة", icon: Globe },
-            { href: "/admin/page-words", label: "كلمات الصفحات", icon: BookMarked },
-            { href: "/admin/word-bank", label: "بنك الكلمات", icon: Languages },
         ],
     },
     {

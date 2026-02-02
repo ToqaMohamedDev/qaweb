@@ -326,7 +326,8 @@ export function useDeleteSubjectAPI(): UseMutationResult {
 }
 
 // ==========================================
-// Lessons Hooks (Admin API Version)
+// Units Hooks (Admin API Version)
+// Note: Uses 'lessons' table - represents Units/Branches in UI
 // ==========================================
 
 export function useLessonsAPI(): UseQueryResult<Lesson> {
@@ -521,7 +522,8 @@ export function useDeleteExamAPI(): UseMutationResult {
 }
 
 // ==========================================
-// Question Banks Hooks (Admin API Version)
+// Lessons Hooks (Admin API Version)
+// Note: Uses 'question_banks' table - represents Lessons in UI
 // ==========================================
 
 export function useQuestionBanksAPI(): UseQueryResult<any> {

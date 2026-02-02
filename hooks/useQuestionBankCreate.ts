@@ -443,7 +443,7 @@ export function useQuestionBankCreate() {
             if (insertError) throw insertError;
 
             setSuccessMessage(labels.successMessage);
-            setTimeout(() => router.push('/admin/question-bank'), 2000);
+            setTimeout(() => router.push('/admin/lessons'), 2000);
         } catch (err: any) {
             logger.error('Error saving questions', { context: 'CreateQuestions', data: err });
             setError(err?.message || labels.errorSaving);
@@ -535,7 +535,7 @@ export function useQuestionBankCreate() {
 
         // Actions
         handleSave,
-        goBack: () => router.push('/admin/question-bank'),
+        goBack: () => router.push('/admin/lessons'),
 
         // Computed
         totalQuestions,

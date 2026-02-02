@@ -78,7 +78,7 @@ export default function SignUpPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const [stages, setStages] = useState<Array<{id: string; name: string}>>([]);
+    const [stages, setStages] = useState<Array<{ id: string; name: string }>>([]);
     const [isLoadingStages, setIsLoadingStages] = useState(true);
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -92,7 +92,7 @@ export default function SignUpPage() {
                 // استخدام API route بدل Supabase client مباشرة
                 // لأن الـ client-side Supabase بيفشل على بعض المتصفحات الموبايل
                 const response = await fetch('/api/public/data?entity=stages');
-                
+
                 if (response.ok) {
                     const result = await response.json();
                     if (result.data && Array.isArray(result.data)) {
@@ -126,7 +126,7 @@ export default function SignUpPage() {
         setSuccess("");
 
         try {
-            const signupResult = await signUpWithEmail({
+            await signUpWithEmail({
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
@@ -134,28 +134,13 @@ export default function SignUpPage() {
                 educationalStageId: formData.educationalStageId
             });
 
-            // حفظ البيانات في جدول profiles مباشرة
-            if (signupResult?.user?.id) {
-                const profileResponse = await fetch('/api/auth/signup-profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: signupResult.user.id,
-                        email: formData.email,
-                        name: formData.name,
-                        role: formData.role,
-                        educationalStageId: formData.educationalStageId
-                    })
-                });
-
-                if (!profileResponse.ok) {
-                    console.error('Failed to create profile');
-                }
-            }
-
+            // تحديث حالة المستخدم في التطبيق
             await refreshUser();
 
-            // توجيه المستخدم للصفحة الرئيسية (البيانات مكتملة)
+            // توجيه المستخدم
+            // ننتظر قليلاً للتأكد من أن التريجر قد عمل (اختياري، لكن آمن)
+            // في الواقع، بمجرد نجاح signUp، المستخدم موجود.
+
             if (formData.role === 'teacher') {
                 router.push('/teacher');
             } else {
@@ -285,11 +270,10 @@ export default function SignUpPage() {
                                     <select
                                         value={formData.educationalStageId}
                                         onChange={(e) => setFieldValue('educationalStageId', e.target.value)}
-                                        className={`w-full pr-12 pl-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border transition-all text-gray-900 dark:text-white appearance-none cursor-pointer ${
-                                            errors.educationalStageId
+                                        className={`w-full pr-12 pl-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border transition-all text-gray-900 dark:text-white appearance-none cursor-pointer ${errors.educationalStageId
                                                 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
                                                 : 'border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20'
-                                        }`}
+                                            }`}
                                     >
                                         <option value="">اختر المرحلة الدراسية</option>
                                         {stages.map((stage) => (

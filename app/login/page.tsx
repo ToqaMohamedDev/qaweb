@@ -95,9 +95,17 @@ export default function LoginPage() {
         setError("");
 
         try {
-            await signInWithEmail({ email: formData.email, password: formData.password });
+            const { user: authUser } = await signInWithEmail({ email: formData.email, password: formData.password });
             await refreshUser();
-            // التوجيه سيتم تلقائياً من useEffect
+
+            // التوجيه المباشر لتسريع الاستجابة
+            if (authUser?.user_metadata?.role === 'admin') {
+                router.push('/admin');
+            } else if (authUser?.user_metadata?.role === 'teacher') {
+                router.push('/teacher');
+            } else {
+                router.push(redirectTo);
+            }
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : '';
 

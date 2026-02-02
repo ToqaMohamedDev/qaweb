@@ -343,7 +343,7 @@ export default function EditGroupPage() {
 
             setSuccessMessage('تم حفظ التعديلات بنجاح!');
             setTimeout(() => {
-                router.push('/admin/question-bank');
+                router.push('/admin/lessons');
             }, 1500);
         } catch (err: any) {
             logger.error('Error saving group', { context: 'EditGroup', data: err });
@@ -377,7 +377,7 @@ export default function EditGroupPage() {
             >
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => router.push('/admin/question-bank')}
+                        onClick={() => router.push('/admin/lessons')}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                     >
                         <ArrowRight className="h-5 w-5" />
@@ -393,7 +393,7 @@ export default function EditGroupPage() {
 
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => router.push('/admin/question-bank')}
+                        onClick={() => router.push('/admin/lessons')}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1c1c24] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
                     >
                         <X className="h-4 w-4" />

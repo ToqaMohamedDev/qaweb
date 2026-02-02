@@ -90,7 +90,7 @@ interface QuestionSection {
 
 const t = {
     ar: {
-        pageTitle: 'إضافة أسئلة للبنك',
+        pageTitle: 'إضافة درس جديد',
         questionsIn: 'سؤال في',
         sections: 'قسم',
         cancel: 'إلغاء',
@@ -599,8 +599,8 @@ export default function CreateQuestionsPage() {
 
             // إنشاء عنوان للبنك من حقل العنوان الرئيسي
             const finalBankTitle = {
-                ar: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'بنك أسئلة جديد',
-                en: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'New Question Bank'
+                ar: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'درس جديد',
+                en: bankTitle.trim() || readingTitle.trim() || poetryTitle.trim() || 'New Lesson'
             };
 
             // حساب مجموع النقاط
@@ -629,7 +629,7 @@ export default function CreateQuestionsPage() {
             if (insertError) throw insertError;
 
             setSuccessMessage(labels.successMessage);
-            setTimeout(() => router.push('/admin/question-bank'), 2000);
+            setTimeout(() => router.push('/admin/lessons'), 2000);
         } catch (err: any) {
             logger.error('Error saving question bank', { context: 'CreateQuestionBank', data: err });
             setError(err?.message || labels.errorSaving);
@@ -685,7 +685,7 @@ export default function CreateQuestionsPage() {
                     </div>
 
                     <button
-                        onClick={() => router.push('/admin/question-bank')}
+                        onClick={() => router.push('/admin/lessons')}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1c1c24] hover:bg-gray-50 text-sm font-medium"
                     >
                         <X className="h-4 w-4" />

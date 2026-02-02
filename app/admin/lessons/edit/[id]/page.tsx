@@ -141,7 +141,7 @@ export default function EditQuestionBankPage() {
                     .single();
 
                 if (fetchError) throw fetchError;
-                if (!data) throw new Error('البنك غير موجود');
+                if (!data) throw new Error('الدرس غير موجود');
 
                 setBank(data as any);
 
@@ -185,7 +185,7 @@ export default function EditQuestionBankPage() {
 
             } catch (err: any) {
                 logger.error('Error loading question bank', { context: 'EditQuestionBank', data: err });
-                setError(err?.message || 'حدث خطأ أثناء تحميل البنك');
+                setError(err?.message || 'حدث خطأ أثناء تحميل الدرس');
             } finally {
                 setIsLoading(false);
             }
@@ -373,7 +373,7 @@ export default function EditQuestionBankPage() {
             <div className="flex items-center justify-center min-h-[400px]" dir="rtl">
                 <div className="flex items-center gap-3 text-gray-500">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    <span>جاري تحميل البنك...</span>
+                    <span>جاري تحميل الدرس...</span>
                 </div>
             </div>
         );
@@ -386,7 +386,7 @@ export default function EditQuestionBankPage() {
                     <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-red-700 dark:text-red-400 mb-2">حدث خطأ</h2>
                     <p className="text-red-600 dark:text-red-300 mb-4">{error}</p>
-                    <Link href="/admin/question-bank" className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    <Link href="/admin/lessons" className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                         <ArrowLeft className="h-4 w-4" />
                         العودة للقائمة
                     </Link>
@@ -412,7 +412,7 @@ export default function EditQuestionBankPage() {
                             <Edit3 className="h-7 w-7" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">تعديل بنك الأسئلة</h1>
+                            <h1 className="text-2xl font-bold">تعديل الدرس</h1>
                             <div className="flex flex-wrap items-center gap-2 text-white/70 text-sm mt-1">
                                 <span>{totalQuestions} سؤال</span>
                                 <span>•</span>
@@ -433,7 +433,7 @@ export default function EditQuestionBankPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Link href="/admin/question-bank" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm">
+                        <Link href="/admin/lessons" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm">
                             <ArrowLeft className="h-4 w-4" />
                             العودة
                         </Link>
