@@ -151,7 +151,10 @@ export default function OnboardingPage() {
 
             if (!user) throw new Error("لم يتم العثور على المستخدم");
 
-            const result = await updateUserRoleAction({
+            // Race Condition:
+            // نحاول الحفظ، لكن إذا تأخرت الاستجابة أكثر من 4 ثواني، سننتقل تلقائياً
+            // هذا يحل مشكلة "التعليق" في الشبكات البطيئة أو عند ضياع الرد
+            const updatePromise = updateUserRoleAction({
                 userId: user.id,
                 role: selectedRole!,
                 email: user.email || '',
@@ -160,7 +163,20 @@ export default function OnboardingPage() {
                 educationalStageId: selectedStageId,
             });
 
-            if (!result.success) throw new Error(result.error || 'فشل في حفظ البيانات');
+            // مؤقت للخروج الاجباري
+            const timeoutNavigation = new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    console.log('Force navigation triggered due to timeout');
+                    resolve();
+                }, 4000);
+            });
+
+            // ننتظر أيهما يحدث أولاً: الحفظ أو انتهاء الوقت
+            await Promise.race([updatePromise.then(res => {
+                if (!res.success) throw new Error(res.error);
+                return res;
+            }), timeoutNavigation]);
+
 
             // إزالة refreshUser() لأنها قد تسبب تعليق في الموبايل
             // الاعتماد كلياً على Hard Reload

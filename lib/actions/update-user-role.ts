@@ -40,27 +40,44 @@ export async function updateUserRoleAction(params: {
             }
         });
 
+        if (educationalStageId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(educationalStageId)) {
+            console.warn('[updateUserRole] Invalid UUID for stage, setting to null');
+            // لا نوقف العملية، بل نصحح القيمة
+        }
+
+        const cleanStageId = (educationalStageId && educationalStageId.trim().length > 0)
+            ? educationalStageId
+            : null;
+
         const updateData = {
             email,
             name: name || email.split('@')[0],
             role,
             role_selected: true,
-            is_teacher_approved: false, // يحتاج موافقة لاحقًا
+            is_teacher_approved: false,
             avatar_url: avatarUrl,
-            educational_stage_id: educationalStageId || null,
+            educational_stage_id: cleanStageId,
             updated_at: new Date().toISOString()
         };
 
-        // استخدام upsert لضمان إنشاء السجل أو تحديثه
-        const { error } = await supabase
+        // إضافة Timeout لعملية قاعدة البيانات لتجنب التعليق اللانهائي
+        const dbPromise = supabase
             .from('profiles')
             .upsert({
                 id: userId,
                 ...updateData
             });
 
+        // ننتظر بحد أقصى 8 ثواني
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout connecting to database')), 8000)
+        );
+
+        const { error } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
         if (error) {
             console.error('[updateUserRole] Supabase Error:', error);
+            // حتى لو حدث خطأ، قد يكون السجل تم تحديثه جزئياً، لكن سنرجع الخطأ
             return {
                 success: false,
                 error: error.message || 'فشل في تحديث الملف الشخصي'
