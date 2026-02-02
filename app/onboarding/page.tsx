@@ -162,15 +162,18 @@ export default function OnboardingPage() {
 
             if (!result.success) throw new Error(result.error || 'فشل في حفظ البيانات');
 
+            // تحديث حالة الجلسة محلياً إن أمكن (اختياري)
             await refreshUser();
 
-            // توجيه المستخدم
+            // استخدام نافذة التوجيه المباشر بدلاً من router.push 
+            // لضمان تحديث كامل للصفحة وتفادي التعليق بسبب الكاش
             if (selectedRole === 'teacher') {
-                router.push("/teacher");
+                window.location.href = "/teacher?welcome=true";
             } else {
-                router.push("/"); // أو للصفحة الرئيسية مع رسالة ترحيب
+                window.location.href = "/?welcome=true";
             }
         } catch (err: unknown) {
+            console.error('Onboarding completion error:', err);
             setError(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الاختيار");
             setIsLoading(false);
         }
@@ -222,10 +225,10 @@ export default function OnboardingPage() {
                     {(['name', 'role', 'stage'] as OnboardingStep[]).map((step, index) => (
                         <div key={step} className="flex items-center">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${currentStep === step
-                                    ? 'bg-primary-500 text-white shadow-lg'
-                                    : index < ['name', 'role', 'stage'].indexOf(currentStep)
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
+                                ? 'bg-primary-500 text-white shadow-lg'
+                                : index < ['name', 'role', 'stage'].indexOf(currentStep)
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
                                 }`}>
                                 {index < ['name', 'role', 'stage'].indexOf(currentStep) ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
                             </div>
@@ -280,8 +283,8 @@ export default function OnboardingPage() {
                                     key={option.value}
                                     onClick={() => { setSelectedRole(option.value); setError(""); }}
                                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-start gap-4 text-right relative overflow-hidden ${selectedRole === option.value
-                                            ? `${option.borderColor} ${option.bgColor}`
-                                            : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                                        ? `${option.borderColor} ${option.bgColor}`
+                                        : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
                                         }`}
                                 >
                                     <div className={`p-3 rounded-lg bg-gradient-to-br ${option.color} text-white shadow-lg`}>
@@ -313,8 +316,8 @@ export default function OnboardingPage() {
                                             key={stage.id}
                                             onClick={() => setSelectedStageId(stage.id)}
                                             className={`w-full p-4 rounded-xl border transition-all flex items-center gap-3 ${selectedStageId === stage.id
-                                                    ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                                                    : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                                                ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                                                : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
                                                 }`}
                                         >
                                             <School className="h-5 w-5 text-gray-500" />
