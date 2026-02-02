@@ -1,8 +1,10 @@
 'use server';
 
+import { createClient } from '@supabase/supabase-js';
+
 /**
- * Update User Role & Profile - Simple Direct Approach
- * Also saves educational stage for students
+ * Update User Role & Profile - Robust Server Action
+ * Uses direct Supabase client for reliability in production environments
  */
 
 export async function updateUserRoleAction(params: {
@@ -15,55 +17,59 @@ export async function updateUserRoleAction(params: {
 }) {
     const { userId, role, email, name, avatarUrl, educationalStageId } = params;
 
+    console.log('[updateUserRole] Starting update for user:', userId);
+
     try {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
         if (!key || !url) {
+            console.error('[updateUserRole] Missing Supabase credentials');
             return {
                 success: false,
                 error: 'Configuration error: Missing credentials'
             };
         }
 
-        const response = await fetch(`${url}/rest/v1/profiles`, {
-            method: 'POST',
-            headers: {
-                'apikey': key,
-                'Authorization': `Bearer ${key}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'resolution=merge-duplicates,return=representation'
-            },
-            body: JSON.stringify({
-                id: userId,
-                email,
-                name: name || email.split('@')[0],
-                role,
-                role_selected: true,
-                is_teacher_approved: false,
-                avatar_url: avatarUrl,
-                educational_stage_id: educationalStageId || null,
-                updated_at: new Date().toISOString()
-            })
+        // استخدام عميل Supabase الرسمي بصلاحيات Service Role
+        // هذا يتخطى أي مشاكل شبكة قد تواجهها طلبات fetch العادية
+        const supabase = createClient(url, key, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[updateUserRole] Error response:', errorText);
+        const updateData = {
+            email,
+            name: name || email.split('@')[0],
+            role,
+            role_selected: true,
+            is_teacher_approved: false, // يحتاج موافقة لاحقًا
+            avatar_url: avatarUrl,
+            educational_stage_id: educationalStageId || null,
+            updated_at: new Date().toISOString()
+        };
 
-            let errorMessage = 'فشل في حفظ البيانات';
-            try {
-                const errorData = JSON.parse(errorText);
-                errorMessage = errorData.message || errorMessage;
-            } catch { }
+        // استخدام upsert لضمان إنشاء السجل أو تحديثه
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: userId,
+                ...updateData
+            });
 
+        if (error) {
+            console.error('[updateUserRole] Supabase Error:', error);
             return {
                 success: false,
-                error: errorMessage
+                error: error.message || 'فشل في تحديث الملف الشخصي'
             };
         }
 
+        console.log('[updateUserRole] Success');
         return { success: true };
+
     } catch (error: any) {
         console.error('[updateUserRole] Exception:', error);
         return {
