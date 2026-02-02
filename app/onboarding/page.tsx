@@ -1,7 +1,7 @@
 "use client";
 
 // =============================================
-// Onboarding Page - صفحة اختيار الدور والمرحلة للمستخدمين الجدد
+// Onboarding Page - Debug Mode
 // =============================================
 
 import { useState, useEffect } from "react";
@@ -11,7 +11,6 @@ import {
     GraduationCap,
     BookOpen,
     ArrowLeft,
-    ArrowRight,
     CheckCircle2,
     AlertCircle,
     Sparkles,
@@ -21,7 +20,7 @@ import {
     School,
     Loader2
 } from "lucide-react";
-import { Button, Navbar } from "@/components"; // Removed Footer import as we have sticky footer
+import { Button, Navbar } from "@/components";
 import { createClient } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { updateUserRoleAction } from "@/lib/actions/update-user-role";
@@ -46,11 +45,20 @@ export default function OnboardingPage() {
     const [selectedRole, setSelectedRole] = useState<SelectedRole>(null);
     const [selectedStageId, setSelectedStageId] = useState<string>('');
     const [stages, setStages] = useState<EducationalStage[]>([]);
+
+    // Debug & Status State
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStages, setIsLoadingStages] = useState(false);
     const [error, setError] = useState("");
+    const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
-    // جلب المراحل الدراسية (Server Action لتجنب مشاكل الصلاحيات)
+    const addLog = (msg: string) => {
+        const time = new Date().toLocaleTimeString();
+        setDebugLogs(prev => [...prev, `[${time}] ${msg}`]);
+        console.log(`[DEBUG] ${msg}`);
+    };
+
+    // جلب المراحل الدراسية
     useEffect(() => {
         const fetchStages = async () => {
             setIsLoadingStages(true);
@@ -61,6 +69,7 @@ export default function OnboardingPage() {
                 }
             } catch (err) {
                 console.error('Error fetching stages:', err);
+                addLog(`Error fetching stages: ${err}`);
             } finally {
                 setIsLoadingStages(false);
             }
@@ -82,20 +91,17 @@ export default function OnboardingPage() {
                 if (hasRole) setSelectedRole(user.user_metadata.role as 'student' | 'teacher');
                 if (hasStage) setSelectedStageId(user.user_metadata.educational_stage_id);
 
-                // الانتقال التلقائي للخطوات التالية
                 if (hasName && hasRole && !hasStage && stages.length > 0) {
                     setCurrentStep('stage');
                 } else if (hasName && !hasRole) {
                     setCurrentStep('role');
                 }
-                // ملاحظة: لا نقوم بالإكمال التلقائي (Auto-complete) هنا لتجنب المشاكل،
-                // نترك المستخدم يضغط "ابدأ" بنفسه للتأكيد.
             }
         };
         fetchUserData();
     }, [stages.length]);
 
-    // التعامل مع الانتقال للخطوة التالية
+    // Navigation Handlers
     const handleNextStep = () => {
         setError("");
 
@@ -115,9 +121,8 @@ export default function OnboardingPage() {
                 setError("يرجى اختيار نوع الحساب");
                 return;
             }
-
-            // إذا لم توجد مراحل (أو فشل تحميلها)، ننهي التسجيل مباشرة
             if (stages.length === 0 && !isLoadingStages) {
+                // If no stages available, allow completion immediately
                 handleComplete();
             } else {
                 setCurrentStep('stage');
@@ -136,7 +141,6 @@ export default function OnboardingPage() {
     };
 
     const handleComplete = async () => {
-        // إذا كان هناك مراحل ولم يختر المستخدم، نمنعه
         if (stages.length > 0 && !selectedStageId) {
             setError("يرجى اختيار المرحلة الدراسية");
             return;
@@ -144,17 +148,30 @@ export default function OnboardingPage() {
 
         setIsLoading(true);
         setError("");
+        setDebugLogs([]); // Clear previous logs
+        addLog("Starting onboarding completion...");
 
         try {
             const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
+            addLog("Getting current user...");
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-            if (!user) throw new Error("لم يتم العثور على المستخدم");
+            if (userError) {
+                addLog(`User Error: ${userError.message}`);
+                throw userError;
+            }
 
-            // Race Condition:
-            // نحاول الحفظ، لكن إذا تأخرت الاستجابة أكثر من 4 ثواني، سننتقل تلقائياً
-            // هذا يحل مشكلة "التعليق" في الشبكات البطيئة أو عند ضياع الرد
-            const updatePromise = updateUserRoleAction({
+            if (!user) {
+                addLog("No user found in session");
+                throw new Error("لم يتم العثور على المستخدم");
+            }
+
+            addLog(`User found: ${user.id}`);
+            addLog(`Role: ${selectedRole}, Stage: ${selectedStageId}`);
+
+            addLog("Calling server action: updateUserRoleAction...");
+
+            const result = await updateUserRoleAction({
                 userId: user.id,
                 role: selectedRole!,
                 email: user.email || '',
@@ -163,40 +180,28 @@ export default function OnboardingPage() {
                 educationalStageId: selectedStageId,
             });
 
-            // مؤقت للخروج الاجباري
-            const timeoutNavigation = new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    console.log('Force navigation triggered due to timeout');
-                    resolve();
-                }, 4000);
-            });
+            addLog(`Action Result: ${JSON.stringify(result)}`);
 
-            // ننتظر أيهما يحدث أولاً: الحفظ أو انتهاء الوقت
-            await Promise.race([updatePromise.then(res => {
-                if (!res.success) throw new Error(res.error);
-                return res;
-            }), timeoutNavigation]);
+            if (!result.success) {
+                addLog(`ERROR: ${result.error}`);
+                throw new Error(result.error || 'فشل في حفظ البيانات');
+            }
 
+            addLog("Update successful! Preparing redirect...");
 
-            // إزالة refreshUser() لأنها قد تسبب تعليق في الموبايل
-            // الاعتماد كلياً على Hard Reload
-
-            // استخدام نافذة التوجيه المباشر بدلاً من router.push 
-            // لضمان تحديث كامل للصفحة وتفادي التعليق بسبب الكاش
-            const targetUrl = selectedRole === 'teacher' ? "/teacher?welcome=true" : "/?welcome=true";
-
-            // محاولة التوجيه الفوري
-            window.location.href = targetUrl;
-
-            // Fallback في حال تأخر المتصفح
+            // Artificial delay to let user see the success log
             setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+                const targetUrl = selectedRole === 'teacher' ? "/teacher?welcome=true" : "/?welcome=true";
+                addLog(`Redirecting to: ${targetUrl}`);
+                window.location.href = targetUrl;
+            }, 1000);
 
         } catch (err: unknown) {
-            console.error('Onboarding completion error:', err);
-            setError(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الاختيار");
+            const msg = err instanceof Error ? err.message : "حدث خطأ غير متوقع";
+            addLog(`EXCEPTION: ${msg}`);
+            setError(msg);
             setIsLoading(false);
+            // We do NOT redirect here, so the user can see the log
         }
     };
 
@@ -237,8 +242,19 @@ export default function OnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex flex-col pt-[70px]" dir="rtl">
-            <Navbar />
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex flex-col pt-8" dir="rtl">
+            {/* Navbar removed to isolate onboarding process and prevent API conflicts */}
+
+            {/* DEBUG CONSOLE */}
+            <div className="max-w-2xl mx-auto w-full p-4 mb-4 safe-area-inset-top">
+                <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs dir-ltr overflow-auto max-h-40 border border-green-900 shadow-xl opacity-90">
+                    <div className="font-bold border-b border-green-800 mb-2 pb-1 flex justify-between">
+                        <span>🛑 DEBUG CONSOLE</span>
+                        <span className="text-gray-500">Take screenshot if stuck</span>
+                    </div>
+                    {debugLogs.length === 0 ? <div className="text-gray-600">Waiting for action...</div> : debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+                </div>
+            </div>
 
             <main className="flex-1 flex flex-col items-center p-4 pb-40 max-w-2xl mx-auto w-full">
                 {/* Progress Steps */}
