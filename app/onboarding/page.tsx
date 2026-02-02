@@ -208,7 +208,20 @@ export default function OnboardingPage() {
             addLog(`EXCEPTION: ${msg}`);
             setError(msg);
             setIsLoading(false);
-            // We do NOT redirect here, so the user can see the log
+
+            // Auto-Fix for timed out auth
+            if (msg === 'Auth check timed out') {
+                addLog("⚠️ DETECTED STUCK SESSION. AUTO-FIXING IN 2s...");
+                setTimeout(async () => {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    localStorage.clear();
+                    document.cookie.split(";").forEach((c) => {
+                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                    });
+                    window.location.reload();
+                }, 2000);
+            }
         }
     };
 
