@@ -162,16 +162,21 @@ export default function OnboardingPage() {
 
             if (!result.success) throw new Error(result.error || 'فشل في حفظ البيانات');
 
-            // تحديث حالة الجلسة محلياً إن أمكن (اختياري)
-            await refreshUser();
+            // إزالة refreshUser() لأنها قد تسبب تعليق في الموبايل
+            // الاعتماد كلياً على Hard Reload
 
             // استخدام نافذة التوجيه المباشر بدلاً من router.push 
             // لضمان تحديث كامل للصفحة وتفادي التعليق بسبب الكاش
-            if (selectedRole === 'teacher') {
-                window.location.href = "/teacher?welcome=true";
-            } else {
-                window.location.href = "/?welcome=true";
-            }
+            const targetUrl = selectedRole === 'teacher' ? "/teacher?welcome=true" : "/?welcome=true";
+
+            // محاولة التوجيه الفوري
+            window.location.href = targetUrl;
+
+            // Fallback في حال تأخر المتصفح
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+
         } catch (err: unknown) {
             console.error('Onboarding completion error:', err);
             setError(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الاختيار");
