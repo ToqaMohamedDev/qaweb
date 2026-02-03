@@ -1,11 +1,11 @@
 "use client";
 
 // =============================================
-// Onboarding Page - Debug Mode
+// Onboarding Page - Production Ready (v2)
+// Fixed: Uses auth store instead of getUser() to avoid Vercel hang
 // =============================================
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     GraduationCap,
@@ -21,7 +21,6 @@ import {
     Loader2
 } from "lucide-react";
 import { Button } from "@/components";
-import { createClient } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { updateUserRoleAction } from "@/lib/actions/update-user-role";
 import { getEducationalStagesAction } from "@/lib/actions/get-educational-stages";
@@ -35,13 +34,9 @@ interface EducationalStage {
     slug: string;
 }
 
-// Show debug console only in development
-const IS_DEV = process.env.NODE_ENV === 'development';
-
 export default function OnboardingPage() {
-    // Note: router and refreshUser kept for potential future use
-    const _router = useRouter();
-    const { refreshUser: _refreshUser } = useAuthStore();
+    // Get user from auth store (already loaded by AuthProvider - avoids getUser() hang on Vercel)
+    const { user: authUser } = useAuthStore();
 
     // State
     const [currentStep, setCurrentStep] = useState<OnboardingStep>('name');
@@ -50,17 +45,10 @@ export default function OnboardingPage() {
     const [selectedStageId, setSelectedStageId] = useState<string>('');
     const [stages, setStages] = useState<EducationalStage[]>([]);
 
-    // Debug & Status State
+    // Status State
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStages, setIsLoadingStages] = useState(false);
     const [error, setError] = useState("");
-    const [debugLogs, setDebugLogs] = useState<string[]>([]);
-
-    const addLog = (msg: string) => {
-        const time = new Date().toLocaleTimeString();
-        setDebugLogs(prev => [...prev, `[${time}] ${msg}`]);
-        console.log(`[DEBUG] ${msg}`);
-    };
 
     // جلب المراحل الدراسية مع retry mechanism
     useEffect(() => {
@@ -69,31 +57,28 @@ export default function OnboardingPage() {
         
         const fetchStages = async () => {
             setIsLoadingStages(true);
-            addLog('Fetching educational stages...');
+            console.log('[Onboarding] Fetching educational stages...');
             
             try {
                 const data = await getEducationalStagesAction();
                 
                 if (data && data.length > 0) {
                     setStages(data);
-                    addLog(`✓ Loaded ${data.length} stages`);
+                    console.log(`[Onboarding] ✓ Loaded ${data.length} stages`);
                 } else if (retryCount < maxRetries) {
-                    // Retry if no data returned (might be cold start issue)
                     retryCount++;
-                    addLog(`No stages returned, retrying (${retryCount}/${maxRetries})...`);
+                    console.log(`[Onboarding] No stages returned, retrying (${retryCount}/${maxRetries})...`);
                     setTimeout(fetchStages, 1500);
                     return;
                 } else {
-                    addLog('⚠️ Could not load stages after retries');
+                    console.warn('[Onboarding] Could not load stages after retries');
                 }
             } catch (err) {
-                console.error('Error fetching stages:', err);
-                addLog(`Error fetching stages: ${err}`);
+                console.error('[Onboarding] Error fetching stages:', err);
                 
-                // Retry on error
                 if (retryCount < maxRetries) {
                     retryCount++;
-                    addLog(`Retrying (${retryCount}/${maxRetries})...`);
+                    console.log(`[Onboarding] Retrying (${retryCount}/${maxRetries})...`);
                     setTimeout(fetchStages, 1500);
                     return;
                 }
@@ -105,29 +90,15 @@ export default function OnboardingPage() {
         fetchStages();
     }, []);
 
-    // جلب الاسم والدور والمرحلة من بيانات المستخدم إن وجد
+    // Pre-fill user data from auth store
     useEffect(() => {
-        const fetchUserData = async () => {
-            const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user?.user_metadata) {
-                const hasName = user.user_metadata.name || user.user_metadata.full_name;
-                const hasRole = user.user_metadata.role && ['student', 'teacher'].includes(user.user_metadata.role);
-                const hasStage = user.user_metadata.educational_stage_id;
-
-                if (hasName) setUserName(hasName);
-                if (hasRole) setSelectedRole(user.user_metadata.role as 'student' | 'teacher');
-                if (hasStage) setSelectedStageId(user.user_metadata.educational_stage_id);
-
-                if (hasName && hasRole && !hasStage && stages.length > 0) {
-                    setCurrentStep('stage');
-                } else if (hasName && !hasRole) {
-                    setCurrentStep('role');
-                }
+        if (authUser) {
+            // Pre-fill name if available
+            if (authUser.name && !userName) {
+                setUserName(authUser.name);
             }
-        };
-        fetchUserData();
-    }, [stages.length]);
+        }
+    }, [authUser, userName]);
 
     // Navigation Handlers
     const handleNextStep = () => {
@@ -174,82 +145,46 @@ export default function OnboardingPage() {
             return;
         }
 
+        // Use authUser from store instead of calling getUser() - this fixes Vercel hang
+        if (!authUser?.id) {
+            setError("لم يتم العثور على المستخدم. يرجى إعادة تحميل الصفحة.");
+            console.error('[Onboarding] No user in auth store');
+            return;
+        }
+
         setIsLoading(true);
         setError("");
-        setDebugLogs([]); // Clear previous logs
-        addLog("Starting onboarding completion...");
+        console.log('[Onboarding] Starting completion for user:', authUser.id);
 
         try {
-            const supabase = createClient();
-            addLog("Getting current user...");
-
-            // Race condition for getUser to prevent infinite hang
-            const userPromise = supabase.auth.getUser();
-            const timeoutPromise = new Promise<{ data: { user: any }, error: any }>((_, reject) =>
-                setTimeout(() => reject(new Error('Auth check timed out')), 5000)
-            );
-
-            const { data: { user }, error: userError } = await Promise.race([userPromise, timeoutPromise]);
-
-            if (userError) {
-                addLog(`User Error: ${userError.message}`);
-                throw userError;
-            }
-
-            if (!user) {
-                addLog("No user found in session");
-                throw new Error("لم يتم العثور على المستخدم");
-            }
-
-            addLog(`User found: ${user.id}`);
-            addLog(`Role: ${selectedRole}, Stage: ${selectedStageId}`);
-
-            addLog("Calling server action: updateUserRoleAction...");
+            console.log('[Onboarding] Calling updateUserRoleAction...');
 
             const result = await updateUserRoleAction({
-                userId: user.id,
+                userId: authUser.id,
                 role: selectedRole!,
-                email: user.email || '',
+                email: authUser.email || '',
                 name: userName.trim(),
-                avatarUrl: user.user_metadata?.avatar_url,
+                avatarUrl: authUser.avatarUrl || undefined,
                 educationalStageId: selectedStageId,
             });
 
-            addLog(`Action Result: ${JSON.stringify(result)}`);
+            console.log('[Onboarding] Action result:', result);
 
             if (!result.success) {
-                addLog(`ERROR: ${result.error}`);
                 throw new Error(result.error || 'فشل في حفظ البيانات');
             }
 
-            addLog("Update successful! Preparing redirect...");
+            console.log('[Onboarding] Success! Redirecting...');
 
-            // Artificial delay to let user see the success log
-            setTimeout(() => {
-                const targetUrl = selectedRole === 'teacher' ? "/teacher?welcome=true" : "/?welcome=true";
-                addLog(`Redirecting to: ${targetUrl}`);
-                window.location.href = targetUrl;
-            }, 1000);
+            // Redirect immediately - no artificial delay needed
+            const targetUrl = selectedRole === 'teacher' ? "/teacher?welcome=true" : "/?welcome=true";
+            window.location.href = targetUrl;
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : "حدث خطأ غير متوقع";
-            addLog(`EXCEPTION: ${msg}`);
+            console.error('[Onboarding] Error:', msg);
             setError(msg);
             setIsLoading(false);
-
-            // Auto-Fix for timed out auth
-            if (msg === 'Auth check timed out') {
-                addLog("⚠️ DETECTED STUCK SESSION. AUTO-FIXING IN 2s...");
-                setTimeout(async () => {
-                    const supabase = createClient();
-                    await supabase.auth.signOut();
-                    localStorage.clear();
-                    document.cookie.split(";").forEach((c) => {
-                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-                    });
-                    window.location.reload();
-                }, 2000);
-            }
         }
     };
 
@@ -291,38 +226,6 @@ export default function OnboardingPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex flex-col pt-8" dir="rtl">
-            {/* Navbar removed to isolate onboarding process and prevent API conflicts */}
-
-            {/* DEBUG CONSOLE - Only show in development or when there's an error */}
-            {(IS_DEV || error) && (
-            <div className="max-w-2xl mx-auto w-full p-4 mb-4 safe-area-inset-top">
-                <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs dir-ltr overflow-auto max-h-40 border border-green-900 shadow-xl opacity-90 relative">
-                    <div className="font-bold border-b border-green-800 mb-2 pb-1 flex justify-between items-center">
-                        <span>🛑 DEBUG CONSOLE</span>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={async () => {
-                                    addLog("♻️ Resetting session...");
-                                    const supabase = createClient();
-                                    await supabase.auth.signOut();
-                                    localStorage.clear();
-                                    document.cookie.split(";").forEach((c) => {
-                                        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-                                    });
-                                    window.location.reload();
-                                }}
-                                className="bg-red-900 text-white px-2 py-1 rounded hover:bg-red-700 text-[10px]"
-                            >
-                                Fix Stuck
-                            </button>
-                            <span className="text-gray-500">Params: {Object.fromEntries(new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').entries()).welcome ? 'welcome=true' : 'none'}</span>
-                        </div>
-                    </div>
-                    {debugLogs.length === 0 ? <div className="text-gray-600">Waiting for action...</div> : debugLogs.map((log, i) => <div key={i}>{log}</div>)}
-                </div>
-            </div>
-            )}
-
             <main className="flex-1 flex flex-col items-center p-4 pb-40 max-w-2xl mx-auto w-full">
                 {/* Progress Steps */}
                 <div className="flex items-center gap-2 mb-8 w-full justify-center">
