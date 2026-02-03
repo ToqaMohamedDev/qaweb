@@ -20,7 +20,7 @@ import {
     School,
     Loader2
 } from "lucide-react";
-import { Button, Navbar } from "@/components";
+import { Button } from "@/components";
 import { createClient } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { updateUserRoleAction } from "@/lib/actions/update-user-role";
@@ -35,9 +35,13 @@ interface EducationalStage {
     slug: string;
 }
 
+// Show debug console only in development
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 export default function OnboardingPage() {
-    const router = useRouter();
-    const { refreshUser } = useAuthStore();
+    // Note: router and refreshUser kept for potential future use
+    const _router = useRouter();
+    const { refreshUser: _refreshUser } = useAuthStore();
 
     // State
     const [currentStep, setCurrentStep] = useState<OnboardingStep>('name');
@@ -58,22 +62,46 @@ export default function OnboardingPage() {
         console.log(`[DEBUG] ${msg}`);
     };
 
-    // جلب المراحل الدراسية
+    // جلب المراحل الدراسية مع retry mechanism
     useEffect(() => {
+        let retryCount = 0;
+        const maxRetries = 2;
+        
         const fetchStages = async () => {
             setIsLoadingStages(true);
+            addLog('Fetching educational stages...');
+            
             try {
                 const data = await getEducationalStagesAction();
+                
                 if (data && data.length > 0) {
                     setStages(data);
+                    addLog(`✓ Loaded ${data.length} stages`);
+                } else if (retryCount < maxRetries) {
+                    // Retry if no data returned (might be cold start issue)
+                    retryCount++;
+                    addLog(`No stages returned, retrying (${retryCount}/${maxRetries})...`);
+                    setTimeout(fetchStages, 1500);
+                    return;
+                } else {
+                    addLog('⚠️ Could not load stages after retries');
                 }
             } catch (err) {
                 console.error('Error fetching stages:', err);
                 addLog(`Error fetching stages: ${err}`);
+                
+                // Retry on error
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    addLog(`Retrying (${retryCount}/${maxRetries})...`);
+                    setTimeout(fetchStages, 1500);
+                    return;
+                }
             } finally {
                 setIsLoadingStages(false);
             }
         };
+        
         fetchStages();
     }, []);
 
@@ -265,7 +293,8 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex flex-col pt-8" dir="rtl">
             {/* Navbar removed to isolate onboarding process and prevent API conflicts */}
 
-            {/* DEBUG CONSOLE */}
+            {/* DEBUG CONSOLE - Only show in development or when there's an error */}
+            {(IS_DEV || error) && (
             <div className="max-w-2xl mx-auto w-full p-4 mb-4 safe-area-inset-top">
                 <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-xs dir-ltr overflow-auto max-h-40 border border-green-900 shadow-xl opacity-90 relative">
                     <div className="font-bold border-b border-green-800 mb-2 pb-1 flex justify-between items-center">
@@ -292,6 +321,7 @@ export default function OnboardingPage() {
                     {debugLogs.length === 0 ? <div className="text-gray-600">Waiting for action...</div> : debugLogs.map((log, i) => <div key={i}>{log}</div>)}
                 </div>
             </div>
+            )}
 
             <main className="flex-1 flex flex-col items-center p-4 pb-40 max-w-2xl mx-auto w-full">
                 {/* Progress Steps */}
