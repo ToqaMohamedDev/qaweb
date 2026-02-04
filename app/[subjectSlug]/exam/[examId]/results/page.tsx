@@ -149,7 +149,7 @@ export default function ExamResultsPage() {
                             examData = {
                                 id: tExam.id,
                                 exam_title: tExam.exam_title,
-                                blocks: tExam.sections || []
+                                blocks: (tExam.sections as unknown[]) || []
                             };
                         }
                     }
