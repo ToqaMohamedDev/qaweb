@@ -243,40 +243,13 @@ function TeacherHeader({ onMenuClick }: { onMenuClick: () => void }) {
     );
 }
 
-// Teacher Protection Component
+// Teacher Protection Component - SIMPLIFIED (no useState, no useEffect)
+// Based on the successful onboarding fix
 function TeacherProtection({ children }: { children: ReactNode }) {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthorized, setIsAuthorized] = useState(false);
     const { user, isLoading: authLoading } = useAuthStore();
 
-    useEffect(() => {
-        // 1. If we have a user, CHECK ROLE IMMEDIATELY (Don't wait for authLoading)
-        if (user) {
-            if (user.role === 'teacher' || user.role === 'admin') {
-                setIsAuthorized(true);
-                setIsLoading(false);
-            } else {
-                logger.warn("Teacher access denied: Invalid role", { context: "TeacherLayout", data: { role: user.role } });
-                window.location.href = "/";
-            }
-            return;
-        }
-
-        // 2. If no user yet, wait for loading to finish
-        if (authLoading) return;
-
-        // 3. Loading finished and still no user -> Redirect to login
-        logger.warn("Teacher access denied: No user found", { context: "TeacherLayout" });
-        window.location.href = "/login?redirect=/teacher";
-
-    }, [user, authLoading]);
-
-    // If authorized, render immediately (bypass loading)
-    if (isAuthorized) {
-        return <>{children}</>;
-    }
-
-    if (isLoading || authLoading) {
+    // Case 1: Still loading auth AND no user cached -> show spinner
+    if (authLoading && !user) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -290,10 +263,23 @@ function TeacherProtection({ children }: { children: ReactNode }) {
         );
     }
 
-    if (!isAuthorized) {
+    // Case 2: No user (loading finished or cached as null) -> redirect to login
+    if (!user) {
+        if (typeof window !== 'undefined') {
+            window.location.href = "/login?redirect=/teacher";
+        }
         return null;
     }
 
+    // Case 3: User exists but wrong role -> redirect to home
+    if (user.role !== 'teacher' && user.role !== 'admin') {
+        if (typeof window !== 'undefined') {
+            window.location.href = "/";
+        }
+        return null;
+    }
+
+    // Case 4: Authorized! Render children immediately
     return <>{children}</>;
 }
 
