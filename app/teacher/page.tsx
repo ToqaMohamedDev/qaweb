@@ -59,22 +59,16 @@ interface ExamPerformance {
 
 export default function TeacherDashboard() {
     const router = useRouter();
-    const { user, isLoading: authLoading, refreshUser } = useAuthStore();
+    const { user, isLoading: authLoading } = useAuthStore();
     const isApprovedTeacher = useAuthStore(selectIsApprovedTeacher);
 
     const [stats, setStats] = useState<TeacherStats | null>(null);
     const [recentExams, setRecentExams] = useState<RecentExam[]>([]);
     const [examPerformance, setExamPerformance] = useState<ExamPerformance[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [hasRefreshed, setHasRefreshed] = useState(false);
 
-    // تحديث بيانات المستخدم عند فتح الصفحة للتأكد من حالة الاعتماد
-    useEffect(() => {
-        if (!hasRefreshed) {
-            refreshUser();
-            setHasRefreshed(true);
-        }
-    }, [refreshUser, hasRefreshed]);
+    // NOTE: We removed refreshUser() here because it calls getUser() which can hang on Vercel
+    // The user data is already loaded by AuthProvider, so we trust it directly
 
     useEffect(() => {
         // If we have a user, proceed immediately (don't wait for authLoading)
@@ -229,8 +223,8 @@ export default function TeacherDashboard() {
                         <div className="flex flex-col gap-3">
                             <button
                                 onClick={() => {
-                                    setHasRefreshed(false);
-                                    setIsLoading(true);
+                                    // Simple reload to re-check approval status
+                                    window.location.reload();
                                 }}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-500 text-white font-medium hover:bg-primary-600 transition-colors"
                             >
