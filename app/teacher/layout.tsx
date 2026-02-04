@@ -250,26 +250,24 @@ function TeacherProtection({ children }: { children: ReactNode }) {
     const { user, isLoading: authLoading } = useAuthStore();
 
     useEffect(() => {
-        // 1. Wait for auth to initialize
+        // 1. If we have a user, CHECK ROLE IMMEDIATELY (Don't wait for authLoading)
+        if (user) {
+            if (user.role === 'teacher' || user.role === 'admin') {
+                setIsAuthorized(true);
+                setIsLoading(false);
+            } else {
+                logger.warn("Teacher access denied: Invalid role", { context: "TeacherLayout", data: { role: user.role } });
+                window.location.href = "/";
+            }
+            return;
+        }
+
+        // 2. If no user yet, wait for loading to finish
         if (authLoading) return;
 
-        // 2. No user -> Redirect to login
-        if (!user) {
-            logger.warn("Teacher access denied: No user found", { context: "TeacherLayout" });
-            window.location.href = "/login?redirect=/teacher";
-            return;
-        }
-
-        // 3. User exists but not teacher/admin -> Redirect home
-        if (user.role !== 'teacher' && user.role !== 'admin') {
-            logger.warn("Teacher access denied: Invalid role", { context: "TeacherLayout", data: { role: user.role } });
-            window.location.href = "/";
-            return;
-        }
-
-        // 4. Authorized
-        setIsAuthorized(true);
-        setIsLoading(false);
+        // 3. Loading finished and still no user -> Redirect to login
+        logger.warn("Teacher access denied: No user found", { context: "TeacherLayout" });
+        window.location.href = "/login?redirect=/teacher";
 
     }, [user, authLoading]);
 
