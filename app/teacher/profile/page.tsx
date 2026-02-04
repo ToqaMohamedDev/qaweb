@@ -79,6 +79,7 @@ export default function TeacherProfilePage() {
     });
 
     const [isLoading, setIsLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -89,6 +90,11 @@ export default function TeacherProfilePage() {
     // Image Cropper state
     const [cropperImage, setCropperImage] = useState<File | null>(null);
     const [cropperType, setCropperType] = useState<'avatar' | 'cover'>('avatar');
+
+    // Wait for hydration
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (authLoading) return;
@@ -109,7 +115,13 @@ export default function TeacherProfilePage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchProfile = async () => {
-        if (!user) return;
+        if (!user) {
+            setIsLoading(false);
+            return;
+        }
+
+        // Safety timeout - 3 seconds
+        const timeoutId = setTimeout(() => setIsLoading(false), 3000);
 
         const supabase = createClient();
 
@@ -144,6 +156,7 @@ export default function TeacherProfilePage() {
         } catch (error) {
             console.error('Error fetching profile:', error);
         } finally {
+            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };
@@ -265,7 +278,7 @@ export default function TeacherProfilePage() {
         }
     };
 
-    if (authLoading || isLoading) {
+    if (!mounted || authLoading || isLoading) {
         return (
             <>
                 <Navbar />

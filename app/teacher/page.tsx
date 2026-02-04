@@ -103,9 +103,8 @@ export default function TeacherDashboard() {
 
 
 
-        // Set a timeout - if fetch takes too long, show page anyway
-        // Safety timeout - show page anyway if data takes too long
-        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
+        // Safety timeout - 3 seconds
+        const timeoutId = setTimeout(() => setIsLoading(false), 3000);
 
         const supabase = createClient();
 

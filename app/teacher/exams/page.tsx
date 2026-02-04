@@ -48,10 +48,16 @@ export default function TeacherExamsPage() {
 
     const [exams, setExams] = useState<TeacherExam[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Wait for hydration
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (authLoading) return;
@@ -70,7 +76,13 @@ export default function TeacherExamsPage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchExams = async () => {
-        if (!user) return;
+        if (!user) {
+            setIsLoading(false);
+            return;
+        }
+
+        // Safety timeout - 3 seconds
+        const timeoutId = setTimeout(() => setIsLoading(false), 3000);
 
         const supabase = createClient();
 
@@ -115,8 +127,8 @@ export default function TeacherExamsPage() {
             setExams(mappedExams as TeacherExam[]);
         } catch (error: any) {
             console.error('Error fetching exams:', error);
-            console.error('Full error object:', JSON.stringify(error, null, 2));
         } finally {
+            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };
@@ -198,7 +210,7 @@ export default function TeacherExamsPage() {
         return matchSearch && matchFilter;
     });
 
-    if (authLoading || isLoading) {
+    if (!mounted || authLoading || isLoading) {
         return (
             <>
                 <Navbar />
