@@ -97,48 +97,32 @@ export default function TeacherDashboard() {
 
     const fetchTeacherData = async () => {
         if (!user) {
-            console.log('[TeacherDashboard] fetchTeacherData: No user, skipping');
             setIsLoading(false);
             return;
         }
 
-        console.log('[TeacherDashboard] fetchTeacherData: Starting...');
-        const startTime = Date.now();
+
 
         // Set a timeout - if fetch takes too long, show page anyway
-        const timeoutId = setTimeout(() => {
-            console.log('[TeacherDashboard] fetchTeacherData: TIMEOUT after 8s');
-            setIsLoading(false);
-        }, 8000);
+        // Safety timeout - show page anyway if data takes too long
+        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
 
         const supabase = createClient();
 
         try {
-            // جلب جميع الامتحانات من comprehensive_exams
-            console.log('[TeacherDashboard] Fetching exams...');
-            const { data: allExams, error: examsError } = await supabase
+            // جلب جميع الامتحانات
+            const { data: allExams } = await supabase
                 .from('comprehensive_exams')
                 .select('id, exam_title, language, is_published, created_at, sections')
                 .eq('created_by', user.id)
                 .order('created_at', { ascending: false });
 
-            if (examsError) {
-                console.error('[TeacherDashboard] Exams fetch error:', examsError);
-            }
-            console.log('[TeacherDashboard] Exams fetched:', allExams?.length || 0, 'items in', Date.now() - startTime, 'ms');
-
-            // جلب الإحصائيات من الـ profile
-            console.log('[TeacherDashboard] Fetching profile...');
-            const { data: profile, error: profileError } = await supabase
+            // جلب الإحصائيات
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('subscriber_count, rating_average, rating_count')
                 .eq('id', user.id)
                 .single();
-
-            if (profileError) {
-                console.error('[TeacherDashboard] Profile fetch error:', profileError);
-            }
-            console.log('[TeacherDashboard] Profile fetched in', Date.now() - startTime, 'ms');
 
             // حساب الإحصائيات
             const examsList = (allExams || []) as any[];
@@ -168,14 +152,11 @@ export default function TeacherDashboard() {
             // جلب بيانات التحليلات
             const examIds = examsList.map(e => e.id);
             if (examIds.length > 0) {
-                console.log('[TeacherDashboard] Fetching attempts...');
                 const { data: attempts } = await supabase
                     .from('comprehensive_exam_attempts')
                     .select('exam_id, total_score, max_score')
                     .in('exam_id', examIds)
                     .in('status', ['completed', 'graded']);
-
-                console.log('[TeacherDashboard] Attempts fetched in', Date.now() - startTime, 'ms');
 
                 const performanceData: ExamPerformance[] = examsList
                     .filter(e => e.is_published)
@@ -201,28 +182,21 @@ export default function TeacherDashboard() {
 
                 setExamPerformance(performanceData);
             }
-
-            console.log('[TeacherDashboard] fetchTeacherData: COMPLETE in', Date.now() - startTime, 'ms');
         } catch (error) {
-            console.error('[TeacherDashboard] Error fetching teacher data:', error);
+            console.error('Error fetching teacher data:', error);
         } finally {
             clearTimeout(timeoutId);
             setIsLoading(false);
-            console.log('[TeacherDashboard] setIsLoading(false) called');
         }
     };
 
-    // Only show loader if we're waiting for auth (and have no user) OR fetching data
+    // Show loader while fetching data
     if ((authLoading && !user) || isLoading) {
-        console.log('[TeacherDashboard] RENDER: Showing loader', { authLoading, user: user?.email, isLoading });
         return (
             <>
                 <Navbar />
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 dark:from-[#0d0d14] dark:via-[#13131a] dark:to-[#0d0d14] flex flex-col items-center justify-center gap-4">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 dark:from-[#0d0d14] dark:via-[#13131a] dark:to-[#0d0d14] flex items-center justify-center">
                     <Loader2 className="h-10 w-10 animate-spin text-primary-500" />
-                    <p className="text-sm text-gray-500 font-mono">
-                        authLoading: {String(authLoading)} | isLoading: {String(isLoading)} | user: {user?.email || 'null'}
-                    </p>
                 </div>
                 <Footer />
             </>

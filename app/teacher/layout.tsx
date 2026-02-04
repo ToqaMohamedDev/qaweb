@@ -243,108 +243,47 @@ function TeacherHeader({ onMenuClick }: { onMenuClick: () => void }) {
     );
 }
 
-// Teacher Protection Component - With DEBUG MODE
+// Teacher Protection Component
 function TeacherProtection({ children }: { children: ReactNode }) {
     const { user, isLoading: authLoading } = useAuthStore();
-
-    // Fix for Zustand hydration: force re-render after mount to get latest store values
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        console.log('[TeacherProtection] Mounted, authLoading:', authLoading, 'user:', user?.email);
         setMounted(true);
     }, []);
 
-    useEffect(() => {
-        console.log('[TeacherProtection] authLoading changed:', authLoading);
-    }, [authLoading]);
-
-    useEffect(() => {
-        console.log('[TeacherProtection] user changed:', user?.email, 'role:', user?.role);
-    }, [user]);
-
-    // DEBUG OVERLAY - Simple version without state updates
-    const DebugOverlay = () => (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            background: 'rgba(0,0,0,0.9)',
-            color: '#00ff00',
-            padding: '10px',
-            fontSize: '12px',
-            fontFamily: 'monospace',
-            zIndex: 99999,
-            direction: 'ltr'
-        }}>
-            <strong>🔧 DEBUG</strong> |
-            mounted: <span style={{ color: mounted ? '#0f0' : '#f00' }}>{String(mounted)}</span> |
-            authLoading: <span style={{ color: authLoading ? '#ff0' : '#0f0' }}>{String(authLoading)}</span> |
-            user: <span style={{ color: user ? '#0f0' : '#f00' }}>{user ? `${user.email} (${user.role})` : 'NULL'}</span>
+    // Loading spinner component
+    const LoadingSpinner = () => (
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                    <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
+                    <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">جاري التحميل...</p>
+            </div>
         </div>
     );
 
-    // Before mount (SSR or first render): always show spinner
-    if (!mounted) {
-        return (
-            <>
-                <DebugOverlay />
-                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-20">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="relative">
-                            <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
-                            <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for mount...</p>
-                    </div>
-                </div>
-            </>
-        );
-    }
+    // Wait for client-side hydration
+    if (!mounted) return <LoadingSpinner />;
 
-    // After mount: Zustand has hydrated, now check the real values
+    // Wait for auth if still loading and no cached user
+    if (authLoading && !user) return <LoadingSpinner />;
 
-    // Case 1: Still loading auth AND no user cached -> show spinner
-    if (authLoading && !user) {
-        return (
-            <>
-                <DebugOverlay />
-                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-20">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="relative">
-                            <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
-                            <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for auth... (authLoading=true, user=null)</p>
-                    </div>
-                </div>
-            </>
-        );
-    }
-
-    // Case 2: No user (loading finished or cached as null) -> redirect to login
+    // Redirect if no user
     if (!user) {
-        console.log('[TeacherProtection] REDIRECTING: No user found');
         window.location.href = "/login?redirect=/teacher";
-        return <DebugOverlay />;
+        return null;
     }
 
-    // Case 3: User exists but wrong role -> redirect to home
+    // Redirect if wrong role
     if (user.role !== 'teacher' && user.role !== 'admin') {
-        console.log('[TeacherProtection] REDIRECTING: Wrong role', user.role);
         window.location.href = "/";
-        return <DebugOverlay />;
+        return null;
     }
 
-    // Case 4: Authorized! Render children immediately
-    console.log('[TeacherProtection] SUCCESS: Rendering children');
-    return (
-        <>
-            <DebugOverlay />
-            {children}
-        </>
-    );
+    return <>{children}</>;
 }
 
 // Layout Content
