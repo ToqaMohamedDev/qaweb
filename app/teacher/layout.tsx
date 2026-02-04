@@ -250,76 +250,27 @@ function TeacherProtection({ children }: { children: ReactNode }) {
     const { user, isLoading: authLoading } = useAuthStore();
 
     useEffect(() => {
-        let selfHealTimeoutId: NodeJS.Timeout;
-        let hasHealed = false;
+        // 1. Wait for auth to initialize
+        if (authLoading) return;
 
-        // Self-healing function - clears session and reloads (like onboarding fix)
-        const triggerSelfHeal = async () => {
-            if (hasHealed) return;
-            hasHealed = true;
-            
-            logger.warn("Teacher auth self-healing triggered - clearing session", { context: "TeacherLayout" });
-            
-            // Clear all auth-related storage (THE KEY FIX from onboarding)
-            try {
-                // Clear localStorage
-                Object.keys(localStorage).forEach(key => {
-                    if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                
-                // Clear sessionStorage
-                Object.keys(sessionStorage).forEach(key => {
-                    if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
-                        sessionStorage.removeItem(key);
-                    }
-                });
-                
-                // Sign out from Supabase to clear cookies
-                await supabase.auth.signOut();
-            } catch (e) {
-                logger.error("Error during self-heal cleanup", { data: { error: e } });
-            }
-            
-            // Hard reload to login page
+        // 2. No user -> Redirect to login
+        if (!user) {
+            logger.warn("Teacher access denied: No user found", { context: "TeacherLayout" });
             window.location.href = "/login?redirect=/teacher";
-        };
+            return;
+        }
 
-        const checkAuth = async () => {
-            // Start self-healing timer - 5 seconds timeout
-            selfHealTimeoutId = setTimeout(() => {
-                triggerSelfHeal();
-            }, 5000);
+        // 3. User exists but not teacher/admin -> Redirect home
+        if (user.role !== 'teacher' && user.role !== 'admin') {
+            logger.warn("Teacher access denied: Invalid role", { context: "TeacherLayout", data: { role: user.role } });
+            window.location.href = "/";
+            return;
+        }
 
-            // Wait for auth to finish loading
-            if (authLoading) return;
+        // 4. Authorized
+        setIsAuthorized(true);
+        setIsLoading(false);
 
-            // Auth loaded - clear the timeout
-            clearTimeout(selfHealTimeoutId);
-
-            // No user - redirect to login
-            if (!user) {
-                window.location.href = "/login?redirect=/teacher";
-                return;
-            }
-
-            // Check role
-            if (user.role !== 'teacher' && user.role !== 'admin') {
-                window.location.href = "/";
-                return;
-            }
-
-            // Success!
-            setIsAuthorized(true);
-            setIsLoading(false);
-        };
-
-        checkAuth();
-
-        return () => {
-            if (selfHealTimeoutId) clearTimeout(selfHealTimeoutId);
-        };
     }, [user, authLoading]);
 
     if (isLoading || authLoading) {
