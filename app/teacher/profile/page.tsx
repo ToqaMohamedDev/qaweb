@@ -109,75 +109,60 @@ export default function TeacherProfilePage() {
             return;
         }
 
-        fetchProfile();
-        fetchSubjects();
-        fetchStages();
+        fetchAllData();
     }, [user, authLoading, isApprovedTeacher]);
 
-    const fetchProfile = async () => {
+    const fetchAllData = async () => {
         if (!user) {
             setIsLoading(false);
             return;
         }
 
-        // Safety timeout - 3 seconds
-        const timeoutId = setTimeout(() => setIsLoading(false), 3000);
+        // Safety timeout - 5 seconds
+        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
 
         const supabase = createClient();
 
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+            // Fetch all data in parallel
+            const [profileResult, subjectsResult, stagesResult] = await Promise.all([
+                supabase.from('profiles').select('*').eq('id', user.id).single(),
+                supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
+                supabase.from('educational_stages').select('id, name').order('order_index'),
+            ]);
 
-            if (error) throw error;
+            // Set subjects and stages
+            setAvailableSubjects(subjectsResult.data || []);
+            setAvailableStages(stagesResult.data || []);
 
-            setFormData({
-                name: data.name || "",
-                bio: data.bio || "",
-                avatar_url: data.avatar_url || "",
-                cover_image_url: (data as any).cover_image_url || "",
-                specialization: (data as any).specialization || "",
-                teacher_title: (data as any).teacher_title || "",
-                years_of_experience: (data as any).years_of_experience || 0,
-                education: (data as any).education || "",
-                phone: data.phone || "",
-                // Read whatsapp from social_links (stored there until we add a column)
-                whatsapp: (data as any).social_links?.whatsapp || (data as any).whatsapp || "",
-                website: (data as any).website || "",
-                teaching_style: (data as any).teaching_style || "",
-                subjects: (data as any).subjects || [],
-                stages: (data as any).stages || [],
-                is_teacher_profile_public: (data as any).is_teacher_profile_public || false,
-                social_links: ((data as any).social_links as TeacherProfileData['social_links']) || {},
-            });
+            // Set profile data
+            if (profileResult.data) {
+                const data = profileResult.data;
+                setFormData({
+                    name: data.name || "",
+                    bio: data.bio || "",
+                    avatar_url: data.avatar_url || "",
+                    cover_image_url: (data as any).cover_image_url || "",
+                    specialization: (data as any).specialization || "",
+                    teacher_title: (data as any).teacher_title || "",
+                    years_of_experience: (data as any).years_of_experience || 0,
+                    education: (data as any).education || "",
+                    phone: data.phone || "",
+                    whatsapp: (data as any).social_links?.whatsapp || (data as any).whatsapp || "",
+                    website: (data as any).website || "",
+                    teaching_style: (data as any).teaching_style || "",
+                    subjects: (data as any).subjects || [],
+                    stages: (data as any).stages || [],
+                    is_teacher_profile_public: (data as any).is_teacher_profile_public || false,
+                    social_links: ((data as any).social_links as TeacherProfileData['social_links']) || {},
+                });
+            }
         } catch (error) {
-            console.error('Error fetching profile:', error);
+            console.error('Error fetching data:', error);
         } finally {
             clearTimeout(timeoutId);
             setIsLoading(false);
         }
-    };
-
-    const fetchSubjects = async () => {
-        const supabase = createClient();
-        const { data } = await supabase
-            .from('subjects')
-            .select('id, name')
-            .eq('is_active', true)
-            .order('order_index');
-        setAvailableSubjects(data || []);
-    };
-
-    const fetchStages = async () => {
-        const supabase = createClient();
-        const { data } = await supabase
-            .from('educational_stages')
-            .select('id, name')
-            .order('order_index');
-        setAvailableStages(data || []);
     };
 
     // فتح الـ cropper عند اختيار صورة
@@ -271,8 +256,9 @@ export default function TeacherProfilePage() {
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
             await refreshUser();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving profile:', error);
+            alert(`فشل الحفظ: ${error.message || 'حدث خطأ غير متوقع'}`);
         } finally {
             setIsSaving(false);
         }

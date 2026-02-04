@@ -103,8 +103,8 @@ export default function TeacherDashboard() {
 
 
 
-        // Safety timeout - 3 seconds
-        const timeoutId = setTimeout(() => setIsLoading(false), 3000);
+        // Safety timeout - 5 seconds
+        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
 
         const supabase = createClient();
 
