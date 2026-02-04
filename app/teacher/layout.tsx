@@ -247,71 +247,70 @@ function TeacherHeader({ onMenuClick }: { onMenuClick: () => void }) {
 function TeacherProtection({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
-    const [authError, setAuthError] = useState<string | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
-    const { user, isLoading: authLoading, refreshUser } = useAuthStore();
-    const router = useRouter();
+    const { user, isLoading: authLoading } = useAuthStore();
 
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout | undefined;
         let selfHealTimeoutId: NodeJS.Timeout;
+        let hasHealed = false;
+
+        // Self-healing function - clears session and reloads (like onboarding fix)
+        const triggerSelfHeal = async () => {
+            if (hasHealed) return;
+            hasHealed = true;
+            
+            logger.warn("Teacher auth self-healing triggered - clearing session", { context: "TeacherLayout" });
+            
+            // Clear all auth-related storage (THE KEY FIX from onboarding)
+            try {
+                // Clear localStorage
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                // Clear sessionStorage
+                Object.keys(sessionStorage).forEach(key => {
+                    if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
+                        sessionStorage.removeItem(key);
+                    }
+                });
+                
+                // Sign out from Supabase to clear cookies
+                await supabase.auth.signOut();
+            } catch (e) {
+                logger.error("Error during self-heal cleanup", { data: { error: e } });
+            }
+            
+            // Hard reload to login page
+            window.location.href = "/login?redirect=/teacher";
+        };
 
         const checkAuth = async () => {
-            // Self-healing: If stuck for more than 5 seconds, try to fix
-            selfHealTimeoutId = setTimeout(async () => {
-                logger.warn("Teacher auth self-healing triggered", { context: "TeacherLayout", data: { retryCount } });
-
-                if (retryCount < 2) {
-                    // First retry: Try refreshing user data
-                    try {
-                        await refreshUser();
-                        setRetryCount(prev => prev + 1);
-                    } catch (e) {
-                        logger.error("Refresh user failed in self-healing", { data: { error: e } });
-                    }
-                } else {
-                    // Final fallback: Direct Supabase check
-                    try {
-                        const { data } = await supabase.auth.getUser();
-                        if (data.user) {
-                            const { data: profile } = await supabase
-                                .from('profiles')
-                                .select('role, is_teacher_approved')
-                                .eq('id', data.user.id)
-                                .single();
-
-                            if (profile?.role === 'teacher' || profile?.role === 'admin') {
-                                setIsAuthorized(true);
-                                setIsLoading(false);
-                                return;
-                            }
-                        }
-                        // No valid session, redirect
-                        window.location.href = "/login?redirect=/teacher";
-                    } catch (e) {
-                        logger.error("Direct Supabase check failed", { data: { error: e } });
-                        window.location.href = "/login?redirect=/teacher";
-                    }
-                }
+            // Start self-healing timer - 5 seconds timeout
+            selfHealTimeoutId = setTimeout(() => {
+                triggerSelfHeal();
             }, 5000);
 
-            // انتظر انتهاء تحميل الـ Auth
+            // Wait for auth to finish loading
             if (authLoading) return;
 
+            // Auth loaded - clear the timeout
             clearTimeout(selfHealTimeoutId);
 
-            // إذا لم يكن هناك مستخدم
+            // No user - redirect to login
             if (!user) {
                 window.location.href = "/login?redirect=/teacher";
                 return;
             }
 
-            // التحقق من الدور
+            // Check role
             if (user.role !== 'teacher' && user.role !== 'admin') {
                 window.location.href = "/";
                 return;
             }
 
+            // Success!
             setIsAuthorized(true);
             setIsLoading(false);
         };
@@ -319,10 +318,9 @@ function TeacherProtection({ children }: { children: ReactNode }) {
         checkAuth();
 
         return () => {
-            if (timeoutId) clearTimeout(timeoutId);
             if (selfHealTimeoutId) clearTimeout(selfHealTimeoutId);
         };
-    }, [user, authLoading, router, retryCount, refreshUser]);
+    }, [user, authLoading]);
 
     if (isLoading || authLoading) {
         return (
@@ -333,9 +331,6 @@ function TeacherProtection({ children }: { children: ReactNode }) {
                         <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                     <p className="text-gray-500 dark:text-gray-400 font-medium">جاري التحميل...</p>
-                    {authError && (
-                        <p className="text-red-500 text-sm">{authError}</p>
-                    )}
                 </div>
             </div>
         );
