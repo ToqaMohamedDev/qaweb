@@ -10,6 +10,7 @@ import {
     Trophy, Target, ChevronLeft, ChevronDown, ChevronUp, Loader2, BookOpen
 } from "lucide-react";
 import { logger } from "@/lib/utils/logger";
+import { supabase } from "@/lib/supabase";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -475,8 +476,71 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                     showResult: false,
                 });
             } else {
-                // All sections complete
+                // All sections complete - save to database
                 newMap.set(bankId, { ...state, isComplete: true });
+                
+                // Save attempt to database asynchronously
+                (async () => {
+                    try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) return;
+
+                        // Calculate totals
+                        let totalCorrect = 0;
+                        let totalQuestions = 0;
+                        const answersRecord: Record<string, { answer: number; correct: boolean }> = {};
+
+                        bank.sections.forEach(section => {
+                            const sectionScore = state.scores.get(section.type) || 0;
+                            totalCorrect += sectionScore;
+                            totalQuestions += section.questions.length;
+                            
+                            section.questions.forEach((q, idx) => {
+                                const answered = state.answeredQuestions.get(section.type);
+                                if (answered?.has(idx)) {
+                                    answersRecord[q.id] = {
+                                        answer: state.selectedAnswer ?? -1,
+                                        correct: sectionScore > 0
+                                    };
+                                }
+                            });
+                        });
+
+                        // Upsert attempt using RPC function
+                        const { error: rpcError } = await supabase.rpc('save_question_bank_attempt', {
+                            p_question_bank_id: bankId,
+                            p_answers: answersRecord,
+                            p_correct_count: totalCorrect,
+                            p_total_count: totalQuestions,
+                        });
+                        
+                        if (rpcError) {
+                            // Fallback: Try direct insert if RPC doesn't exist
+                            const { error: insertError } = await supabase
+                                .from('question_bank_attempts')
+                                .upsert({
+                                    question_bank_id: bankId,
+                                    student_id: user.id,
+                                    answers: answersRecord,
+                                    correct_count: totalCorrect,
+                                    total_count: totalQuestions,
+                                    status: 'completed',
+                                    completed_at: new Date().toISOString(),
+                                }, {
+                                    onConflict: 'question_bank_id,student_id'
+                                });
+                            
+                            if (insertError) {
+                                logger.error("Direct insert also failed", { error: insertError });
+                                throw insertError;
+                            }
+                        }
+
+                        logger.info("Question bank attempt saved", { context: "LessonPage", data: { bankId, totalCorrect, totalQuestions } });
+                    } catch (err) {
+                        logger.error("Failed to save question bank attempt", { error: err });
+                    }
+                })();
             }
             return newMap;
         });
@@ -517,9 +581,9 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
 
     if (error || !lesson) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f]" dir={direction}>
+            <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-[#0a0a0f]" dir={direction}>
                 <Navbar />
-                <main className="container mx-auto px-4 py-20 text-center">
+                <main className="container mx-auto px-4 py-20 text-center flex-1">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{error || t.lessonNotFound}</h1>
                     <Link href={`/${subject}`} className="text-primary-600 hover:underline">{t.backToLessons}</Link>
                 </main>
@@ -530,9 +594,9 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
 
     if (banks.length === 0) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]" dir={direction}>
+            <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]" dir={direction}>
                 <Navbar />
-                <main className="container mx-auto px-4 py-20 text-center max-w-2xl">
+                <main className="container mx-auto px-4 py-20 text-center max-w-2xl flex-1">
                     <div className="bg-white dark:bg-[#1c1c24] rounded-2xl p-8 border border-gray-200/60 dark:border-[#2e2e3a]">
                         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                             <Target className="h-8 w-8 text-gray-400" />
@@ -550,9 +614,9 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]" dir={direction}>
+        <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#0a0a0f] dark:via-[#121218] dark:to-[#0a0a0f]" dir={direction}>
             <Navbar />
-            <main className="relative z-10">
+            <main className="relative z-10 flex-1">
                 <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 max-w-4xl">
                     {/* Back Link */}
                     <motion.div initial={{ opacity: 0, x: isArabic ? 10 : -10 }} animate={{ opacity: 1, x: 0 }}>

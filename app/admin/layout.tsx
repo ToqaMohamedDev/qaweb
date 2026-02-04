@@ -28,6 +28,7 @@ import {
     Smartphone,
     Mail,
     Gamepad2,
+    BookMarked,
 } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
@@ -54,6 +55,7 @@ const sidebarItems = [
             { href: "/admin/lessons", label: "الدروس", icon: FileText },
             { href: "/admin/exams", label: "الامتحانات", icon: FileText },
             { href: "/admin/quiz-questions", label: "أسئلة الكويز", icon: Gamepad2 },
+            { href: "/admin/words", label: "القاموس", icon: BookMarked },
         ],
     },
     {

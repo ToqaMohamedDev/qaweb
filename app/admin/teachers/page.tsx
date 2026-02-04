@@ -217,7 +217,7 @@ export default function TeachersPage() {
 
         try {
             await updateMutation.mutateAsync({
-                teacherId: selectedTeacher.id,
+                userId: selectedTeacher.id,
                 updates: {
                     name: formData.name,
                     specialization: formData.specialization,
@@ -243,7 +243,7 @@ export default function TeachersPage() {
         async (teacherId: string, verified: boolean) => {
             try {
                 await updateMutation.mutateAsync({
-                    teacherId,
+                    userId: teacherId,
                     updates: { is_verified: verified },
                 });
                 addToast({
@@ -261,7 +261,7 @@ export default function TeachersPage() {
         async (teacherId: string, approved: boolean) => {
             try {
                 await updateMutation.mutateAsync({
-                    teacherId,
+                    userId: teacherId,
                     updates: { is_teacher_approved: approved },
                 });
                 addToast({

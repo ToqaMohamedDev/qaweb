@@ -74,63 +74,118 @@ export default function ExamResultsPage() {
                 // Fetch the latest attempt for this exam
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    setError("Not authenticated");
+                    setError(isRTL ? "يجب تسجيل الدخول" : "Not authenticated");
                     return;
                 }
 
-                const { data, error: fetchError } = await supabase
-                    .from("comprehensive_exam_attempts" as any)
+                // First try comprehensive_exam_attempts
+                let attemptData: {
+                    id: string;
+                    total_score: number | null;
+                    max_score: number | null;
+                    completed_at: string | null;
+                    answers: Record<string, unknown> | null;
+                } | null = null;
+                let examData: { id: string; exam_title: string; blocks: unknown[] } | null = null;
+
+                const { data: compAttempt } = await supabase
+                    .from("comprehensive_exam_attempts")
                     .select(`
                         id,
                         total_score,
                         max_score,
-                        percentage,
                         completed_at,
                         answers,
-                        comprehensive_exams:exam_id (
-                            id,
-                            exam_title,
-                            blocks
-                        )
+                        status
                     `)
                     .eq("exam_id", examId)
                     .eq("student_id", user.id)
                     .in("status", ["submitted", "graded"])
                     .order("completed_at", { ascending: false })
                     .limit(1)
-                    .single();
+                    .maybeSingle();
 
-                if (fetchError) throw fetchError;
-
-                if (data) {
-                    const examData = (data as any).comprehensive_exams;
-                    const totalScore = (data as any).total_score || 0;
-                    const maxScore = (data as any).max_score || 0;
-                    setResult({
-                        id: (data as any).id,
-                        score: totalScore,
-                        max_score: maxScore,
-                        percentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0,
-                        time_spent_seconds: 0,
-                        submitted_at: (data as any).completed_at,
-                        answers: (data as any).answers || {},
-                        exam: {
-                            id: examData?.id,
-                            title: examData?.exam_title || "Exam",
-                            blocks: examData?.blocks || [],
-                        },
-                    });
+                if (compAttempt) {
+                    attemptData = compAttempt as typeof attemptData;
+                    // Fetch exam separately
+                    const { data: exam } = await supabase
+                        .from("comprehensive_exams")
+                        .select("id, exam_title, blocks")
+                        .eq("id", examId)
+                        .single();
+                    if (exam) {
+                        examData = { id: exam.id, exam_title: exam.exam_title, blocks: (exam.blocks as unknown[]) || [] };
+                    }
                 }
+
+                // If no comprehensive attempt, try teacher_exam_attempts
+                if (!attemptData) {
+                    const { data: teacherAttempt } = await supabase
+                        .from("teacher_exam_attempts")
+                        .select(`
+                            id,
+                            total_score,
+                            max_score,
+                            completed_at,
+                            answers,
+                            status
+                        `)
+                        .eq("exam_id", examId)
+                        .eq("student_id", user.id)
+                        .in("status", ["submitted", "graded"])
+                        .order("completed_at", { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (teacherAttempt) {
+                        attemptData = teacherAttempt;
+                        // Fetch teacher exam
+                        const { data: tExam } = await supabase
+                            .from("teacher_exams")
+                            .select("id, exam_title, sections")
+                            .eq("id", examId)
+                            .single();
+                        if (tExam) {
+                            examData = {
+                                id: tExam.id,
+                                exam_title: tExam.exam_title,
+                                blocks: tExam.sections || []
+                            };
+                        }
+                    }
+                }
+
+                if (!attemptData) {
+                    setError(isRTL ? "لا توجد نتائج لهذا الامتحان" : "No results found for this exam");
+                    return;
+                }
+
+                const totalScore = attemptData.total_score || 0;
+                const maxScore = attemptData.max_score || 0;
+                setResult({
+                    id: attemptData.id,
+                    score: totalScore,
+                    max_score: maxScore,
+                    percentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0,
+                    time_spent_seconds: 0,
+                    submitted_at: attemptData.completed_at || '',
+                    answers: attemptData.answers || {},
+                    exam: {
+                        id: examData?.id || examId,
+                        title: examData?.exam_title || (isRTL ? "الامتحان" : "Exam"),
+                        blocks: examData?.blocks || [],
+                    },
+                });
             } catch (err) {
                 console.error("Error fetching results:", err);
-                setError(err instanceof Error ? err.message : "Failed to load results");
+                setError(err instanceof Error ? err.message : (isRTL ? "فشل تحميل النتائج" : "Failed to load results"));
             } finally {
                 setLoading(false);
             }
         };
 
         fetchResults();
-    }, [examId]);
+    }, [examId, isRTL]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);

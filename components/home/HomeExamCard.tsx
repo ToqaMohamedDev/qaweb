@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FileText, Clock, HelpCircle, ChevronLeft, Sparkles } from 'lucide-react';
+import { Clock, HelpCircle, ChevronLeft, Award, Zap, BookOpen, Play } from 'lucide-react';
 
 export interface ExamCardProps {
     id: string;
@@ -19,6 +19,29 @@ const fadeInUp = {
     visible: { opacity: 1, y: 0 }
 };
 
+// Subject color configurations
+const SUBJECT_THEMES: Record<string, { bg: string; text: string; icon: string; gradient: string }> = {
+    arabic: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-600 dark:text-emerald-400', icon: '📚', gradient: 'from-emerald-500 to-green-600' },
+    math: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-400', icon: '📐', gradient: 'from-blue-500 to-indigo-600' },
+    physics: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-600 dark:text-orange-400', icon: '⚡', gradient: 'from-orange-500 to-red-600' },
+    chemistry: { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-600 dark:text-purple-400', icon: '🧪', gradient: 'from-purple-500 to-violet-600' },
+    biology: { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-600 dark:text-green-400', icon: '🧬', gradient: 'from-green-500 to-teal-600' },
+    english: { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-600 dark:text-sky-400', icon: '🌍', gradient: 'from-sky-500 to-blue-600' },
+    default: { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-600 dark:text-indigo-400', icon: '📝', gradient: 'from-indigo-500 to-purple-600' },
+};
+
+function getSubjectTheme(name: string | null) {
+    if (!name) return SUBJECT_THEMES.default;
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('عربي') || lowerName.includes('arabic')) return SUBJECT_THEMES.arabic;
+    if (lowerName.includes('رياضي') || lowerName.includes('math')) return SUBJECT_THEMES.math;
+    if (lowerName.includes('فيزي') || lowerName.includes('physics')) return SUBJECT_THEMES.physics;
+    if (lowerName.includes('كيمي') || lowerName.includes('chemistry')) return SUBJECT_THEMES.chemistry;
+    if (lowerName.includes('أحياء') || lowerName.includes('biology')) return SUBJECT_THEMES.biology;
+    if (lowerName.includes('انجليز') || lowerName.includes('english')) return SUBJECT_THEMES.english;
+    return SUBJECT_THEMES.default;
+}
+
 export function HomeExamCard({
     id,
     examTitle,
@@ -28,68 +51,70 @@ export function HomeExamCard({
     duration,
     index = 0
 }: ExamCardProps) {
-    // تحديد اللون بناءً على المادة
-    const getSubjectColor = (name: string | null) => {
-        if (!name) return 'from-primary-500 to-primary-600';
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes('عربي') || lowerName.includes('arabic')) return 'from-emerald-500 to-green-600';
-        if (lowerName.includes('رياضي') || lowerName.includes('math')) return 'from-blue-500 to-indigo-600';
-        if (lowerName.includes('فيزي') || lowerName.includes('physics')) return 'from-orange-500 to-red-600';
-        if (lowerName.includes('كيمي') || lowerName.includes('chemistry')) return 'from-purple-500 to-violet-600';
-        if (lowerName.includes('أحياء') || lowerName.includes('biology')) return 'from-green-500 to-teal-600';
-        if (lowerName.includes('انجليز') || lowerName.includes('english')) return 'from-sky-500 to-blue-600';
-        return 'from-primary-500 to-primary-600';
-    };
-
-    const colorGradient = getSubjectColor(subjectName);
+    const theme = getSubjectTheme(subjectName);
     const examUrl = subjectSlug ? `/${subjectSlug}/exam/${id}` : `/arabic/exam/${id}`;
 
     return (
         <motion.div
             variants={fadeInUp}
             transition={{ delay: index * 0.05 }}
-            className="group"
+            className="group h-full"
         >
-            <Link href={examUrl}>
-                <div className="relative h-full overflow-hidden rounded-2xl bg-white dark:bg-[#1a1a22] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:border-primary-300 dark:hover:border-primary-700 hover:-translate-y-1">
-                    {/* Header Gradient */}
-                    <div className={`h-2 bg-gradient-to-r ${colorGradient}`} />
+            <Link href={examUrl} className="block h-full">
+                <div className="relative h-full overflow-hidden rounded-2xl bg-white dark:bg-[#16161d] border border-gray-100 dark:border-gray-800/50 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 hover:-translate-y-2">
+                    {/* Decorative Background */}
+                    <div className="absolute top-0 left-0 w-full h-32 opacity-50 dark:opacity-30">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-10`} />
+                        <div className="absolute top-4 right-4 text-4xl opacity-20 group-hover:scale-110 transition-transform duration-500">
+                            {theme.icon}
+                        </div>
+                    </div>
                     
-                    <div className="p-4">
-                        {/* Subject Badge */}
-                        {subjectName && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 mb-3">
-                                <Sparkles className="w-3 h-3 text-primary-500" />
-                                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{subjectName}</span>
-                            </div>
-                        )}
-                        
-                        {/* Exam Title */}
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                            {examTitle}
-                        </h3>
-                        
-                        {/* Meta Info */}
-                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
-                            <div className="flex items-center gap-1.5">
-                                <HelpCircle className="w-4 h-4" />
-                                <span>{questionsCount} سؤال</span>
-                            </div>
+                    <div className="relative p-5">
+                        {/* Top Row: Subject & Duration */}
+                        <div className="flex items-center justify-between mb-4">
+                            {subjectName && (
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${theme.bg} ${theme.text}`}>
+                                    <BookOpen className="w-3.5 h-3.5" />
+                                    {subjectName}
+                                </span>
+                            )}
                             {duration && (
-                                <div className="flex items-center gap-1.5">
-                                    <Clock className="w-4 h-4" />
-                                    <span>{duration} دقيقة</span>
-                                </div>
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800/70 text-xs text-gray-600 dark:text-gray-400">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {duration} د
+                                </span>
                             )}
                         </div>
                         
-                        {/* CTA */}
-                        <div className={`flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r ${colorGradient} bg-opacity-10`}>
-                            <div className="flex items-center gap-2 text-white">
-                                <FileText className="w-4 h-4" />
-                                <span className="text-sm font-semibold">ابدأ الامتحان</span>
+                        {/* Exam Title */}
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 line-clamp-2 min-h-[3.5rem] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {examTitle}
+                        </h3>
+                        
+                        {/* Stats Row */}
+                        <div className="flex items-center gap-4 mb-5">
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                <HelpCircle className="w-4 h-4 text-indigo-500" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{questionsCount}</span>
+                                <span className="text-xs text-gray-500">سؤال</span>
                             </div>
-                            <ChevronLeft className="w-4 h-4 text-white group-hover:-translate-x-1 transition-transform rtl:rotate-180" />
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                <Award className="w-4 h-4 text-amber-500" />
+                                <span className="text-xs text-gray-500">اختبر نفسك</span>
+                            </div>
+                        </div>
+                        
+                        {/* CTA Button */}
+                        <div className={`flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r ${theme.gradient} group-hover:shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300`}>
+                            <div className="flex items-center gap-2 text-white">
+                                <Play className="w-4 h-4" />
+                                <span className="text-sm font-bold">ابدأ الامتحان</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-white/80">
+                                <Zap className="w-4 h-4" />
+                                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform rtl:rotate-180" />
+                            </div>
                         </div>
                     </div>
                 </div>
