@@ -106,7 +106,7 @@ export default function ExamResultsPage() {
                     .maybeSingle();
 
                 if (compAttempt) {
-                    attemptData = compAttempt as typeof attemptData;
+                    attemptData = compAttempt as unknown as typeof attemptData;
                     // Fetch exam separately
                     const { data: exam } = await supabase
                         .from("comprehensive_exams")

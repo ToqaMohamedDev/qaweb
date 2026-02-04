@@ -81,55 +81,75 @@ export default function TeacherExamResultsPage() {
                     return;
                 }
 
-                const { data, error: fetchError } = await supabase
-                    .from("teacher_exam_attempts" as any)
+                // Fetch attempt first
+                const { data: attemptData, error: attemptError } = await supabase
+                    .from("teacher_exam_attempts")
                     .select(`
                         id,
                         total_score,
                         max_score,
-                        percentage,
                         completed_at,
                         answers,
-                        status,
-                        teacher_exams:exam_id (
-                            id,
-                            exam_title,
-                            blocks,
-                            profiles:teacher_id (
-                                full_name
-                            )
-                        )
+                        status
                     `)
                     .eq("exam_id", examId)
                     .eq("student_id", user.id)
                     .in("status", ["submitted", "graded"])
                     .order("completed_at", { ascending: false })
                     .limit(1)
+                    .maybeSingle();
+
+                if (attemptError) throw attemptError;
+                
+                if (!attemptData) {
+                    setError(isRTL ? "لا توجد نتائج" : "No results found");
+                    return;
+                }
+
+                // Fetch exam separately
+                const { data: examData, error: examError } = await supabase
+                    .from("teacher_exams")
+                    .select(`
+                        id,
+                        exam_title,
+                        blocks,
+                        sections,
+                        created_by
+                    `)
+                    .eq("id", examId)
                     .single();
 
-                if (fetchError) throw fetchError;
+                if (examError) throw examError;
 
-                if (data) {
-                    const examData = (data as any).teacher_exams;
-                    const totalScore = (data as any).total_score || 0;
-                    const maxScore = (data as any).max_score || 0;
-                    
-                    setResult({
-                        id: (data as any).id,
-                        score: totalScore,
-                        max_score: maxScore,
-                        percentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0,
-                        time_spent_seconds: 0,
-                        submitted_at: (data as any).completed_at,
-                        answers: (data as any).answers || {},
-                        exam: {
-                            id: examData?.id,
-                            title: examData?.exam_title || "Exam",
-                            blocks: examData?.blocks || [],
-                            teacher_name: examData?.profiles?.full_name,
-                        },
-                    });
+                // Fetch teacher profile if available
+                let teacherName = "";
+                if (examData?.created_by) {
+                    const { data: profileData } = await supabase
+                        .from("profiles")
+                        .select("full_name")
+                        .eq("id", examData.created_by)
+                        .single();
+                    teacherName = profileData?.full_name || "";
                 }
+
+                const totalScore = attemptData.total_score || 0;
+                const maxScore = attemptData.max_score || 0;
+                
+                setResult({
+                    id: attemptData.id,
+                    score: totalScore,
+                    max_score: maxScore,
+                    percentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0,
+                    time_spent_seconds: 0,
+                    submitted_at: attemptData.completed_at || "",
+                    answers: (attemptData.answers as Record<string, unknown>) || {},
+                    exam: {
+                        id: examData?.id || examId,
+                        title: examData?.exam_title || "Exam",
+                        blocks: (examData?.blocks || examData?.sections || []) as unknown[],
+                        teacher_name: teacherName,
+                    },
+                });
             } catch (err) {
                 console.error("Error fetching results:", err);
                 setError(err instanceof Error ? err.message : "Failed to load results");

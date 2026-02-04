@@ -8,7 +8,7 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -150,6 +150,20 @@ export function TeacherExamSectionPlayer({
     const currentSectionQuestions = getBlockQuestions(currentSection);
     const totalQuestions = blocks.reduce((sum, b) => sum + getBlockQuestions(b).length, 0);
     const answeredCount = Object.keys(answers).length;
+
+    // Group questions by type for compact display
+    const groupedQuestions = useMemo(() => {
+        const mcq = currentSectionQuestions.filter(q => q.type === 'mcq' || q.type === 'multiple_choice');
+        const tf = currentSectionQuestions.filter(q => q.type === 'true_false');
+        const essay = currentSectionQuestions.filter(q => q.type === 'essay' || q.type === 'maqali');
+        const parsing = currentSectionQuestions.filter(q => q.type === 'parsing');
+        const fillBlank = currentSectionQuestions.filter(q => q.type === 'fill_blank');
+        const extraction = currentSectionQuestions.filter(q => q.type === 'extraction');
+        const other = currentSectionQuestions.filter(q => 
+            !['mcq', 'multiple_choice', 'true_false', 'essay', 'maqali', 'parsing', 'fill_blank', 'extraction'].includes(q.type)
+        );
+        return { mcq, tf, essay, parsing, fillBlank, extraction, other };
+    }, [currentSectionQuestions]);
 
     // Labels
     const labels = {
@@ -337,6 +351,30 @@ export function TeacherExamSectionPlayer({
                 answers,
                 timeSpent: Math.floor((Date.now() - startTime) / 1000),
             };
+
+            // Save to database
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { error: insertError } = await supabase
+                    .from('teacher_exam_attempts')
+                    .upsert({
+                        exam_id: examId,
+                        student_id: user.id,
+                        answers: answers,
+                        total_score: totalScore,
+                        max_score: maxScore,
+                        status: 'submitted',
+                        completed_at: new Date().toISOString(),
+                    }, {
+                        onConflict: 'exam_id,student_id'
+                    });
+
+                if (insertError) {
+                    logger.error('Error saving exam attempt', { context: 'TeacherExamSectionPlayer', data: insertError });
+                } else {
+                    logger.info('Exam attempt saved successfully', { context: 'TeacherExamSectionPlayer', data: { examId, totalScore, maxScore } });
+                }
+            }
 
             if (onComplete) {
                 onComplete(results);
@@ -667,9 +705,104 @@ export function TeacherExamSectionPlayer({
                             </div>
                         )}
 
-                        {/* Questions List */}
-                        <div className="space-y-4">
-                            {currentSectionQuestions.map((q, idx) => renderQuestion(q, idx))}
+                        {/* Questions List - Grouped by Type */}
+                        <div className="space-y-6">
+                            {/* MCQ Questions */}
+                            {groupedQuestions.mcq.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                                        <h3 className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                            {isRTL ? 'اختيار من متعدد' : 'Multiple Choice'} ({groupedQuestions.mcq.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.mcq.map((q, i) => renderQuestion(q, i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* True/False Questions */}
+                            {groupedQuestions.tf.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                                        <h3 className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                                            {isRTL ? 'صح أم خطأ' : 'True or False'} ({groupedQuestions.tf.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.tf.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Essay Questions */}
+                            {groupedQuestions.essay.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                            {isRTL ? 'أسئلة مقالية' : 'Essay Questions'} ({groupedQuestions.essay.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.essay.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + groupedQuestions.tf.length + i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Parsing Questions */}
+                            {groupedQuestions.parsing.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                                        <h3 className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                                            {isRTL ? 'أعرب ما تحته خط' : 'Parsing'} ({groupedQuestions.parsing.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.parsing.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + groupedQuestions.tf.length + groupedQuestions.essay.length + i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fill Blank Questions */}
+                            {groupedQuestions.fillBlank.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                        <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                            {isRTL ? 'أكمل الفراغ' : 'Fill in the Blank'} ({groupedQuestions.fillBlank.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.fillBlank.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + groupedQuestions.tf.length + groupedQuestions.essay.length + groupedQuestions.parsing.length + i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Extraction Questions */}
+                            {groupedQuestions.extraction.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-2">
+                                        <div className="w-2 h-2 rounded-full bg-pink-500" />
+                                        <h3 className="text-sm font-bold text-pink-600 dark:text-pink-400">
+                                            {isRTL ? 'استخراج' : 'Extraction'} ({groupedQuestions.extraction.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {groupedQuestions.extraction.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + groupedQuestions.tf.length + groupedQuestions.essay.length + groupedQuestions.parsing.length + groupedQuestions.fillBlank.length + i))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Other Questions */}
+                            {groupedQuestions.other.length > 0 && (
+                                <div className="space-y-3">
+                                    {groupedQuestions.other.map((q, i) => renderQuestion(q, groupedQuestions.mcq.length + groupedQuestions.tf.length + groupedQuestions.essay.length + groupedQuestions.parsing.length + groupedQuestions.fillBlank.length + groupedQuestions.extraction.length + i))}
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </AnimatePresence>
