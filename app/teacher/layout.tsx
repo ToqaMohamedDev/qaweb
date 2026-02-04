@@ -271,6 +271,11 @@ function TeacherProtection({ children }: { children: ReactNode }) {
 
     }, [user, authLoading]);
 
+    // If authorized, render immediately (bypass loading)
+    if (isAuthorized) {
+        return <>{children}</>;
+    }
+
     if (isLoading || authLoading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
