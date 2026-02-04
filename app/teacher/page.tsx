@@ -77,26 +77,28 @@ export default function TeacherDashboard() {
     }, [refreshUser, hasRefreshed]);
 
     useEffect(() => {
+        // If we have a user, proceed immediately (don't wait for authLoading)
+        if (user) {
+            if (user.role !== 'teacher') {
+                router.push("/");
+                return;
+            }
+
+            if (!isApprovedTeacher) {
+                // المدرس غير معتمد بعد
+                setIsLoading(false);
+                return;
+            }
+
+            fetchTeacherData();
+            return;
+        }
+
+        // Only if NO user and STILL loading, we wait
         if (authLoading) return;
 
-        // التحقق من أن المستخدم مدرس معتمد
-        if (!user) {
-            router.push("/login");
-            return;
-        }
-
-        if (user.role !== 'teacher') {
-            router.push("/");
-            return;
-        }
-
-        if (!isApprovedTeacher) {
-            // المدرس غير معتمد بعد
-            setIsLoading(false);
-            return;
-        }
-
-        fetchTeacherData();
+        // Loading finished and no user -> Redirect
+        router.push("/login");
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchTeacherData = async () => {
@@ -185,7 +187,8 @@ export default function TeacherDashboard() {
         }
     };
 
-    if (authLoading || isLoading) {
+    // Only show loader if we're waiting for auth (and have no user) OR fetching data
+    if ((authLoading && !user) || isLoading) {
         return (
             <>
                 <Navbar />
