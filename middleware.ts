@@ -96,9 +96,17 @@ export async function middleware(request: NextRequest) {
 
     // CRITICAL: Always call getUser() to refresh session
     // This updates the auth cookies if they're expired
+    // Added timeout to prevent Vercel hangs
     let user = null;
     try {
-        const { data, error } = await supabase.auth.getUser();
+        // Wrap getUser with 3-second timeout to prevent Vercel hang
+        const userPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise<{ data: { user: null }, error: null }>((resolve) =>
+            setTimeout(() => resolve({ data: { user: null }, error: null }), 3000)
+        );
+
+        const { data, error } = await Promise.race([userPromise, timeoutPromise]);
+
         if (error) {
             // تجاهل أخطاء التوكن المنتهي، فهي طبيعية وتعني أن المستخدم يحتاج لتسجيل الدخول
             if (!error.message.includes('Refresh Token Not Found') &&
@@ -156,12 +164,18 @@ export async function middleware(request: NextRequest) {
         isWelcomeParam;
 
     if (user && !skipOnboardingCheck) {
-        // Only verify profile if we really need to
-        const { data: profile } = await supabase
+        // Only verify profile if we really need to - with timeout
+        const profilePromise = supabase
             .from('profiles')
             .select('role, role_selected, educational_stage_id')
             .eq('id', user.id)
             .single();
+
+        const profileTimeout = new Promise<{ data: null }>((resolve) =>
+            setTimeout(() => resolve({ data: null }), 2000)
+        );
+
+        const { data: profile } = await Promise.race([profilePromise, profileTimeout]) as any;
 
         // If user hasn't completed onboarding, redirect to onboarding
         // Check: role_selected is false
