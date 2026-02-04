@@ -84,7 +84,7 @@ export default function ExamResultsPage() {
                     total_score: number | null;
                     max_score: number | null;
                     completed_at: string | null;
-                    answers: Record<string, unknown> | null;
+                    answers: Record<string, any> | null;
                 } | null = null;
                 let examData: { id: string; exam_title: string; blocks: unknown[] } | null = null;
 
@@ -106,7 +106,7 @@ export default function ExamResultsPage() {
                     .maybeSingle();
 
                 if (compAttempt) {
-                    attemptData = compAttempt as unknown as typeof attemptData;
+                    attemptData = compAttempt as any;
                     // Fetch exam separately
                     const { data: exam } = await supabase
                         .from("comprehensive_exams")
@@ -138,7 +138,7 @@ export default function ExamResultsPage() {
                         .maybeSingle();
 
                     if (teacherAttempt) {
-                        attemptData = teacherAttempt;
+                        attemptData = teacherAttempt as any;
                         // Fetch teacher exam
                         const { data: tExam } = await supabase
                             .from("teacher_exams")
