@@ -243,29 +243,74 @@ function TeacherHeader({ onMenuClick }: { onMenuClick: () => void }) {
     );
 }
 
-// Teacher Protection Component - With hydration fix
+// Teacher Protection Component - With DEBUG MODE
 function TeacherProtection({ children }: { children: ReactNode }) {
     const { user, isLoading: authLoading } = useAuthStore();
 
     // Fix for Zustand hydration: force re-render after mount to get latest store values
     const [mounted, setMounted] = useState(false);
+    const [debugLogs, setDebugLogs] = useState<string[]>(['Initial render']);
+
+    const addLog = (msg: string) => {
+        const timestamp = new Date().toLocaleTimeString();
+        setDebugLogs(prev => [...prev.slice(-10), `[${timestamp}] ${msg}`]);
+    };
+
     useEffect(() => {
+        addLog('useEffect: Component mounted');
+        addLog(`useEffect: authLoading=${authLoading}, user=${user?.email || 'null'}`);
         setMounted(true);
     }, []);
 
+    useEffect(() => {
+        addLog(`authLoading changed: ${authLoading}`);
+    }, [authLoading]);
+
+    useEffect(() => {
+        addLog(`user changed: ${user?.email || 'null'}, role=${user?.role || 'no-role'}`);
+    }, [user]);
+
+    // DEBUG OVERLAY - Will be visible on production to diagnose the issue
+    const DebugOverlay = () => (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            background: 'rgba(0,0,0,0.9)',
+            color: '#00ff00',
+            padding: '10px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            zIndex: 99999,
+            maxHeight: '150px',
+            overflow: 'auto',
+            direction: 'ltr'
+        }}>
+            <div><strong>🔧 DEBUG MODE - TeacherProtection</strong></div>
+            <div>mounted: <span style={{ color: mounted ? '#0f0' : '#f00' }}>{String(mounted)}</span></div>
+            <div>authLoading: <span style={{ color: authLoading ? '#ff0' : '#0f0' }}>{String(authLoading)}</span></div>
+            <div>user: <span style={{ color: user ? '#0f0' : '#f00' }}>{user ? `${user.email} (${user.role})` : 'NULL'}</span></div>
+            <div>---</div>
+            {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+        </div>
+    );
+
     // Before mount (SSR or first render): always show spinner
-    // This prevents hydration mismatch and ensures we wait for Zustand to hydrate
     if (!mounted) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="relative">
-                        <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
-                        <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <>
+                <DebugOverlay />
+                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-40">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for mount...</p>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">جاري التحميل...</p>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -274,32 +319,43 @@ function TeacherProtection({ children }: { children: ReactNode }) {
     // Case 1: Still loading auth AND no user cached -> show spinner
     if (authLoading && !user) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="relative">
-                        <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
-                        <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <>
+                <DebugOverlay />
+                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-40">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for auth...</p>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">جاري التحميل...</p>
                 </div>
-            </div>
+            </>
         );
     }
 
     // Case 2: No user (loading finished or cached as null) -> redirect to login
     if (!user) {
+        addLog('REDIRECTING: No user found');
         window.location.href = "/login?redirect=/teacher";
-        return null;
+        return <DebugOverlay />;
     }
 
     // Case 3: User exists but wrong role -> redirect to home
     if (user.role !== 'teacher' && user.role !== 'admin') {
+        addLog(`REDIRECTING: Wrong role (${user.role})`);
         window.location.href = "/";
-        return null;
+        return <DebugOverlay />;
     }
 
     // Case 4: Authorized! Render children immediately
-    return <>{children}</>;
+    addLog('SUCCESS: Rendering children');
+    return (
+        <>
+            <DebugOverlay />
+            {children}
+        </>
+    );
 }
 
 // Layout Content
