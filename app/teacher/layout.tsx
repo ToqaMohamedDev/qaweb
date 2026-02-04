@@ -243,10 +243,33 @@ function TeacherHeader({ onMenuClick }: { onMenuClick: () => void }) {
     );
 }
 
-// Teacher Protection Component - SIMPLIFIED (no useState, no useEffect)
-// Based on the successful onboarding fix
+// Teacher Protection Component - With hydration fix
 function TeacherProtection({ children }: { children: ReactNode }) {
     const { user, isLoading: authLoading } = useAuthStore();
+
+    // Fix for Zustand hydration: force re-render after mount to get latest store values
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Before mount (SSR or first render): always show spinner
+    // This prevents hydration mismatch and ensures we wait for Zustand to hydrate
+    if (!mounted) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
+                        <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // After mount: Zustand has hydrated, now check the real values
 
     // Case 1: Still loading auth AND no user cached -> show spinner
     if (authLoading && !user) {
@@ -265,17 +288,13 @@ function TeacherProtection({ children }: { children: ReactNode }) {
 
     // Case 2: No user (loading finished or cached as null) -> redirect to login
     if (!user) {
-        if (typeof window !== 'undefined') {
-            window.location.href = "/login?redirect=/teacher";
-        }
+        window.location.href = "/login?redirect=/teacher";
         return null;
     }
 
     // Case 3: User exists but wrong role -> redirect to home
     if (user.role !== 'teacher' && user.role !== 'admin') {
-        if (typeof window !== 'undefined') {
-            window.location.href = "/";
-        }
+        window.location.href = "/";
         return null;
     }
 
