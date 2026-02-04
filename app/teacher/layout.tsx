@@ -253,21 +253,21 @@ function TeacherProtection({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout;
+        let timeoutId: NodeJS.Timeout | undefined;
         let selfHealTimeoutId: NodeJS.Timeout;
 
         const checkAuth = async () => {
             // Self-healing: If stuck for more than 5 seconds, try to fix
             selfHealTimeoutId = setTimeout(async () => {
-                logger.warn("Teacher auth self-healing triggered", { context: "TeacherLayout", retryCount });
-                
+                logger.warn("Teacher auth self-healing triggered", { context: "TeacherLayout", data: { retryCount } });
+
                 if (retryCount < 2) {
                     // First retry: Try refreshing user data
                     try {
                         await refreshUser();
                         setRetryCount(prev => prev + 1);
                     } catch (e) {
-                        logger.error("Refresh user failed in self-healing", { error: e });
+                        logger.error("Refresh user failed in self-healing", { data: { error: e } });
                     }
                 } else {
                     // Final fallback: Direct Supabase check
@@ -279,7 +279,7 @@ function TeacherProtection({ children }: { children: ReactNode }) {
                                 .select('role, is_teacher_approved')
                                 .eq('id', data.user.id)
                                 .single();
-                            
+
                             if (profile?.role === 'teacher' || profile?.role === 'admin') {
                                 setIsAuthorized(true);
                                 setIsLoading(false);
@@ -289,7 +289,7 @@ function TeacherProtection({ children }: { children: ReactNode }) {
                         // No valid session, redirect
                         window.location.href = "/login?redirect=/teacher";
                     } catch (e) {
-                        logger.error("Direct Supabase check failed", { error: e });
+                        logger.error("Direct Supabase check failed", { data: { error: e } });
                         window.location.href = "/login?redirect=/teacher";
                     }
                 }

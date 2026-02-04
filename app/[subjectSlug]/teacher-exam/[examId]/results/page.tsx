@@ -100,7 +100,7 @@ export default function TeacherExamResultsPage() {
                     .maybeSingle();
 
                 if (attemptError) throw attemptError;
-                
+
                 if (!attemptData) {
                     setError(isRTL ? "لا توجد نتائج" : "No results found");
                     return;
@@ -126,15 +126,15 @@ export default function TeacherExamResultsPage() {
                 if (examData?.created_by) {
                     const { data: profileData } = await supabase
                         .from("profiles")
-                        .select("full_name")
+                        .select("name")
                         .eq("id", examData.created_by)
                         .single();
-                    teacherName = profileData?.full_name || "";
+                    teacherName = (profileData as any)?.name || (profileData as any)?.full_name || "";
                 }
 
                 const totalScore = attemptData.total_score || 0;
                 const maxScore = attemptData.max_score || 0;
-                
+
                 setResult({
                     id: attemptData.id,
                     score: totalScore,

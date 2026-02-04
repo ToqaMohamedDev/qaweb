@@ -138,7 +138,7 @@ export default function AdminWordsPage() {
 
             if (fetchError) throw fetchError;
 
-            setWords(data || []);
+            setWords((data as any) || []);
             setTotalCount(count || 0);
         } catch (err) {
             console.error("Error fetching words:", err);
@@ -223,7 +223,7 @@ export default function AdminWordsPage() {
 
         try {
             const lexicalEntries: Record<string, { lemma: string; examples?: string[] }> = {};
-            
+
             if (formData.lemma_ar.trim()) {
                 lexicalEntries.ar = {
                     lemma: formData.lemma_ar.trim(),
@@ -243,7 +243,7 @@ export default function AdminWordsPage() {
                 definition: formData.definition.trim() || null,
                 part_of_speech: formData.part_of_speech || null,
                 lexical_entries: Object.keys(lexicalEntries).length > 0 ? lexicalEntries : null,
-                domains: formData.domains.trim() 
+                domains: formData.domains.trim()
                     ? formData.domains.split(",").map(d => d.trim()).filter(Boolean)
                     : null,
                 updated_at: new Date().toISOString(),
@@ -403,7 +403,7 @@ export default function AdminWordsPage() {
                                 words.map((word) => {
                                     const entries = word.lexical_entries || {};
                                     const languages = Object.keys(entries);
-                                    
+
                                     return (
                                         <tr key={word.concept_id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30">
                                             <td className="px-5 py-4">
@@ -430,7 +430,7 @@ export default function AdminWordsPage() {
                                             <td className="px-5 py-4">
                                                 <div className="flex gap-1">
                                                     {languages.map(lang => (
-                                                        <span 
+                                                        <span
                                                             key={lang}
                                                             className="px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                                                         >
@@ -515,8 +515,8 @@ export default function AdminWordsPage() {
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                     {selectedWord ? "تعديل كلمة" : "إضافة كلمة جديدة"}
                                 </h2>
-                                <button 
-                                    onClick={() => setShowModal(false)} 
+                                <button
+                                    onClick={() => setShowModal(false)}
                                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                                 >
                                     <X className="h-5 w-5" />
@@ -530,7 +530,6 @@ export default function AdminWordsPage() {
                                         label="جذر الكلمة"
                                         value={formData.word_family_root}
                                         onChange={(v) => setFormData(prev => ({ ...prev, word_family_root: v }))}
-                                        required
                                     />
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -562,7 +561,7 @@ export default function AdminWordsPage() {
                                         <Languages className="h-4 w-4" />
                                         المداخل اللغوية
                                     </h3>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-3">
                                             <FormField

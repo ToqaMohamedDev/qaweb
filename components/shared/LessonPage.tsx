@@ -478,7 +478,7 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
             } else {
                 // All sections complete - save to database
                 newMap.set(bankId, { ...state, isComplete: true });
-                
+
                 // Save attempt to database asynchronously
                 (async () => {
                     try {
@@ -494,7 +494,7 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                             const sectionScore = state.scores.get(section.type) || 0;
                             totalCorrect += sectionScore;
                             totalQuestions += section.questions.length;
-                            
+
                             section.questions.forEach((q, idx) => {
                                 const answered = state.answeredQuestions.get(section.type);
                                 if (answered?.has(idx)) {
@@ -507,16 +507,16 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                         });
 
                         // Upsert attempt using RPC function
-                        const { error: rpcError } = await supabase.rpc('save_question_bank_attempt', {
+                        const { error: rpcError } = await (supabase as any).rpc('save_question_bank_attempt', {
                             p_question_bank_id: bankId,
                             p_answers: answersRecord,
                             p_correct_count: totalCorrect,
                             p_total_count: totalQuestions,
                         });
-                        
+
                         if (rpcError) {
                             // Fallback: Try direct insert if RPC doesn't exist
-                            const { error: insertError } = await supabase
+                            const { error: insertError } = await (supabase as any)
                                 .from('question_bank_attempts')
                                 .upsert({
                                     question_bank_id: bankId,
@@ -529,16 +529,16 @@ export function LessonPageComponent({ lessonId, subject }: LessonPageProps) {
                                 }, {
                                     onConflict: 'question_bank_id,student_id'
                                 });
-                            
+
                             if (insertError) {
-                                logger.error("Direct insert also failed", { error: insertError });
+                                logger.error("Direct insert also failed", { data: { error: insertError } });
                                 throw insertError;
                             }
                         }
 
                         logger.info("Question bank attempt saved", { context: "LessonPage", data: { bankId, totalCorrect, totalQuestions } });
                     } catch (err) {
-                        logger.error("Failed to save question bank attempt", { error: err });
+                        logger.error("Failed to save question bank attempt", { data: { error: err } });
                     }
                 })();
             }

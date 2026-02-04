@@ -159,7 +159,7 @@ export function TeacherExamSectionPlayer({
         const parsing = currentSectionQuestions.filter(q => q.type === 'parsing');
         const fillBlank = currentSectionQuestions.filter(q => q.type === 'fill_blank');
         const extraction = currentSectionQuestions.filter(q => q.type === 'extraction');
-        const other = currentSectionQuestions.filter(q => 
+        const other = currentSectionQuestions.filter(q =>
             !['mcq', 'multiple_choice', 'true_false', 'essay', 'maqali', 'parsing', 'fill_blank', 'extraction'].includes(q.type)
         );
         return { mcq, tf, essay, parsing, fillBlank, extraction, other };
@@ -360,7 +360,7 @@ export function TeacherExamSectionPlayer({
                     .upsert({
                         exam_id: examId,
                         student_id: user.id,
-                        answers: answers,
+                        answers: answers as any,
                         total_score: totalScore,
                         max_score: maxScore,
                         status: 'submitted',
@@ -425,8 +425,8 @@ export function TeacherExamSectionPlayer({
                     <div className="flex items-center gap-2">
                         {q.difficulty && (
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${q.difficulty === 'easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                                    q.difficulty === 'hard' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                q.difficulty === 'hard' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
                                 }`}>
                                 {isRTL ? (q.difficulty === 'easy' ? 'سهل' : q.difficulty === 'hard' ? 'صعب' : 'متوسط') : q.difficulty}
                             </span>
@@ -495,14 +495,14 @@ export function TeacherExamSectionPlayer({
                                     key={idx}
                                     onClick={() => handleAnswer(q.id, idx)}
                                     className={`w-full p-3 text-start rounded-xl border-2 transition-all ${isSelected
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
-                                            : 'border-gray-200 dark:border-[#2e2e3a] hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-[#2e2e3a]'
+                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
+                                        : 'border-gray-200 dark:border-[#2e2e3a] hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-[#2e2e3a]'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold ${isSelected
-                                                ? 'bg-primary-500 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                            ? 'bg-primary-500 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                                             }`}>
                                             {String.fromCharCode(65 + idx)}
                                         </span>
@@ -596,8 +596,8 @@ export function TeacherExamSectionPlayer({
                             {/* Timer */}
                             {timeRemaining !== null && (
                                 <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-semibold ${timeRemaining < 300
-                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
-                                        : 'bg-gray-100 text-gray-700 dark:bg-[#2e2e3a] dark:text-gray-300'
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-[#2e2e3a] dark:text-gray-300'
                                     }`}>
                                     <Clock className="w-4 h-4" />
                                     <span>{formatTime(timeRemaining)}</span>
@@ -616,10 +616,10 @@ export function TeacherExamSectionPlayer({
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
                                 className={`flex-1 h-2 rounded-full transition-all ${idx === currentSectionIndex
-                                        ? 'bg-primary-500'
-                                        : idx < currentSectionIndex
-                                            ? 'bg-green-500'
-                                            : 'bg-gray-200 dark:bg-[#2e2e3a]'
+                                    ? 'bg-primary-500'
+                                    : idx < currentSectionIndex
+                                        ? 'bg-green-500'
+                                        : 'bg-gray-200 dark:bg-[#2e2e3a]'
                                     }`}
                             />
                         ))}
