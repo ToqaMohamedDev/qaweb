@@ -249,28 +249,21 @@ function TeacherProtection({ children }: { children: ReactNode }) {
 
     // Fix for Zustand hydration: force re-render after mount to get latest store values
     const [mounted, setMounted] = useState(false);
-    const [debugLogs, setDebugLogs] = useState<string[]>(['Initial render']);
-
-    const addLog = (msg: string) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setDebugLogs(prev => [...prev.slice(-10), `[${timestamp}] ${msg}`]);
-    };
 
     useEffect(() => {
-        addLog('useEffect: Component mounted');
-        addLog(`useEffect: authLoading=${authLoading}, user=${user?.email || 'null'}`);
+        console.log('[TeacherProtection] Mounted, authLoading:', authLoading, 'user:', user?.email);
         setMounted(true);
     }, []);
 
     useEffect(() => {
-        addLog(`authLoading changed: ${authLoading}`);
+        console.log('[TeacherProtection] authLoading changed:', authLoading);
     }, [authLoading]);
 
     useEffect(() => {
-        addLog(`user changed: ${user?.email || 'null'}, role=${user?.role || 'no-role'}`);
+        console.log('[TeacherProtection] user changed:', user?.email, 'role:', user?.role);
     }, [user]);
 
-    // DEBUG OVERLAY - Will be visible on production to diagnose the issue
+    // DEBUG OVERLAY - Simple version without state updates
     const DebugOverlay = () => (
         <div style={{
             position: 'fixed',
@@ -280,19 +273,15 @@ function TeacherProtection({ children }: { children: ReactNode }) {
             background: 'rgba(0,0,0,0.9)',
             color: '#00ff00',
             padding: '10px',
-            fontSize: '11px',
+            fontSize: '12px',
             fontFamily: 'monospace',
             zIndex: 99999,
-            maxHeight: '150px',
-            overflow: 'auto',
             direction: 'ltr'
         }}>
-            <div><strong>🔧 DEBUG MODE - TeacherProtection</strong></div>
-            <div>mounted: <span style={{ color: mounted ? '#0f0' : '#f00' }}>{String(mounted)}</span></div>
-            <div>authLoading: <span style={{ color: authLoading ? '#ff0' : '#0f0' }}>{String(authLoading)}</span></div>
-            <div>user: <span style={{ color: user ? '#0f0' : '#f00' }}>{user ? `${user.email} (${user.role})` : 'NULL'}</span></div>
-            <div>---</div>
-            {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+            <strong>🔧 DEBUG</strong> |
+            mounted: <span style={{ color: mounted ? '#0f0' : '#f00' }}>{String(mounted)}</span> |
+            authLoading: <span style={{ color: authLoading ? '#ff0' : '#0f0' }}>{String(authLoading)}</span> |
+            user: <span style={{ color: user ? '#0f0' : '#f00' }}>{user ? `${user.email} (${user.role})` : 'NULL'}</span>
         </div>
     );
 
@@ -301,7 +290,7 @@ function TeacherProtection({ children }: { children: ReactNode }) {
         return (
             <>
                 <DebugOverlay />
-                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-40">
+                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-20">
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                             <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
@@ -321,13 +310,13 @@ function TeacherProtection({ children }: { children: ReactNode }) {
         return (
             <>
                 <DebugOverlay />
-                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-40">
+                <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center pt-20">
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                             <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-900 rounded-full" />
                             <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for auth...</p>
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">Waiting for auth... (authLoading=true, user=null)</p>
                     </div>
                 </div>
             </>
@@ -336,20 +325,20 @@ function TeacherProtection({ children }: { children: ReactNode }) {
 
     // Case 2: No user (loading finished or cached as null) -> redirect to login
     if (!user) {
-        addLog('REDIRECTING: No user found');
+        console.log('[TeacherProtection] REDIRECTING: No user found');
         window.location.href = "/login?redirect=/teacher";
         return <DebugOverlay />;
     }
 
     // Case 3: User exists but wrong role -> redirect to home
     if (user.role !== 'teacher' && user.role !== 'admin') {
-        addLog(`REDIRECTING: Wrong role (${user.role})`);
+        console.log('[TeacherProtection] REDIRECTING: Wrong role', user.role);
         window.location.href = "/";
         return <DebugOverlay />;
     }
 
     // Case 4: Authorized! Render children immediately
-    addLog('SUCCESS: Rendering children');
+    console.log('[TeacherProtection] SUCCESS: Rendering children');
     return (
         <>
             <DebugOverlay />
