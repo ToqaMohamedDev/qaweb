@@ -66,34 +66,24 @@ export default function TeacherDashboard() {
     const [recentExams, setRecentExams] = useState<RecentExam[]>([]);
     const [examPerformance, setExamPerformance] = useState<ExamPerformance[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
-    // NOTE: We removed refreshUser() here because it calls getUser() which can hang on Vercel
-    // The user data is already loaded by AuthProvider, so we trust it directly
+    // Wait for hydration
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
-        // If we have a user, proceed immediately (don't wait for authLoading)
-        if (user) {
-            if (user.role !== 'teacher') {
-                router.push("/");
-                return;
-            }
+        // Don't do anything until component is mounted (hydrated)
+        if (!mounted) return;
 
-            if (!isApprovedTeacher) {
-                // المدرس غير معتمد بعد
-                setIsLoading(false);
-                return;
-            }
+        // If authLoading is true, wait for it to finish
+        // But only if we don't have a user cached
+        if (authLoading && !user) return;
 
-            fetchTeacherData();
-            return;
-        }
-
-        // Only if NO user and STILL loading, we wait
-        if (authLoading) return;
-
-        // Loading finished and no user -> Redirect
-        router.push("/login");
-    }, [user, authLoading, isApprovedTeacher]);
+        // Call fetchTeacherData - it will verify auth via Supabase directly
+        fetchTeacherData();
+    }, [mounted, authLoading]);
 
     const fetchTeacherData = async () => {
         // Safety timeout - 8 seconds (increased for Vercel cold starts)
@@ -200,7 +190,7 @@ export default function TeacherDashboard() {
     };
 
     // Show loader while fetching data
-    if ((authLoading && !user) || isLoading) {
+    if (!mounted || (authLoading && !user) || isLoading) {
         return (
             <>
                 <Navbar />

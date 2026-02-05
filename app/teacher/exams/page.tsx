@@ -60,20 +60,16 @@ export default function TeacherExamsPage() {
     }, []);
 
     useEffect(() => {
-        if (authLoading) return;
+        // Don't do anything until component is mounted (hydrated)
+        if (!mounted) return;
 
-        if (!user || user.role !== 'teacher') {
-            router.push("/");
-            return;
-        }
+        // If authLoading is true, wait for it to finish
+        // But only if we don't have a user cached
+        if (authLoading && !user) return;
 
-        if (!isApprovedTeacher) {
-            router.push("/teacher");
-            return;
-        }
-
+        // Call fetchExams - it will verify auth via Supabase directly
         fetchExams();
-    }, [user, authLoading, isApprovedTeacher]);
+    }, [mounted, authLoading]);
 
     const fetchExams = async () => {
         // Safety timeout - 8 seconds (increased for Vercel cold starts)
