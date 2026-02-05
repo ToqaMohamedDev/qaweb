@@ -96,31 +96,34 @@ export default function TeacherDashboard() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchTeacherData = async () => {
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-
-
-
         // Safety timeout - 5 seconds
         const timeoutId = setTimeout(() => setIsLoading(false), 5000);
 
         const supabase = createClient();
 
         try {
+            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session?.user) {
+                console.log('No session found');
+                setIsLoading(false);
+                return;
+            }
+
+            const userId = sessionData.session.user.id; // Use session user ID!
+
             // جلب جميع الامتحانات
             const { data: allExams } = await supabase
                 .from('comprehensive_exams')
                 .select('id, exam_title, language, is_published, created_at, sections')
-                .eq('created_by', user.id)
+                .eq('created_by', userId) // Use session user ID!
                 .order('created_at', { ascending: false });
 
             // جلب الإحصائيات
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('subscriber_count, rating_average, rating_count')
-                .eq('id', user.id)
+                .eq('id', userId) // Use session user ID!
                 .single();
 
             // حساب الإحصائيات

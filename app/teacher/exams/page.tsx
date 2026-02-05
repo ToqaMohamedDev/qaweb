@@ -76,27 +76,30 @@ export default function TeacherExamsPage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchExams = async () => {
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-
         // Safety timeout - 5 seconds
         const timeoutId = setTimeout(() => setIsLoading(false), 5000);
 
         const supabase = createClient();
 
         try {
+            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session?.user) {
+                console.log('No session found');
+                setIsLoading(false);
+                return;
+            }
+
+            const userId = sessionData.session.user.id; // Use session user ID!
+
             const { data, error } = await supabase
                 .from('teacher_exams')
                 .select('*')
-                .eq('created_by', user.id)
+                .eq('created_by', userId) // Use session user ID!
                 .order('created_at', { ascending: false });
 
             if (error) {
                 console.error('Supabase Error:', JSON.stringify(error, null, 2));
-                console.error('Error code:', error.code);
-                console.error('Error message:', error.message);
                 throw error;
             }
 
@@ -121,7 +124,7 @@ export default function TeacherExamsPage() {
                 updated_at: exam.updated_at,
                 duration_minutes: exam.duration_minutes || 30,
                 questions_count: countQuestions(exam.sections),
-                attempts_count: 0, // Will be fetched separately if needed
+                attempts_count: 0,
             }));
 
             setExams(mappedExams as TeacherExam[]);

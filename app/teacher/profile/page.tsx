@@ -113,20 +113,25 @@ export default function TeacherProfilePage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchAllData = async () => {
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-
         // Safety timeout - 5 seconds
         const timeoutId = setTimeout(() => setIsLoading(false), 5000);
 
         const supabase = createClient();
 
         try {
+            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session?.user) {
+                console.log('No session found');
+                setIsLoading(false);
+                return;
+            }
+
+            const userId = sessionData.session.user.id; // Use session user ID!
+
             // Fetch all data in parallel
             const [profileResult, subjectsResult, stagesResult] = await Promise.all([
-                supabase.from('profiles').select('*').eq('id', user.id).single(),
+                supabase.from('profiles').select('*').eq('id', userId).single(), // Use session user ID!
                 supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
                 supabase.from('educational_stages').select('id, name').order('order_index'),
             ]);
@@ -222,17 +227,17 @@ export default function TeacherProfilePage() {
     };
 
     const handleSave = async () => {
-        if (!user) return;
-
         setIsSaving(true);
         const supabase = createClient();
 
         try {
-            // Refresh session before write operation (critical for Vercel)
+            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
             const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session) {
+            if (sessionError || !sessionData.session?.user) {
                 throw new Error('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
             }
+
+            const userId = sessionData.session.user.id; // Use session user ID!
 
             const { error } = await supabase
                 .from('profiles')
@@ -254,7 +259,7 @@ export default function TeacherProfilePage() {
                     social_links: { ...formData.social_links, whatsapp: formData.whatsapp },
                     updated_at: new Date().toISOString(),
                 })
-                .eq('id', user.id);
+                .eq('id', userId); // Use session user ID!
 
             if (error) {
                 console.error('Supabase update error:', error);
