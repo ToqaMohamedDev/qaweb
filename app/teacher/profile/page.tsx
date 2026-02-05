@@ -97,55 +97,80 @@ export default function TeacherProfilePage() {
     }, []);
 
     useEffect(() => {
+        console.log('[Profile] useEffect triggered - mounted:', mounted, 'authLoading:', authLoading, 'user:', user?.id);
+
         // Don't do anything until component is mounted (hydrated)
-        if (!mounted) return;
+        if (!mounted) {
+            console.log('[Profile] Waiting for mount...');
+            return;
+        }
 
         // If authLoading is true, wait for it to finish
         // But only if we don't have a user cached
-        if (authLoading && !user) return;
+        if (authLoading && !user) {
+            console.log('[Profile] Waiting for auth to finish...');
+            return;
+        }
 
         // Call fetchAllData - it will verify auth via Supabase directly
-        // Don't rely on Zustand user for auth verification on Vercel!
+        console.log('[Profile] Calling fetchAllData...');
         fetchAllData();
     }, [mounted, authLoading]);
 
     const fetchAllData = async () => {
+        console.log('[Profile] fetchAllData started');
+        console.log('[Profile] mounted:', mounted, 'authLoading:', authLoading, 'user:', user?.id);
+
         // Safety timeout - 8 seconds (increased for Vercel cold starts)
-        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
+        const timeoutId = setTimeout(() => {
+            console.log('[Profile] TIMEOUT - 8 seconds passed!');
+            setIsLoading(false);
+        }, 8000);
 
         const supabase = createClient();
 
         try {
+            console.log('[Profile] Fetching subjects and stages...');
+
             // FIRST: Fetch subjects and stages (they don't need authentication)
             const [subjectsResult, stagesResult] = await Promise.all([
                 supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
                 supabase.from('educational_stages').select('id, name').order('order_index'),
             ]);
 
+            console.log('[Profile] Subjects result:', subjectsResult.error ? subjectsResult.error : subjectsResult.data?.length + ' items');
+            console.log('[Profile] Stages result:', stagesResult.error ? stagesResult.error : stagesResult.data?.length + ' items');
+
             // Set subjects and stages immediately
             setAvailableSubjects(subjectsResult.data || []);
             setAvailableStages(stagesResult.data || []);
 
             // THEN: Get user from session for profile data
-            // Try getUser() first (more reliable), fallback to getSession()
+            console.log('[Profile] Getting user from Supabase...');
+
             let userId: string | null = null;
 
             const { data: userData, error: userError } = await supabase.auth.getUser();
+            console.log('[Profile] getUser result:', userError ? userError.message : userData?.user?.id);
+
             if (!userError && userData.user) {
                 userId = userData.user.id;
             } else {
                 // Fallback to Zustand user if getUser fails
+                console.log('[Profile] Falling back to Zustand user:', user?.id);
                 if (user?.id) {
                     userId = user.id;
                 }
             }
 
             if (!userId) {
-                console.log('No user found for profile fetch');
+                console.log('[Profile] No user found - stopping');
                 clearTimeout(timeoutId);
                 setIsLoading(false);
                 return;
             }
+
+            console.log('[Profile] Fetching profile for user:', userId);
 
             // Fetch profile data
             const { data: profileData, error: profileError } = await supabase
@@ -154,12 +179,15 @@ export default function TeacherProfilePage() {
                 .eq('id', userId)
                 .single();
 
+            console.log('[Profile] Profile result:', profileError ? profileError.message : 'Success');
+
             if (profileError) {
-                console.error('Profile fetch error:', profileError);
+                console.error('[Profile] Profile fetch error:', profileError);
             }
 
             // Set profile data
             if (profileData) {
+                console.log('[Profile] Setting form data with profile:', profileData.name);
                 const data = profileData;
                 setFormData({
                     name: data.name || "",
@@ -180,11 +208,14 @@ export default function TeacherProfilePage() {
                     social_links: ((data as any).social_links as TeacherProfileData['social_links']) || {},
                 });
             }
+
+            console.log('[Profile] fetchAllData completed successfully');
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('[Profile] Error in fetchAllData:', error);
         } finally {
             clearTimeout(timeoutId);
             setIsLoading(false);
+            console.log('[Profile] Loading set to false');
         }
     };
 
