@@ -138,6 +138,13 @@ export default function TeacherExamsPage() {
         const supabase = createClient();
 
         try {
+            // Refresh session before write operation (critical for Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session) {
+                alert('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
+                return;
+            }
+
             const { error } = await supabase
                 .from('teacher_exams')
                 .delete()
@@ -147,8 +154,9 @@ export default function TeacherExamsPage() {
 
             setExams(exams.filter(e => e.id !== examId));
             setDeleteConfirm(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting exam:', error);
+            alert(`فشل الحذف: ${error.message || 'حدث خطأ'}`);
         } finally {
             setIsDeleting(false);
         }
@@ -158,6 +166,13 @@ export default function TeacherExamsPage() {
         const supabase = createClient();
 
         try {
+            // Refresh session before write operation (critical for Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session) {
+                alert('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
+                return;
+            }
+
             const { error } = await supabase
                 .from('teacher_exams')
                 .update({ is_published: !currentStatus })
@@ -188,12 +203,12 @@ export default function TeacherExamsPage() {
                         });
                     } catch (notifyError) {
                         console.error('Failed to send notifications:', notifyError);
-                        // لا نوقف العملية إذا فشل إرسال الإشعارات
                     }
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating exam:', error);
+            alert(`فشل التحديث: ${error.message || 'حدث خطأ'}`);
         }
     };
 

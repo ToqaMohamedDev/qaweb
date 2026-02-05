@@ -228,6 +228,12 @@ export default function TeacherProfilePage() {
         const supabase = createClient();
 
         try {
+            // Refresh session before write operation (critical for Vercel)
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !sessionData.session) {
+                throw new Error('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
+            }
+
             const { error } = await supabase
                 .from('profiles')
                 .update({
@@ -245,13 +251,15 @@ export default function TeacherProfilePage() {
                     subjects: formData.subjects,
                     stages: formData.stages,
                     is_teacher_profile_public: formData.is_teacher_profile_public,
-                    // Store whatsapp in social_links until column is added
                     social_links: { ...formData.social_links, whatsapp: formData.whatsapp },
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', user.id);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase update error:', error);
+                throw new Error(error.message || 'فشل في تحديث البيانات');
+            }
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
