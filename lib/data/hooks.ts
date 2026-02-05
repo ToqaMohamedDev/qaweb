@@ -44,6 +44,13 @@ function useQuery<T>(
     const [isError, setIsError] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const isMounted = useRef(true);
+    
+    // Store queryFn in a ref to avoid dependency issues
+    const queryFnRef = useRef(queryFn);
+    queryFnRef.current = queryFn;
+    
+    // Track if initial fetch has been done
+    const hasFetched = useRef(false);
 
     const fetch = useCallback(async () => {
         if (!enabled) return;
@@ -53,7 +60,7 @@ function useQuery<T>(
         setError(null);
 
         try {
-            const result = await queryFn();
+            const result = await queryFnRef.current();
             if (isMounted.current) {
                 setData(result);
             }
@@ -67,17 +74,22 @@ function useQuery<T>(
                 setIsLoading(false);
             }
         }
-    }, [queryFn, enabled]);
+    }, [enabled]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         isMounted.current = true;
-        if (refetchOnMount) {
+        
+        // Only fetch if enabled and (refetchOnMount or first time)
+        if (enabled && (refetchOnMount || !hasFetched.current)) {
+            hasFetched.current = true;
             fetch();
         }
+        
         return () => {
             isMounted.current = false;
         };
-    }, [...deps, fetch, refetchOnMount]);
+    }, [...deps, enabled, refetchOnMount]);
 
     return { data, isLoading, isError, error, refetch: fetch };
 }

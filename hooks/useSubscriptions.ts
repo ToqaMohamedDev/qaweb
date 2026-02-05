@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface SubscriptionState {
     subscriptions: Set<string>;
@@ -27,6 +27,9 @@ export function useSubscriptions(userId: string | null) {
         error: null,
         loading: false,
     });
+    
+    const isMounted = useRef(true);
+    const lastUserId = useRef<string | null>(null);
 
     // Fetch subscriptions via API
     const fetchSubscriptions = useCallback(async () => {
@@ -41,26 +44,40 @@ export function useSubscriptions(userId: string | null) {
             const res = await fetch('/api/subscriptions');
             const result = await res.json();
 
-            if (result.success) {
-                const subscriptionSet = new Set<string>(result.data || []);
-                setState(prev => ({ ...prev, subscriptions: subscriptionSet, loading: false }));
-            } else {
-                console.warn('Subscriptions fetch warning:', result.error);
-                setState(prev => ({ ...prev, subscriptions: new Set(), loading: false }));
+            if (isMounted.current) {
+                if (result.success) {
+                    const subscriptionSet = new Set<string>(result.data || []);
+                    setState(prev => ({ ...prev, subscriptions: subscriptionSet, loading: false }));
+                } else {
+                    console.warn('Subscriptions fetch warning:', result.error);
+                    setState(prev => ({ ...prev, subscriptions: new Set(), loading: false }));
+                }
             }
         } catch (err) {
             console.warn('Subscriptions fetch error:', err);
-            setState(prev => ({
-                ...prev,
-                subscriptions: new Set(),
-                loading: false,
-            }));
+            if (isMounted.current) {
+                setState(prev => ({
+                    ...prev,
+                    subscriptions: new Set(),
+                    loading: false,
+                }));
+            }
         }
     }, [userId]);
 
     useEffect(() => {
-        fetchSubscriptions();
-    }, [fetchSubscriptions]);
+        isMounted.current = true;
+        
+        // Only fetch if userId actually changed
+        if (userId !== lastUserId.current) {
+            lastUserId.current = userId;
+            fetchSubscriptions();
+        }
+        
+        return () => {
+            isMounted.current = false;
+        };
+    }, [userId, fetchSubscriptions]);
 
     // Toggle subscription (subscribe/unsubscribe)
     const toggle = useCallback(async (teacherId: string): Promise<ToggleResult> => {

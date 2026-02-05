@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getTeachers, getTeacherById } from '@/lib/services/teacher.service';
 import type { Teacher } from '@/lib/types';
 
@@ -15,18 +15,25 @@ export function useTeachers() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    
+    const isMounted = useRef(true);
+    const hasFetched = useRef(false);
 
     const fetchTeachers = useCallback(async () => {
         try {
             setStatus('loading');
             setError(null);
             const data = await getTeachers();
-            setTeachers(data);
-            setFilteredTeachers(data);
-            setStatus('success');
+            if (isMounted.current) {
+                setTeachers(data);
+                setFilteredTeachers(data);
+                setStatus('success');
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch teachers');
-            setStatus('error');
+            if (isMounted.current) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch teachers');
+                setStatus('error');
+            }
             console.error('Error fetching teachers:', err);
         }
     }, []);
@@ -62,7 +69,16 @@ export function useTeachers() {
     }, [teachers, searchQuery, selectedCategory]);
 
     useEffect(() => {
-        fetchTeachers();
+        isMounted.current = true;
+        
+        if (!hasFetched.current) {
+            hasFetched.current = true;
+            fetchTeachers();
+        }
+        
+        return () => {
+            isMounted.current = false;
+        };
     }, [fetchTeachers]);
 
     const featuredTeachers = filteredTeachers.filter(t => (t.subscriber_count ?? 0) > 100); // Simple threshold for now

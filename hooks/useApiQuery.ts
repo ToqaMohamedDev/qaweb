@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { adminQuery, adminInsert, adminUpdate, adminDelete } from '@/lib/api/adminClient';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -44,11 +44,18 @@ export function useApiQuery<T>(config: QueryConfig): UseQueryResult<T> {
     const [data, setData] = useState<T[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const isMounted = useRef(true);
+    const hasFetched = useRef(false);
 
     const { table, orderBy, ascending, limit, filterColumn, filterValue, enabled = true } = config;
 
+    // Store config in ref to avoid dependency issues
+    const configRef = useRef(config);
+    configRef.current = config;
+
     const refetch = useCallback(async () => {
-        if (!enabled) {
+        const cfg = configRef.current;
+        if (!cfg.enabled) {
             setIsLoading(false);
             return;
         }
@@ -57,22 +64,37 @@ export function useApiQuery<T>(config: QueryConfig): UseQueryResult<T> {
         setError(null);
 
         const result = await adminQuery<T>({
-            table,
-            orderBy,
-            ascending,
-            limit,
-            filterColumn,
-            filterValue,
+            table: cfg.table,
+            orderBy: cfg.orderBy,
+            ascending: cfg.ascending,
+            limit: cfg.limit,
+            filterColumn: cfg.filterColumn,
+            filterValue: cfg.filterValue,
         });
 
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, [table, orderBy, ascending, limit, filterColumn, filterValue, enabled]);
+        if (isMounted.current) {
+            setData(result.data);
+            setError(result.error);
+            setIsLoading(false);
+        }
+    }, []); // No dependencies - uses ref
 
     useEffect(() => {
-        refetch();
-    }, [refetch]);
+        isMounted.current = true;
+        
+        if (enabled && !hasFetched.current) {
+            hasFetched.current = true;
+            refetch();
+        } else if (enabled && hasFetched.current) {
+            // Refetch when deps change after initial fetch
+            refetch();
+        }
+        
+        return () => {
+            isMounted.current = false;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [table, orderBy, ascending, limit, filterColumn, filterValue, enabled]);
 
     return { data, isLoading, error, refetch };
 }
