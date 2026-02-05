@@ -113,36 +113,57 @@ export default function TeacherProfilePage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchAllData = async () => {
-        // Safety timeout - 5 seconds
-        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
+        // Safety timeout - 8 seconds (increased for Vercel cold starts)
+        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
 
         const supabase = createClient();
 
         try {
-            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session?.user) {
-                console.log('No session found');
-                setIsLoading(false);
-                return;
-            }
-
-            const userId = sessionData.session.user.id; // Use session user ID!
-
-            // Fetch all data in parallel
-            const [profileResult, subjectsResult, stagesResult] = await Promise.all([
-                supabase.from('profiles').select('*').eq('id', userId).single(), // Use session user ID!
+            // FIRST: Fetch subjects and stages (they don't need authentication)
+            const [subjectsResult, stagesResult] = await Promise.all([
                 supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
                 supabase.from('educational_stages').select('id, name').order('order_index'),
             ]);
 
-            // Set subjects and stages
+            // Set subjects and stages immediately
             setAvailableSubjects(subjectsResult.data || []);
             setAvailableStages(stagesResult.data || []);
 
+            // THEN: Get user from session for profile data
+            // Try getUser() first (more reliable), fallback to getSession()
+            let userId: string | null = null;
+
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (!userError && userData.user) {
+                userId = userData.user.id;
+            } else {
+                // Fallback to Zustand user if getUser fails
+                if (user?.id) {
+                    userId = user.id;
+                }
+            }
+
+            if (!userId) {
+                console.log('No user found for profile fetch');
+                clearTimeout(timeoutId);
+                setIsLoading(false);
+                return;
+            }
+
+            // Fetch profile data
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (profileError) {
+                console.error('Profile fetch error:', profileError);
+            }
+
             // Set profile data
-            if (profileResult.data) {
-                const data = profileResult.data;
+            if (profileData) {
+                const data = profileData;
                 setFormData({
                     name: data.name || "",
                     bio: data.bio || "",
@@ -231,13 +252,19 @@ export default function TeacherProfilePage() {
         const supabase = createClient();
 
         try {
-            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session?.user) {
-                throw new Error('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
+            // Get user ID - try getUser() first, fallback to Zustand
+            let userId: string | null = null;
+
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (!userError && userData.user) {
+                userId = userData.user.id;
+            } else if (user?.id) {
+                userId = user.id;
             }
 
-            const userId = sessionData.session.user.id; // Use session user ID!
+            if (!userId) {
+                throw new Error('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
+            }
 
             const { error } = await supabase
                 .from('profiles')

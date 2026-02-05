@@ -76,21 +76,28 @@ export default function TeacherExamsPage() {
     }, [user, authLoading, isApprovedTeacher]);
 
     const fetchExams = async () => {
-        // Safety timeout - 5 seconds
-        const timeoutId = setTimeout(() => setIsLoading(false), 5000);
+        // Safety timeout - 8 seconds (increased for Vercel cold starts)
+        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
 
         const supabase = createClient();
 
         try {
-            // CRITICAL: Get user from session, NOT from Zustand (Zustand may have stale data on Vercel)
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session?.user) {
-                console.log('No session found');
+            // Get user ID - try getUser() first, fallback to Zustand
+            let userId: string | null = null;
+
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (!userError && userData.user) {
+                userId = userData.user.id;
+            } else if (user?.id) {
+                userId = user.id;
+            }
+
+            if (!userId) {
+                console.log('No user found');
+                clearTimeout(timeoutId);
                 setIsLoading(false);
                 return;
             }
-
-            const userId = sessionData.session.user.id; // Use session user ID!
 
             const { data, error } = await supabase
                 .from('teacher_exams')
