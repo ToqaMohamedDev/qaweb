@@ -9,7 +9,6 @@ import dynamic from 'next/dynamic';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { QueryProvider, AuthProvider } from '@/lib/providers';
 import { OneSignalProvider } from '@/components/providers/OneSignalProvider';
-import { GlobalWordProvider } from '@/components/providers/GlobalWordProvider';
 
 // Lazy load heavy components
 const ChatWidget = dynamic(() => import('@/components/ChatWidget'), { ssr: false });
@@ -28,7 +27,6 @@ export function ClientProviders({ children }: ClientProvidersProps) {
                 <SplashScreenWrapper>
                     <AuthProvider>
                         <OneSignalProvider>
-                            <GlobalWordProvider>
                                 {/* Main Content */}
                                 <div id="main-content" style={{ minHeight: '100dvh', position: 'relative' }} suppressHydrationWarning>
                                     <Suspense fallback={null}>
@@ -41,7 +39,6 @@ export function ClientProviders({ children }: ClientProvidersProps) {
                                     <VisitorTracker />
                                     <ToastContainer />
                                 </Suspense>
-                            </GlobalWordProvider>
                         </OneSignalProvider>
                     </AuthProvider>
                 </SplashScreenWrapper>

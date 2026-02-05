@@ -1,36 +1,16 @@
 /**
- * useSubjects Hook - Simple version
+ * useSubjects Hook - Uses unified dataService
  */
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { getActiveSubjects } from '@/lib/services';
-import type { Subject } from '@/lib/types';
+import { useCallback, useMemo } from 'react';
+import { useSubjects as useSubjectsBase } from '@/lib/data/hooks';
 
 export function useSubjects() {
-    const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchData = useCallback(async () => {
-        setStatus('loading');
-        setError(null);
-
-        try {
-            const data = await getActiveSubjects();
-            setSubjects(data);
-            setStatus('success');
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            setError(message);
-            setStatus('error');
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const { data, isLoading, isError, error, refetch } = useSubjectsBase({ active: true });
+    
+    const subjects = data || [];
 
     const getSubjectById = useCallback((id: string) => {
         return subjects.find(s => s.id === id);
@@ -40,12 +20,18 @@ export function useSubjects() {
         return subjects.find(s => s.slug === slug);
     }, [subjects]);
 
+    const status = useMemo(() => {
+        if (isLoading) return 'loading' as const;
+        if (isError) return 'error' as const;
+        return 'success' as const;
+    }, [isLoading, isError]);
+
     return {
         subjects,
         status,
-        error,
+        error: error?.message || null,
         getSubjectById,
         getSubjectBySlug,
-        refetch: fetchData,
+        refetch,
     };
 }

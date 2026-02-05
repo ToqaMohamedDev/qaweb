@@ -4,7 +4,10 @@
  * Handles device tracking (تتبع الأجهزة)
  */
 
-import { getSupabaseClient } from '../supabase-client';
+import { createBrowserClient } from '../supabase';
+
+// Helper to get client
+const getSupabaseClient = () => createBrowserClient();
 import type { UserDevice, VisitorDevice } from '../database.types';
 
 // ==========================================

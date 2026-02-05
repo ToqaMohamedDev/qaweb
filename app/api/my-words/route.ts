@@ -1,43 +1,45 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase/server';
 
-// GET - Fetch user's saved words
+// GET - جلب كلمات المستخدم
 export async function GET(request: NextRequest) {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        const supabase = await createServerClient();
+        
+        // التحقق من المستخدم
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'يجب تسجيل الدخول أولاً' },
+                { status: 401 }
+            );
         }
 
         const { searchParams } = new URL(request.url);
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = parseInt(searchParams.get("limit") || "20");
-        const search = searchParams.get("search") || "";
-        const favoritesOnly = searchParams.get("favorites") === "true";
-
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '20');
+        const favoritesOnly = searchParams.get('favorites') === 'true';
         const offset = (page - 1) * limit;
 
         let query = supabase
-            .from("my_words")
+            .from('my_words' as any)
             .select(`
                 *,
-                dictionary (
+                dictionary:concept_id (
                     concept_id,
                     word_family_root,
                     definition,
                     part_of_speech,
-                    domains,
                     lexical_entries,
+                    domains,
                     relations
                 )
-            `, { count: "exact" })
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false });
+            `, { count: 'exact' })
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
 
         if (favoritesOnly) {
-            query = query.eq("is_favorite", true);
+            query = query.eq('is_favorite', true);
         }
 
         query = query.range(offset, offset + limit - 1);
@@ -45,26 +47,16 @@ export async function GET(request: NextRequest) {
         const { data, error, count } = await query;
 
         if (error) {
-            console.error("My words fetch error:", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-        }
-
-        // Filter by search if provided (client-side for now)
-        let filteredData = data;
-        if (search && data) {
-            const searchLower = search.toLowerCase();
-            filteredData = data.filter((item) => {
-                const dict = item.dictionary as Record<string, unknown>;
-                const wordRoot = (dict?.word_family_root as string) || "";
-                const definition = (dict?.definition as string) || "";
-                return wordRoot.toLowerCase().includes(searchLower) ||
-                    definition.toLowerCase().includes(searchLower);
-            });
+            console.error('My words fetch error:', error);
+            return NextResponse.json(
+                { error: 'فشل في جلب الكلمات' },
+                { status: 500 }
+            );
         }
 
         return NextResponse.json({
             success: true,
-            words: filteredData,
+            words: data || [],
             pagination: {
                 page,
                 limit,
@@ -72,144 +64,203 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil((count || 0) / limit),
             },
         });
+
     } catch (error) {
-        console.error("My words API error:", error);
-        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+        console.error('My words API error:', error);
+        return NextResponse.json(
+            { error: 'حدث خطأ في الخادم' },
+            { status: 500 }
+        );
     }
 }
 
-// POST - Save a word to user's collection
+// POST - إضافة كلمة جديدة
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        const supabase = await createServerClient();
+        
+        // التحقق من المستخدم
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'يجب تسجيل الدخول أولاً' },
+                { status: 401 }
+            );
         }
 
         const body = await request.json();
-        const { concept_id, notes, is_favorite } = body;
+        const { concept_id, notes } = body;
 
         if (!concept_id) {
-            return NextResponse.json({ success: false, error: "concept_id is required" }, { status: 400 });
+            return NextResponse.json(
+                { error: 'concept_id مطلوب' },
+                { status: 400 }
+            );
         }
 
-        // Check if already saved
-        const { data: existing } = await supabase
-            .from("my_words")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("concept_id", concept_id)
+        // التحقق من وجود الكلمة في القاموس
+        const { data: dictEntry, error: dictError } = await supabase
+            .from('dictionary' as any)
+            .select('concept_id')
+            .eq('concept_id', concept_id)
             .single();
 
-        if (existing) {
-            return NextResponse.json({ success: false, error: "Word already saved", alreadySaved: true }, { status: 409 });
+        if (dictError || !dictEntry) {
+            return NextResponse.json(
+                { error: 'الكلمة غير موجودة في القاموس' },
+                { status: 404 }
+            );
         }
 
+        // إضافة الكلمة
         const { data, error } = await supabase
-            .from("my_words")
-            .insert({
+            .from('my_words' as any)
+            .upsert({
                 user_id: user.id,
                 concept_id,
                 notes: notes || null,
-                is_favorite: is_favorite || false,
+                is_favorite: false
+            }, {
+                onConflict: 'user_id,concept_id'
             })
             .select()
             .single();
 
         if (error) {
-            console.error("Save word error:", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+            console.error('Add word error:', error);
+            return NextResponse.json(
+                { error: 'فشل في إضافة الكلمة' },
+                { status: 500 }
+            );
         }
 
-        return NextResponse.json({ success: true, word: data });
+        return NextResponse.json({
+            success: true,
+            data
+        });
+
     } catch (error) {
-        console.error("My words POST error:", error);
-        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+        console.error('My words POST error:', error);
+        return NextResponse.json(
+            { error: 'حدث خطأ في الخادم' },
+            { status: 500 }
+        );
     }
 }
 
-// PATCH - Update a saved word (notes, favorite status)
+// DELETE - حذف كلمة
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = await createServerClient();
+        
+        // التحقق من المستخدم
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'يجب تسجيل الدخول أولاً' },
+                { status: 401 }
+            );
+        }
+
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        const conceptId = searchParams.get('concept_id');
+
+        if (!id && !conceptId) {
+            return NextResponse.json(
+                { error: 'id أو concept_id مطلوب' },
+                { status: 400 }
+            );
+        }
+
+        let deleteQuery = supabase
+            .from('my_words' as any)
+            .delete()
+            .eq('user_id', user.id);
+
+        if (id) {
+            deleteQuery = deleteQuery.eq('id', id);
+        } else if (conceptId) {
+            deleteQuery = deleteQuery.eq('concept_id', conceptId);
+        }
+
+        const { error } = await deleteQuery;
+
+        if (error) {
+            console.error('Delete word error:', error);
+            return NextResponse.json(
+                { error: 'فشل في حذف الكلمة' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true
+        });
+
+    } catch (error) {
+        console.error('My words DELETE error:', error);
+        return NextResponse.json(
+            { error: 'حدث خطأ في الخادم' },
+            { status: 500 }
+        );
+    }
+}
+
+// PATCH - تحديث كلمة (المفضلة/الملاحظات)
 export async function PATCH(request: NextRequest) {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        const supabase = await createServerClient();
+        
+        // التحقق من المستخدم
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'يجب تسجيل الدخول أولاً' },
+                { status: 401 }
+            );
         }
 
         const body = await request.json();
-        const { id, concept_id, notes, is_favorite } = body;
+        const { id, is_favorite, notes } = body;
 
-        // Can update by id or concept_id
-        const identifier = id || concept_id;
-        const identifierField = id ? "id" : "concept_id";
-
-        if (!identifier) {
-            return NextResponse.json({ success: false, error: "id or concept_id required" }, { status: 400 });
+        if (!id) {
+            return NextResponse.json(
+                { error: 'id مطلوب' },
+                { status: 400 }
+            );
         }
 
-        const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
-        if (notes !== undefined) updateData.notes = notes;
-        if (is_favorite !== undefined) updateData.is_favorite = is_favorite;
+        const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (typeof is_favorite === 'boolean') updates.is_favorite = is_favorite;
+        if (notes !== undefined) updates.notes = notes;
 
         const { data, error } = await supabase
-            .from("my_words")
-            .update(updateData)
-            .eq("user_id", user.id)
-            .eq(identifierField, identifier)
+            .from('my_words' as any)
+            .update(updates)
+            .eq('id', id)
+            .eq('user_id', user.id)
             .select()
             .single();
 
         if (error) {
-            console.error("Update word error:", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+            console.error('Update word error:', error);
+            return NextResponse.json(
+                { error: 'فشل في تحديث الكلمة' },
+                { status: 500 }
+            );
         }
 
-        return NextResponse.json({ success: true, word: data });
+        return NextResponse.json({
+            success: true,
+            data
+        });
+
     } catch (error) {
-        console.error("My words PATCH error:", error);
-        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
-    }
-}
-
-// DELETE - Remove a word from user's collection
-export async function DELETE(request: NextRequest) {
-    try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-        }
-
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get("id");
-        const conceptId = searchParams.get("concept_id");
-
-        const identifier = id || conceptId;
-        const identifierField = id ? "id" : "concept_id";
-
-        if (!identifier) {
-            return NextResponse.json({ success: false, error: "id or concept_id required" }, { status: 400 });
-        }
-
-        const { error } = await supabase
-            .from("my_words")
-            .delete()
-            .eq("user_id", user.id)
-            .eq(identifierField, identifier);
-
-        if (error) {
-            console.error("Delete word error:", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-        }
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("My words DELETE error:", error);
-        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+        console.error('My words PATCH error:', error);
+        return NextResponse.json(
+            { error: 'حدث خطأ في الخادم' },
+            { status: 500 }
+        );
     }
 }

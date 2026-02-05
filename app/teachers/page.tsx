@@ -30,8 +30,7 @@ import { useTeachers } from '@/hooks/useTeachers';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useSubjects } from '@/hooks/useSubjects';
 
-// Animations
-import { fadeInUp } from '@/lib/animations';
+// Animations removed to fix flickering
 
 export default function TeachersPage() {
     const pathname = usePathname();
@@ -185,34 +184,19 @@ export default function TeachersPage() {
                     )}
 
                     {/* Results Info */}
-                    <motion.div
-                        className="px-3 sm:px-6 pb-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                    >
+                    <div className="px-3 sm:px-6 pb-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                                <motion.span
-                                    className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white dark:bg-[#1a1a1a] rounded-xl text-xs sm:text-sm text-gray-700 dark:text-gray-200 font-semibold border border-gray-200 dark:border-[#2a2a2a] shadow-sm"
-                                    key={filteredTeachers.length}
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                >
+                                <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white dark:bg-[#1a1a1a] rounded-xl text-xs sm:text-sm text-gray-700 dark:text-gray-200 font-semibold border border-gray-200 dark:border-[#2a2a2a] shadow-sm">
                                     <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-500 dark:text-red-500" />
                                     {filteredTeachers?.length || 0} نتيجة
-                                </motion.span>
+                                </span>
 
                                 {featuredTeachers.length > 0 && (
-                                    <motion.span
-                                        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl text-xs sm:text-sm text-amber-700 dark:text-amber-300 font-semibold border border-amber-200/50 dark:border-amber-500/30"
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ delay: 0.1 }}
-                                    >
+                                    <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl text-xs sm:text-sm text-amber-700 dark:text-amber-300 font-semibold border border-amber-200/50 dark:border-amber-500/30">
                                         <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-500 text-yellow-500" />
                                         {featuredTeachers.length} مميز
-                                    </motion.span>
+                                    </span>
                                 )}
                             </div>
 
@@ -221,7 +205,7 @@ export default function TeachersPage() {
                                 ترتيب حسب الأكثر متابعة
                             </button>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Content Grid */}
                     <div className="px-3 sm:px-6 pb-28 md:pb-10">
@@ -238,13 +222,7 @@ export default function TeachersPage() {
                             <>
                                 {/* Featured Teachers */}
                                 {featuredTeachers.length > 0 && (
-                                    <motion.div
-                                        key="featured-section"
-                                        className="mb-12"
-                                        initial="hidden"
-                                        animate="visible"
-                                        variants={fadeInUp}
-                                    >
+                                    <div className="mb-12">
                                         <SectionHeader
                                             icon={Award}
                                             title="المعلمون المميزون"
@@ -260,16 +238,11 @@ export default function TeachersPage() {
                                             onSubscribe={handleSubscribe}
                                             isFeatured
                                         />
-                                    </motion.div>
+                                    </div>
                                 )}
 
                                 {/* All Teachers */}
-                                <motion.div
-                                    key="all-section"
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={fadeInUp}
-                                >
+                                <div>
                                     <SectionHeader
                                         icon={Users}
                                         title="جميع المعلمين"
@@ -283,7 +256,7 @@ export default function TeachersPage() {
                                         currentUserId={user?.id || null}
                                         onSubscribe={handleSubscribe}
                                     />
-                                </motion.div>
+                                </div>
                             </>
                         )}
                     </div>

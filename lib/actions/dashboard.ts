@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase-server';
+import { createServerClient } from '@/lib/supabase/server';
 
 // =============================================
 // Types
@@ -59,7 +59,7 @@ export interface DashboardData {
  * - جلب الحقول المطلوبة فقط
  */
 export async function fetchDashboardAction(): Promise<DashboardData> {
-    const supabase = await createClient();
+    const supabase = await createServerClient();
     const startTime = Date.now();
 
     try {
@@ -144,7 +144,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
         const [subjectStagesResult, lessonsResult, examsResult, statsResult] = await Promise.all([
             // المواد المرتبطة بالمرحلة مع بيانات المادة (JOIN)
             supabase
-                .from('subject_stages')
+                .from('subject_stages' as any)
                 .select(`
                     subject_id,
                     order_index,
@@ -191,7 +191,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
             fetchPlatformStatsOptimized(supabase, stageId)
         ]);
 
-        const subjectStages = subjectStagesResult.data || [];
+        const subjectStages = (subjectStagesResult.data || []) as any[];
         const allLessons = lessonsResult.data || [];
         const rawExams = examsResult.data || [];
 
@@ -246,7 +246,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
             });
 
         // بناء قائمة الامتحانات
-        const exams: ExamForDashboard[] = rawExams.map(exam => ({
+        const exams: ExamForDashboard[] = rawExams.map((exam: any) => ({
             id: exam.id,
             examTitle: exam.exam_title,
             type: 'comprehensive' as const,
@@ -288,7 +288,7 @@ export async function fetchDashboardAction(): Promise<DashboardData> {
  * جلب الإحصائيات بشكل محسّن باستخدام Promise.all
  */
 async function fetchPlatformStatsOptimized(
-    supabase: Awaited<ReturnType<typeof createClient>>,
+    supabase: any,
     stageId: string | null
 ): Promise<PlatformStats> {
     try {
@@ -338,7 +338,7 @@ async function fetchPlatformStatsOptimized(
         // 1. Average Rating Calculation
         let averageRating = 4.9; // Default slightly high
         if (ratingsResult.data && ratingsResult.data.length > 0) {
-            const sum = ratingsResult.data.reduce((acc, r) => acc + (r.rating || 0), 0);
+            const sum = ratingsResult.data.reduce((acc: number, r: any) => acc + (r.rating || 0), 0);
             averageRating = Math.round((sum / ratingsResult.data.length) * 10) / 10;
         }
 
@@ -375,7 +375,7 @@ async function fetchPlatformStatsOptimized(
 
 // Legacy function kept for backwards compatibility
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function _fetchPlatformStatsLegacy(supabase: Awaited<ReturnType<typeof createClient>>, stageId: string | null): Promise<PlatformStats> {
+async function _fetchPlatformStatsLegacy(supabase: any, stageId: string | null): Promise<PlatformStats> {
     try {
         // 1. عدد المستخدمين (الطلاب فقط)
         const { count: usersCount } = await supabase
@@ -445,7 +445,7 @@ async function _fetchPlatformStatsLegacy(supabase: Awaited<ReturnType<typeof cre
  * - جلب الحقول المطلوبة فقط
  */
 export async function fetchSubjectLessonsAction(subjectSlug: string) {
-    const supabase = await createClient();
+    const supabase = await createServerClient();
     const startTime = Date.now();
 
     try {

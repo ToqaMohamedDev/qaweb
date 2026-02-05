@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, X, BookMarked, Globe } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { useAuth } from "@/hooks/useAuth";
+import { Footer } from "@/components/Footer";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import {
     WordDetailModal,
     WordsPagination,
@@ -20,7 +21,7 @@ import {
 } from "@/lib/utils/words";
 
 export default function WordsPage() {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
 
     // Tab state
     const [activeTab, setActiveTab] = useState<"dictionary" | "mywords">("dictionary");
@@ -58,14 +59,11 @@ export default function WordsPage() {
             const word = item.dictionary;
             if (!word) return false;
             const entries = word.lexical_entries || {};
-            // Search in all language lemmas
             for (const lang of Object.keys(entries)) {
                 const entry = entries[lang];
                 if (entry?.lemma?.toLowerCase().includes(query)) return true;
             }
-            // Search in definition
             if (word.definition?.toLowerCase().includes(query)) return true;
-            // Search in word_family_root
             if (word.word_family_root?.toLowerCase().includes(query)) return true;
             return false;
         });
@@ -223,11 +221,11 @@ export default function WordsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#09090b]" dir="rtl">
+        <div className="min-h-screen bg-zinc-950" dir="rtl">
             <Navbar />
 
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-[#09090b]/95 backdrop-blur-md border-b border-white/5">
+            <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800">
                 <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
                     {/* Tabs */}
                     <div className="flex items-center justify-between h-14">
@@ -273,12 +271,12 @@ export default function WordsPage() {
                                 placeholder="ابحث عن كلمة..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pr-12 pl-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                className="w-full pr-12 pl-10 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery("")}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-white/10"
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-zinc-800"
                                 >
                                     <X className="w-4 h-4 text-zinc-400" />
                                 </button>
@@ -300,7 +298,7 @@ export default function WordsPage() {
                                         className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                                             selectedLanguage === lang.code
                                                 ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25"
-                                                : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-white/5"
+                                                : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800"
                                         }`}
                                     >
                                         <span className="text-base">{lang.flag}</span>
@@ -401,6 +399,8 @@ export default function WordsPage() {
                 onSave={saveWord}
                 onRemove={removeWord}
             />
+
+            <Footer />
         </div>
     );
 }

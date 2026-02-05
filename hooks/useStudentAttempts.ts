@@ -8,7 +8,9 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase-client';
+import { createBrowserClient } from '@/lib/supabase';
+
+const supabase = createBrowserClient();
 import type {
   QuestionBankProgress,
   TeacherExamResult,

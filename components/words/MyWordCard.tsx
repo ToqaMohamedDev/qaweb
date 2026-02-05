@@ -30,7 +30,7 @@ function MyWordCardComponent({
 
     return (
         <div
-            className="group relative p-3 rounded-xl bg-[#141417] border border-white/5 hover:border-purple-500/20 transition-all cursor-pointer"
+            className="group relative p-3 rounded-xl bg-zinc-900 dark:bg-zinc-900 border border-zinc-800 hover:border-purple-500/30 transition-all cursor-pointer"
             onClick={onClick}
         >
             {/* Header: Arabic + Actions */}
@@ -92,7 +92,7 @@ function MyWordCardComponent({
 
             {/* Languages preview */}
             {word.lexical_entries && Object.keys(word.lexical_entries).length > 1 && (
-                <div className="flex gap-1 mt-2 pt-2 border-t border-white/5">
+                <div className="flex gap-1 mt-2 pt-2 border-t border-zinc-800">
                     {Object.keys(word.lexical_entries).map((lang) => {
                         const langConfig = ALL_LANGUAGES.find((l) => l.code === lang);
                         return (

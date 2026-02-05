@@ -1,28 +1,17 @@
 /**
  * Services Index
  * 
- * Central export for all database services
+ * Central export for active database services
+ * Note: Other services (stage, subject, lesson, exam, question) 
+ * are now handled by lib/data/service.ts (dataService)
  */
 
-// Auth & User Services
+// Auth & Profile Services
 export * from './auth.service';
 export * from './profile.service';
 
-// Content Services
-export * from './stage.service';
-export * from './subject.service';
-export * from './lesson.service';
-export * from './question.service';
-
-// Exam Services
-export * from './exam.service';
-
-// Social Services
-export * from './subscription.service';
+// Teacher Services
 export * from './teacher.service';
-
-// Notification Services
-export * from './notification.service';
 
 // Tracking Services
 export * from './device.service';
@@ -31,8 +20,5 @@ export * from './device.service';
 export * from './message.service';
 export * from './support.service';
 
-// Progress Services
-export * from './progress.service';
-
-// Settings Services
-export * from './settings.service';
+// Email Services
+export * from './email.service';

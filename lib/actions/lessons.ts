@@ -1,13 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase-server';
+import { createServerClient } from '@/lib/supabase/server';
 
 const DEFAULT_STAGE_SLUG = 'grade-3-secondary';
 const ARABIC_SUBJECT_SLUG = 'arabic';
 const ENGLISH_SUBJECT_SLUG = 'english';
 
 export async function fetchHomeLessonsAction() {
-    const supabase = await createClient();
+    const supabase = await createServerClient();
 
     try {
         // 1. Try to get user's selected educational stage from their profile

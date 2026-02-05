@@ -36,7 +36,7 @@ function DictionaryWordCardComponent({
 
     return (
         <div
-            className="group relative p-3 rounded-xl bg-[#141417] border border-white/5 hover:border-purple-500/20 transition-all cursor-pointer"
+            className="group relative p-3 rounded-xl bg-zinc-900 dark:bg-zinc-900 border border-zinc-800 hover:border-purple-500/30 transition-all cursor-pointer"
             onClick={onClick}
         >
             {/* Header: Arabic word + Actions */}

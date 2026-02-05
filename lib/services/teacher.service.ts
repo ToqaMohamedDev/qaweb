@@ -2,12 +2,14 @@
  * Teacher Service
  * 
  * Handles teacher-specific operations
- * Uses unified API client for consistency
  */
 
 import { apiClient, endpoints } from '../api-client';
-import { getSupabaseClient } from '../supabase-client';
+import { createBrowserClient } from '../supabase';
 import type { Profile, TeacherExam, TeacherRating } from '../database.types';
+
+// Helper to get client
+const getSupabaseClient = () => createBrowserClient();
 
 // ==========================================
 // Types

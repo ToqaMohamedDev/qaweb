@@ -4,53 +4,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
-// =============================================
-// Helper
-// =============================================
-
-async function createSupabaseServerClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        );
-                    } catch { /* Read-only in some contexts */ }
-                },
-            },
-        }
-    );
-}
-
-// Service role client for bypassing RLS when needed
-function createSupabaseAdminClient() {
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-            cookies: {
-                getAll() { return []; },
-                setAll() { },
-            },
-        }
-    );
-}
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 
 // Ensure user profile exists in profiles table
 async function ensureProfileExists(userId: string, userEmail: string | undefined) {
-    const adminClient = createSupabaseAdminClient();
+    const adminClient = createAdminClient();
     
     // Check if profile exists
     const { data: existingProfile } = await adminClient
@@ -86,7 +44,7 @@ async function ensureProfileExists(userId: string, userEmail: string | undefined
 
 export async function GET() {
     try {
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         // Get authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -135,7 +93,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         // Get authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -167,7 +125,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Use admin client for subscription operations to bypass RLS issues
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         // Check if already subscribed
         const { data: existing } = await adminClient
@@ -234,7 +192,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         // Get authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -257,7 +215,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Use admin client for subscription operations
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         // Unsubscribe
         const { error: deleteError } = await adminClient

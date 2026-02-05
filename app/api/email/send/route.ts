@@ -4,12 +4,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase/server';
 import { sendEmailNotification } from '@/lib/services/email.service';
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = createClient();
+        const supabase = await createServerClient();
 
         // التحقق من المصادقة
         const { data: { user }, error: authError } = await supabase.auth.getUser();

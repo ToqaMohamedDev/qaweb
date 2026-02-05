@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 import { createMessageReplyEmail, sendEmail } from '@/lib/services/email.service';
 
 export async function POST(request: NextRequest) {
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
         }
 
         // استخدام service role
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabase = createAdminClient();
 
         // جلب بيانات الرسالة
         const { data: message, error: fetchError } = await supabase
@@ -60,8 +57,9 @@ export async function POST(request: NextRequest) {
         }
 
         // ✨ إرسال بريد إلكتروني للمستخدم
-        const userEmail = message.user?.email || message.email;
-        const emailEnabled = message.user?.notification_preferences?.email_notifications !== false;
+        const msg = message as any;
+        const userEmail = msg.user?.email || msg.email;
+        const emailEnabled = msg.user?.notification_preferences?.email_notifications !== false;
 
         if (userEmail && emailEnabled) {
             try {

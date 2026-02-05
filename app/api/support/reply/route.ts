@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 import { createSupportReplyEmail, sendEmail } from '@/lib/services/email.service';
 
 export async function POST(request: NextRequest) {
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
         }
 
         // استخدام service role
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabase = createAdminClient();
 
         // جلب بيانات المحادثة
         const { data: chat, error: fetchError } = await supabase
@@ -46,6 +43,7 @@ export async function POST(request: NextRequest) {
             .insert({
                 chat_id: chatId,
                 sender_id: null, // admin
+                sender_type: 'admin' as const,
                 message,
                 created_at: new Date().toISOString(),
             });
@@ -68,15 +66,16 @@ export async function POST(request: NextRequest) {
             .eq('id', chatId);
 
         // ✨ إرسال بريد إلكتروني للمستخدم
-        const userEmail = chat.user?.email;
-        const emailEnabled = chat.user?.notification_preferences?.email_notifications !== false;
+        const chatData = chat as any;
+        const userEmail = chatData.user?.email;
+        const emailEnabled = chatData.user?.notification_preferences?.email_notifications !== false;
 
         if (userEmail && emailEnabled) {
             try {
                 const chatUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://qaalaa.com'}/support`;
 
                 const html = createSupportReplyEmail({
-                    chatSubject: chat.subject,
+                    chatSubject: chat.subject || 'محادثة دعم',
                     reply: message,
                     chatUrl,
                 });

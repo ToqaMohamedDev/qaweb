@@ -220,9 +220,7 @@ export default function TeachersPage() {
                 userId: selectedTeacher.id,
                 updates: {
                     name: formData.name,
-                    specialization: formData.specialization,
                     bio: formData.bio,
-                    is_verified: formData.is_verified,
                     is_teacher_approved: formData.is_teacher_approved,
                     teacher_title: formData.teacher_title,
                     years_of_experience: formData.years_of_experience,
@@ -230,7 +228,7 @@ export default function TeachersPage() {
                     phone: formData.phone,
                     website: formData.website,
                     teaching_style: formData.teaching_style,
-                },
+                } as any,
             });
             setShowModal(false);
             addToast({ type: "success", message: "تم تحديث بيانات المعلم بنجاح" });
@@ -244,7 +242,7 @@ export default function TeachersPage() {
             try {
                 await updateMutation.mutateAsync({
                     userId: teacherId,
-                    updates: { is_verified: verified },
+                    updates: { is_verified: verified } as any,
                 });
                 addToast({
                     type: "success",

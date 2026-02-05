@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 import { createExamPublishedEmail, sendEmail } from '@/lib/services/email.service';
 import { notifyNewExam } from '@/lib/onesignal/server';
 
@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
         }
 
         // استخدام service role للوصول الكامل
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabase = createAdminClient();
 
         // جلب المشتركين مع المدرس
         const { data: subscribers, error: subError } = await supabase
@@ -60,7 +57,7 @@ export async function POST(request: NextRequest) {
         }
 
         // إنشاء إشعارات داخل التطبيق لكل مشترك
-        const notifications = subscribers.map(sub => ({
+        const notifications = (subscribers as any[]).map(sub => ({
             user_id: sub.user_id,
             type: 'new_content',
             title: `امتحان جديد من ${teacherName || 'المدرس'}`,
@@ -77,7 +74,7 @@ export async function POST(request: NextRequest) {
         // إدراج الإشعارات
         const { error: insertError, data: insertedNotifications } = await supabase
             .from('notifications')
-            .insert(notifications)
+            .insert(notifications as any)
             .select('id');
 
         if (insertError) {
@@ -91,7 +88,7 @@ export async function POST(request: NextRequest) {
         // ✨ إرسال البريد الإلكتروني في الخلفية (لا ننتظر)
         sendEmailToSubscribers(
             supabase,
-            subscribers.map(s => s.user_id),
+            (subscribers as any[]).map(s => s.user_id),
             examId,
             examTitle || 'امتحان جديد',
             teacherName || 'المدرس',

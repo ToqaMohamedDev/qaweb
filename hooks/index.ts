@@ -76,6 +76,39 @@ export type { UseAdminTableOptions, UseAdminTableReturn } from './useAdminTable'
 export { useExamCreate } from './useExamCreate';
 export type { UseExamCreateReturn } from './useExamCreate';
 
+// Generic API Query Hooks
+export {
+    useApiQuery,
+    useApiCreate,
+    useApiUpdate,
+    useApiDelete,
+    // Pre-configured hooks
+    useUsers,
+    useCreateUser,
+    useUpdateUser,
+    useDeleteUser,
+    useTeachers as useTeachersAPI,
+    useStages,
+    useCreateStage,
+    useUpdateStage,
+    useDeleteStage,
+    useSubjects as useSubjectsAPI,
+    useCreateSubject,
+    useUpdateSubject,
+    useDeleteSubject,
+    useLessons as useLessonsAPI,
+    useCreateLesson,
+    useUpdateLesson,
+    useDeleteLesson,
+    useExams,
+    useCreateExam,
+    useUpdateExam,
+    useDeleteExam,
+    useQuestionBanks,
+    useDeleteQuestionBank,
+} from './useApiQuery';
+export type { QueryConfig, UseQueryResult, UseMutationResult } from './useApiQuery';
+
 // Student Attempts Hooks
 export {
     useQuestionBankAttempt,
@@ -89,6 +122,21 @@ export {
 // Re-export types
 export type { UseAuthReturn } from './useAuth';
 export type { AsyncState } from './useAsync';
+
+// =============================================
+// Data Layer Hooks (with caching via dataService)
+// =============================================
+export {
+    useStages as useStagesWithCache,
+    useSubjects as useSubjectsWithCache,
+    useSubjectsWithLessons,
+    useLessons as useLessonsWithCache,
+    useExams as useExamsWithCache,
+    usePlatformStats,
+    useAdminStats,
+    useDashboard,
+    useAdminDashboard as useAdminDashboardData,
+} from '@/lib/data/hooks';
 
 
 

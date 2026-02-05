@@ -1,0 +1,213 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// useApiQuery - Generic Hook لـ API Queries و Mutations
+// يقلل التكرار في adminQueries.ts وغيره
+// ═══════════════════════════════════════════════════════════════════════════
+
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { adminQuery, adminInsert, adminUpdate, adminDelete } from '@/lib/api/adminClient';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface QueryConfig {
+    table: string;
+    orderBy?: string;
+    ascending?: boolean;
+    limit?: number;
+    filterColumn?: string;
+    filterValue?: string;
+    enabled?: boolean;
+}
+
+export interface UseQueryResult<T> {
+    data: T[];
+    isLoading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+}
+
+export interface UseMutationResult<TInput = any, TOutput = any> {
+    mutateAsync: (input: TInput) => Promise<TOutput>;
+    isPending: boolean;
+    error: string | null;
+    reset: () => void;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERIC QUERY HOOK
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function useApiQuery<T>(config: QueryConfig): UseQueryResult<T> {
+    const [data, setData] = useState<T[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const { table, orderBy, ascending, limit, filterColumn, filterValue, enabled = true } = config;
+
+    const refetch = useCallback(async () => {
+        if (!enabled) {
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+
+        const result = await adminQuery<T>({
+            table,
+            orderBy,
+            ascending,
+            limit,
+            filterColumn,
+            filterValue,
+        });
+
+        setData(result.data);
+        setError(result.error);
+        setIsLoading(false);
+    }, [table, orderBy, ascending, limit, filterColumn, filterValue, enabled]);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { data, isLoading, error, refetch };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERIC CREATE MUTATION HOOK
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function useApiCreate<T>(table: string): UseMutationResult<Partial<T>, T | null> {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: Partial<T>): Promise<T | null> => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminInsert<T>(table, input);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    const reset = () => {
+        setError(null);
+        setIsPending(false);
+    };
+
+    return { mutateAsync, isPending, error, reset };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERIC UPDATE MUTATION HOOK
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface UpdateInput<T> {
+    id: string;
+    updates: Partial<T>;
+}
+
+export function useApiUpdate<T>(table: string): UseMutationResult<UpdateInput<T>, T | null> {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (input: UpdateInput<T>): Promise<T | null> => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminUpdate<T>(table, input.id, input.updates);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+        return result.data;
+    };
+
+    const reset = () => {
+        setError(null);
+        setIsPending(false);
+    };
+
+    return { mutateAsync, isPending, error, reset };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERIC DELETE MUTATION HOOK
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function useApiDelete(table: string): UseMutationResult<string, void> {
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const mutateAsync = async (id: string): Promise<void> => {
+        setIsPending(true);
+        setError(null);
+
+        const result = await adminDelete(table, id);
+
+        setIsPending(false);
+        if (result.error) {
+            setError(result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    const reset = () => {
+        setError(null);
+        setIsPending(false);
+    };
+
+    return { mutateAsync, isPending, error, reset };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRE-CONFIGURED HOOKS (لسهولة الاستخدام)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Users
+export const useUsers = () => useApiQuery({ table: 'profiles', orderBy: 'created_at', ascending: false, limit: 500 });
+export const useCreateUser = () => useApiCreate('profiles');
+export const useUpdateUser = () => useApiUpdate('profiles');
+export const useDeleteUser = () => useApiDelete('profiles');
+
+// Teachers
+export const useTeachers = () => useApiQuery({ table: 'profiles', orderBy: 'created_at', ascending: false, filterColumn: 'role', filterValue: 'teacher', limit: 500 });
+
+// Stages
+export const useStages = () => useApiQuery({ table: 'educational_stages', orderBy: 'order_index', ascending: true, limit: 100 });
+export const useCreateStage = () => useApiCreate('educational_stages');
+export const useUpdateStage = () => useApiUpdate('educational_stages');
+export const useDeleteStage = () => useApiDelete('educational_stages');
+
+// Subjects
+export const useSubjects = () => useApiQuery({ table: 'subjects', orderBy: 'order_index', ascending: true, limit: 100 });
+export const useCreateSubject = () => useApiCreate('subjects');
+export const useUpdateSubject = () => useApiUpdate('subjects');
+export const useDeleteSubject = () => useApiDelete('subjects');
+
+// Lessons
+export const useLessons = () => useApiQuery({ table: 'lessons', orderBy: 'order_index', ascending: true, limit: 500 });
+export const useCreateLesson = () => useApiCreate('lessons');
+export const useUpdateLesson = () => useApiUpdate('lessons');
+export const useDeleteLesson = () => useApiDelete('lessons');
+
+// Exams
+export const useExams = () => useApiQuery({ table: 'comprehensive_exams', orderBy: 'created_at', ascending: false, limit: 500 });
+export const useCreateExam = () => useApiCreate('comprehensive_exams');
+export const useUpdateExam = () => useApiUpdate('comprehensive_exams');
+export const useDeleteExam = () => useApiDelete('comprehensive_exams');
+
+// Question Banks
+export const useQuestionBanks = () => useApiQuery({ table: 'question_banks', orderBy: 'created_at', ascending: false, limit: 500 });
+export const useDeleteQuestionBank = () => useApiDelete('question_banks');

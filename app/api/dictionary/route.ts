@@ -1,16 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { searchParams } = new URL(request.url);
 
-        // Query parameters
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "20");
         const search = searchParams.get("search") || "";
-        const language = searchParams.get("language") || "en"; // en, ar, fr, de
+        const language = searchParams.get("language") || "en";
         const partOfSpeech = searchParams.get("pos") || "";
         const conceptId = searchParams.get("concept_id") || "";
 
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
         // If requesting a specific word by concept_id
         if (conceptId) {
             const { data, error } = await supabase
-                .from("dictionary")
+                .from("dictionary" as any)
                 .select("*")
                 .eq("concept_id", conceptId)
                 .single();
@@ -32,11 +31,10 @@ export async function GET(request: NextRequest) {
         }
 
         // Build base query
-        let query = supabase.from("dictionary").select("*", { count: "exact" });
+        let query = supabase.from("dictionary" as any).select("*", { count: "exact" });
 
-        // Search filter - search in word_family_root or definition
+        // Search filter
         if (search) {
-            // Search in word_family_root, definition, or inside lexical_entries
             query = query.or(
                 `word_family_root.ilike.%${search}%,definition.ilike.%${search}%`
             );
@@ -47,10 +45,8 @@ export async function GET(request: NextRequest) {
             query = query.eq("part_of_speech", partOfSpeech);
         }
 
-        // Order by word_family_root alphabetically
+        // Order and pagination
         query = query.order("word_family_root", { ascending: true });
-
-        // Pagination
         query = query.range(offset, offset + limit - 1);
 
         const { data, error, count } = await query;
@@ -61,14 +57,13 @@ export async function GET(request: NextRequest) {
         }
 
         // Transform data to include language-specific entries
-        const transformedData = data?.map((word) => {
+        const transformedData = (data as any[])?.map((word) => {
             const lexicalEntries = word.lexical_entries as Record<string, unknown> || {};
             const langEntry = lexicalEntries[language] as Record<string, unknown> || {};
 
             return {
                 ...word,
-                // Add language-specific lemma for easy access
-                lemma: langEntry?.lemma || word.word_family_root,
+                lemma: (langEntry?.lemma as string) || word.word_family_root,
                 pronunciations: langEntry?.pronunciations || [],
                 examples: langEntry?.examples || [],
                 inflections: langEntry?.inflections || [],

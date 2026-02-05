@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 import { notifyNewComprehensiveExam } from '@/lib/onesignal/server';
 
 export async function POST(request: NextRequest) {
@@ -28,10 +28,7 @@ export async function POST(request: NextRequest) {
         }
 
         // استخدام service role للوصول الكامل
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabase = createAdminClient();
 
         // 🔔 إرسال Push Notification عبر OneSignal
         const pushSuccess = await notifyNewComprehensiveExam({
@@ -73,7 +70,7 @@ export async function POST(request: NextRequest) {
 
             const { error: insertError, count } = await supabase
                 .from('notifications')
-                .insert(notifications);
+                .insert(notifications as any);
 
             if (insertError) {
                 console.error('Error inserting in-app notifications:', insertError);

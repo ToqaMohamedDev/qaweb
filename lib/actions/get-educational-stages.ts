@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 
 /**
  * Get Educational Stages - Robust Server Action with Timeout
@@ -28,12 +28,7 @@ export async function getEducationalStagesAction() {
         console.log('[getEducationalStages] Credentials OK, connecting to Supabase...');
 
         // استخدام عميل Supabase بصلاحيات Service Role لتجاوز RLS
-        const supabase = createClient(url, key, {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        });
+        const supabase = createAdminClient();
 
         // إضافة Timeout لتجنب التعليق اللانهائي على Vercel
         const dbPromise = supabase

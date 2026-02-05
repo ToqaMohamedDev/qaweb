@@ -7,16 +7,19 @@
  */
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CLIENT
+// CLIENT (Browser-side only)
 // ═══════════════════════════════════════════════════════════════════════════
 export {
     getClient,
     getBrowserClient,
-    getServerClient,
     resetBrowserClient,
     createClient,
     supabase,
 } from './client';
+
+// Server client - import DIRECTLY from server-client.ts to avoid bundling next/headers
+// Usage: import { getServerClient } from '@/lib/data/server-client';
+// DO NOT re-export here as it will break client components
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICE (Main Data Access)

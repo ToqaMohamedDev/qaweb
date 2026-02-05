@@ -1,581 +1,195 @@
 /**
- * Admin Query Hooks
- * Uses server-side API for data fetching - works with HttpOnly cookies on Vercel
+ * Admin Query Hooks - Unified Version
+ * Re-exports from hooks/useApiQuery.ts to eliminate duplication
+ * Maintains backward compatibility with existing imports
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminQuery, adminInsert, adminUpdate, adminDelete } from '@/lib/api/adminClient';
+import {
+    useApiQuery,
+    useApiCreate,
+    useApiUpdate,
+    useApiDelete,
+    type QueryConfig,
+    type UseQueryResult,
+    type UseMutationResult,
+} from '@/hooks/useApiQuery';
 import type { Database } from '@/lib/database.types';
 
+// Type aliases for database tables
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Stage = Database['public']['Tables']['educational_stages']['Row'];
 type Subject = Database['public']['Tables']['subjects']['Row'];
 type Lesson = Database['public']['Tables']['lessons']['Row'];
 type Exam = Database['public']['Tables']['comprehensive_exams']['Row'];
+type QuestionBank = Database['public']['Tables']['question_banks']['Row'];
 
-interface UseQueryResult<T> {
-    data: T[];
-    isLoading: boolean;
-    error: string | null;
-    refetch: () => Promise<void>;
-}
-
-interface UseMutationResult {
-    mutateAsync: (input: any) => Promise<any>;
-    isPending: boolean;
-    error: string | null;
-}
+// Re-export base hooks for advanced usage
+export { useApiQuery, useApiCreate, useApiUpdate, useApiDelete };
+export type { QueryConfig, UseQueryResult, UseMutationResult };
 
 // ==========================================
-// Users Hooks (Admin API Version)
+// Users Hooks (Alias for backward compatibility)
 // ==========================================
 
-export function useUsersAPI(): UseQueryResult<Profile> {
-    const [data, setData] = useState<Profile[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useUsersAPI = () => useApiQuery<Profile>({
+    table: 'profiles',
+    orderBy: 'created_at',
+    ascending: false,
+    limit: 500,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        const result = await adminQuery<Profile>({
-            table: 'profiles',
-            orderBy: 'created_at',
-            ascending: false,
-            limit: 500,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useUpdateUserAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: { userId: string; updates: any }) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminUpdate<Profile>('profiles', input.userId, input.updates);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
+export const useUpdateUserAPI = () => {
+    const mutation = useApiUpdate<Profile>('profiles');
+    return {
+        ...mutation,
+        mutateAsync: async (input: { userId: string; updates: Partial<Profile> }) => {
+            return mutation.mutateAsync({ id: input.userId, updates: input.updates });
+        },
     };
+};
 
-    return { mutateAsync, isPending, error };
-}
-
-export function useDeleteUserAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('profiles', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteUserAPI = () => useApiDelete('profiles');
 
 // ==========================================
-// Teachers Hooks (Admin API Version)
+// Teachers Hooks
 // ==========================================
 
-export function useTeachersAPI(): UseQueryResult<Profile> {
-    const [data, setData] = useState<Profile[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        const result = await adminQuery<Profile>({
-            table: 'profiles',
-            orderBy: 'created_at',
-            ascending: false,
-            filterColumn: 'role',
-            filterValue: 'teacher',
-            limit: 500,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
+export const useTeachersAPI = () => useApiQuery<Profile>({
+    table: 'profiles',
+    orderBy: 'created_at',
+    ascending: false,
+    filterColumn: 'role',
+    filterValue: 'teacher',
+    limit: 500,
+});
 
 // ==========================================
-// Stages Hooks (Admin API Version)
+// Stages Hooks
 // ==========================================
 
-export function useStagesAPI(): UseQueryResult<Stage> {
-    const [data, setData] = useState<Stage[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useStagesAPI = () => useApiQuery<Stage>({
+    table: 'educational_stages',
+    orderBy: 'order_index',
+    ascending: true,
+    limit: 100,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
+export const useCreateStageAPI = () => useApiCreate<Stage>('educational_stages');
 
-        const result = await adminQuery<Stage>({
-            table: 'educational_stages',
-            orderBy: 'order_index',
-            ascending: true,
-            limit: 100,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useCreateStageAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Stage>) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminInsert<Stage>('educational_stages', input);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
+export const useUpdateStageAPI = () => {
+    const mutation = useApiUpdate<Stage>('educational_stages');
+    return {
+        ...mutation,
+        mutateAsync: async (input: { id: string } & Partial<Stage>) => {
+            const { id, ...updates } = input;
+            return mutation.mutateAsync({ id, updates });
+        },
     };
+};
 
-    return { mutateAsync, isPending, error };
-}
-
-export function useUpdateStageAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Stage> & { id: string }) => {
-        setIsPending(true);
-        setError(null);
-
-        const { id, ...updates } = input;
-        const result = await adminUpdate<Stage>('educational_stages', id, updates);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
-    };
-
-    return { mutateAsync, isPending, error };
-}
-
-export function useDeleteStageAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('educational_stages', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteStageAPI = () => useApiDelete('educational_stages');
 
 // ==========================================
-// Subjects Hooks (Admin API Version)
+// Subjects Hooks
 // ==========================================
 
-export function useSubjectsAPI(): UseQueryResult<Subject> {
-    const [data, setData] = useState<Subject[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useSubjectsAPI = () => useApiQuery<Subject>({
+    table: 'subjects',
+    orderBy: 'order_index',
+    ascending: true,
+    limit: 100,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
+export const useCreateSubjectAPI = () => useApiCreate<Subject>('subjects');
 
-        const result = await adminQuery<Subject>({
-            table: 'subjects',
-            orderBy: 'order_index',
-            ascending: true,
-            limit: 100,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useCreateSubjectAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Subject>) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminInsert<Subject>('subjects', input);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
+export const useUpdateSubjectAPI = () => {
+    const mutation = useApiUpdate<Subject>('subjects');
+    return {
+        ...mutation,
+        mutateAsync: async (input: { id: string } & Partial<Subject>) => {
+            const { id, ...updates } = input;
+            return mutation.mutateAsync({ id, updates });
+        },
     };
+};
 
-    return { mutateAsync, isPending, error };
-}
-
-export function useUpdateSubjectAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Subject> & { id: string }) => {
-        setIsPending(true);
-        setError(null);
-
-        const { id, ...updates } = input;
-        const result = await adminUpdate<Subject>('subjects', id, updates);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
-    };
-
-    return { mutateAsync, isPending, error };
-}
-
-export function useDeleteSubjectAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('subjects', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteSubjectAPI = () => useApiDelete('subjects');
 
 // ==========================================
-// Units Hooks (Admin API Version)
-// Note: Uses 'lessons' table - represents Units/Branches in UI
+// Lessons/Units Hooks
 // ==========================================
 
-export function useLessonsAPI(): UseQueryResult<Lesson> {
-    const [data, setData] = useState<Lesson[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useLessonsAPI = () => useApiQuery<Lesson>({
+    table: 'lessons',
+    orderBy: 'order_index',
+    ascending: true,
+    limit: 500,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
+export const useCreateLessonAPI = () => useApiCreate<Lesson>('lessons');
 
-        const result = await adminQuery<Lesson>({
-            table: 'lessons',
-            orderBy: 'order_index',
-            ascending: true,
-            limit: 500,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useCreateLessonAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Lesson>) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminInsert<Lesson>('lessons', input);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
+export const useUpdateLessonAPI = () => {
+    const mutation = useApiUpdate<Lesson>('lessons');
+    return {
+        ...mutation,
+        mutateAsync: async (input: { id: string } & Partial<Lesson>) => {
+            const { id, ...updates } = input;
+            return mutation.mutateAsync({ id, updates });
+        },
     };
+};
 
-    return { mutateAsync, isPending, error };
-}
-
-export function useUpdateLessonAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Lesson> & { id: string }) => {
-        setIsPending(true);
-        setError(null);
-
-        const { id, ...updates } = input;
-        const result = await adminUpdate<Lesson>('lessons', id, updates);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
-    };
-
-    return { mutateAsync, isPending, error };
-}
-
-export function useDeleteLessonAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('lessons', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteLessonAPI = () => useApiDelete('lessons');
 
 // ==========================================
-// Exams Hooks (Admin API Version)
+// Exams Hooks
 // ==========================================
 
-export function useExamsAPI(): UseQueryResult<Exam> {
-    const [data, setData] = useState<Exam[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useExamsAPI = () => useApiQuery<Exam>({
+    table: 'comprehensive_exams',
+    orderBy: 'created_at',
+    ascending: false,
+    limit: 500,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
+export const useCreateExamAPI = () => useApiCreate<Exam>('comprehensive_exams');
 
-        const result = await adminQuery<Exam>({
-            table: 'comprehensive_exams',
-            orderBy: 'created_at',
-            ascending: false,
-            limit: 500,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useCreateExamAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: Partial<Exam>) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminInsert<Exam>('comprehensive_exams', input);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
+export const useUpdateExamAPI = () => {
+    const mutation = useApiUpdate<Exam>('comprehensive_exams');
+    return {
+        ...mutation,
+        mutateAsync: async (input: { examId?: string; id?: string; updates?: Partial<Exam> } & Partial<Exam>) => {
+            const examId = input.examId || input.id;
+            const updates = input.updates || (() => {
+                const { examId: _, id: __, updates: ___, ...rest } = input;
+                return rest;
+            })();
+            if (!examId) throw new Error('Exam ID is required');
+            return mutation.mutateAsync({ id: examId, updates });
+        },
     };
+};
 
-    return { mutateAsync, isPending, error };
-}
-
-export function useUpdateExamAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (input: any) => {
-        setIsPending(true);
-        setError(null);
-
-        const examId = input.examId || input.id;
-        const updates = input.updates || (() => {
-            const { examId: _, id: __, ...rest } = input;
-            return rest;
-        })();
-
-        const result = await adminUpdate<Exam>('comprehensive_exams', examId, updates);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-        return result.data;
-    };
-
-    return { mutateAsync, isPending, error };
-}
-
-export function useDeleteExamAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('comprehensive_exams', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteExamAPI = () => useApiDelete('comprehensive_exams');
 
 // ==========================================
-// Lessons Hooks (Admin API Version)
-// Note: Uses 'question_banks' table - represents Lessons in UI
+// Question Banks Hooks
 // ==========================================
 
-export function useQuestionBanksAPI(): UseQueryResult<any> {
-    const [data, setData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const useQuestionBanksAPI = () => useApiQuery<QuestionBank>({
+    table: 'question_banks',
+    orderBy: 'created_at',
+    ascending: false,
+    limit: 500,
+});
 
-    const refetch = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        const result = await adminQuery<any>({
-            table: 'question_banks',
-            orderBy: 'created_at',
-            ascending: false,
-            limit: 500,
-        });
-
-        setData(result.data);
-        setError(result.error);
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-}
-
-export function useDeleteQuestionBankAPI(): UseMutationResult {
-    const [isPending, setIsPending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const mutateAsync = async (id: string) => {
-        setIsPending(true);
-        setError(null);
-
-        const result = await adminDelete('question_banks', id);
-
-        setIsPending(false);
-        if (result.error) {
-            setError(result.error);
-            throw new Error(result.error);
-        }
-    };
-
-    return { mutateAsync, isPending, error };
-}
+export const useDeleteQuestionBankAPI = () => useApiDelete('question_banks');
 
 // ==========================================
-// Subject-Stages Hooks (Many-to-Many Relationship)
+// Subject-Stages Hooks (Special - uses custom API)
 // ==========================================
 
 interface SubjectStage {
@@ -587,7 +201,14 @@ interface SubjectStage {
     created_at: string;
 }
 
-export function useSubjectStagesAPI(subjectId?: string): UseQueryResult<SubjectStage> {
+interface UseSubjectStagesResult {
+    data: SubjectStage[];
+    isLoading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+}
+
+export function useSubjectStagesAPI(subjectId?: string): UseSubjectStagesResult {
     const [data, setData] = useState<SubjectStage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -621,7 +242,13 @@ export function useSubjectStagesAPI(subjectId?: string): UseQueryResult<SubjectS
     return { data, isLoading, error, refetch };
 }
 
-export function useUpdateSubjectStagesAPI(): UseMutationResult {
+interface UpdateSubjectStagesResult {
+    mutateAsync: (input: { subjectId: string; stageIds: string[] }) => Promise<any>;
+    isPending: boolean;
+    error: string | null;
+}
+
+export function useUpdateSubjectStagesAPI(): UpdateSubjectStagesResult {
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 

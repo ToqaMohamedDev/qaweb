@@ -1,7 +1,7 @@
 'use server';
 
 import { unstable_cache } from 'next/cache';
-import { createClient } from '@/lib/supabase-server';
+import { createServerClient } from '@/lib/supabase/server';
 
 // =============================================
 // Cached Data Functions
@@ -13,7 +13,7 @@ import { createClient } from '@/lib/supabase-server';
  */
 export const getCachedAppSettings = unstable_cache(
     async () => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { data } = await supabase
             .from('app_settings')
             .select('show_first_semester, show_second_semester')
@@ -38,7 +38,7 @@ export const getCachedAppSettings = unstable_cache(
  */
 export const getCachedEducationalStages = unstable_cache(
     async () => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { data } = await supabase
             .from('educational_stages')
             .select('id, name, slug, description, image_url, order_index')
@@ -59,7 +59,7 @@ export const getCachedEducationalStages = unstable_cache(
  */
 export const getCachedDefaultStage = unstable_cache(
     async () => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { data } = await supabase
             .from('educational_stages')
             .select('id, name')
@@ -80,9 +80,9 @@ export const getCachedDefaultStage = unstable_cache(
  */
 export const getCachedSubjectsForStage = unstable_cache(
     async (stageId: string) => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { data } = await supabase
-            .from('subject_stages')
+            .from('subject_stages' as any)
             .select(`
                 subject_id,
                 order_index,
@@ -115,7 +115,7 @@ export const getCachedSubjectsForStage = unstable_cache(
  */
 export const getCachedLessonsCount = unstable_cache(
     async (stageId: string, showFirst: boolean, showSecond: boolean) => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         
         let query = supabase
             .from('lessons')
@@ -152,7 +152,7 @@ export const getCachedLessonsCount = unstable_cache(
  */
 export const getCachedPlatformStats = unstable_cache(
     async (stageId: string) => {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         
         const [usersResult, lessonsResult, ratingsResult] = await Promise.all([
             supabase

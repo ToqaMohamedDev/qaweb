@@ -1,33 +1,50 @@
 /**
- * Supabase Client Configuration
- * 
- * This is the main entry point for Supabase client.
- * It provides a singleton browser client for client-side usage.
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║                    SUPABASE CLIENT - MAIN ENTRY POINT                    ║
+ * ║                                                                          ║
+ * ║  Browser-safe exports only                                               ║
+ * ║  For server imports, use '@/lib/supabase/server'                         ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
-import { getSupabaseClient, supabase } from './supabase-client';
+// =============================================
+// Re-export browser-safe exports
+// =============================================
+export {
+    // Main browser client
+    createBrowserClient,
+    
+    // Aliases (backward compatibility)
+    createClient,
+    getSupabaseClient,
+    getClient,
+    getBrowserClient,
+    supabase,
+    
+    // Utilities
+    resetBrowserClient,
+    isServer,
+    isClient,
+    
+    // Types
+    type SupabaseClient,
+} from './supabase/index';
 
-// Debug: Log Supabase configuration
-if (typeof window !== 'undefined') {
-    console.log('[Supabase] URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET ✓' : 'NOT SET ✗');
-    console.log('[Supabase] KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET ✓' : 'NOT SET ✗');
-}
-
-// Re-export core client functions
-export { getSupabaseClient, supabase };
-export { getSupabaseClient as createClient };
-
-// Re-export commonly used functions from services for backward compatibility
+// =============================================
+// Re-export auth services (backward compatibility)
+// =============================================
 export {
     signUpWithEmail,
     signInWithEmail,
     signInWithGoogle,
     signOut,
-    getCurrentUser,
     updatePassword,
     resetPassword,
 } from './services/auth.service';
 
+// =============================================
+// Re-export profile services (backward compatibility)
+// =============================================
 export {
     getCurrentProfile,
     getProfile,

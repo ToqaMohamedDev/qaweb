@@ -1,13 +1,11 @@
 /**
- * Unified Supabase Client
+ * Browser Supabase Client
  * 
- * Single source of truth for all Supabase client instances
- * - Browser client (singleton)
- * - Server client (per-request)
+ * Client-side only Supabase client (singleton)
+ * For server-side usage, import from './server-client'
  */
 
-import { createBrowserClient, createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '../database.types';
 
 // =============================================
@@ -15,7 +13,9 @@ import type { Database } from '../database.types';
 // =============================================
 
 export type SupabaseClient = ReturnType<typeof createBrowserClient<Database>>;
-export type SupabaseServerClient = ReturnType<typeof createServerClient<Database>>;
+
+// Re-export server client type for convenience
+export type { SupabaseServerClient } from './server-client';
 
 // =============================================
 // Browser Client (Singleton)
@@ -50,37 +50,11 @@ export function resetBrowserClient(): void {
 }
 
 // =============================================
-// Server Client (Per-Request)
+// Server Client - Import from separate file
 // =============================================
 
-/**
- * Create a server-side Supabase client
- * Use this in Server Components, Server Actions, and API Routes
- */
-export async function getServerClient(): Promise<SupabaseServerClient> {
-    const cookieStore = await cookies();
-
-    return createServerClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        );
-                    } catch {
-                        // Called from Server Component - ignore
-                    }
-                },
-            },
-        }
-    );
-}
+// For server-side usage, import getServerClient from './server-client'
+// This separation prevents next/headers from being bundled in client code
 
 // =============================================
 // Universal Client Getter

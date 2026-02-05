@@ -4,35 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
-// =============================================
-// Helper
-// =============================================
-
-async function createSupabaseServerClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        );
-                    } catch { /* Read-only in some contexts */ }
-                },
-            },
-        }
-    );
-}
+import { createServerClient } from '@/lib/supabase/server';
 
 // =============================================
 // GET - Fetch exam data
@@ -50,7 +22,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         // Get current user (optional - may be null for public exams)
         const { data: { user } } = await supabase.auth.getUser();
@@ -153,7 +125,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -196,7 +168,7 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({
                 success: true,
-                attemptId: newAttempt.id
+                attemptId: (newAttempt as any).id
             });
         }
 

@@ -4,7 +4,10 @@
  * Handles contact messages (رسائل الاتصال)
  */
 
-import { getSupabaseClient } from '../supabase-client';
+import { createBrowserClient } from '../supabase';
+
+// Helper to get client
+const getSupabaseClient = () => createBrowserClient();
 import type { Message, TablesInsert, TablesUpdate } from '../database.types';
 
 // ==========================================
@@ -20,6 +23,11 @@ export async function getMessages(): Promise<Message[]> {
         const result = await res.json();
 
         if (!res.ok) {
+            // If permission denied, return empty array instead of throwing
+            if (result.error?.includes('permission denied')) {
+                console.warn('Messages table permission denied - check SUPABASE_SERVICE_ROLE_KEY');
+                return [];
+            }
             throw new Error(result.error || 'Failed to fetch messages');
         }
 

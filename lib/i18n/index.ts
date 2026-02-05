@@ -153,3 +153,6 @@ export function useTranslations<T extends Record<SupportedLanguage, Record<strin
 // Question Bank Translations
 export { questionBankI18n, getTranslations, type QuestionBankTranslations } from './question-bank';
 
+// Dashboard Translations
+export { dashboardTranslations, getDashboardTranslations, type DashboardTranslationKey } from './dashboard';
+

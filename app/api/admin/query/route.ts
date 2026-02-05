@@ -5,9 +5,8 @@
  * Uses server-side authentication for Vercel compatibility
  */
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { isValidUUID, sanitizeInput } from '@/lib/security';
 
 // =============================================
@@ -35,43 +34,7 @@ const ALLOWED_TABLES = new Set([
 const MAX_LIMIT = 1000;
 const DEFAULT_LIMIT = 100;
 
-// =============================================
-// Helpers
-// =============================================
-
-// Client for authentication (uses anon key with cookies)
-async function createSupabaseAuthClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll() { /* Read-only in API routes */ },
-            },
-        }
-    );
-}
-
-// Client for admin operations (uses service role key to bypass RLS)
-function createSupabaseAdminClient() {
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-            cookies: {
-                getAll() { return []; },
-                setAll() { },
-            },
-        }
-    );
-}
-
-async function verifyAdmin(supabase: Awaited<ReturnType<typeof createSupabaseAuthClient>>) {
+async function verifyAdmin(supabase: Awaited<ReturnType<typeof createServerClient>>) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -105,11 +68,13 @@ function validateTable(table: string | null): { valid: boolean; error?: string }
     return { valid: true };
 }
 
-function securityHeaders(): HeadersInit {
-    return {
-        'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': 'no-store, max-age=0',
-    };
+const securityHeaders: HeadersInit = {
+    'X-Content-Type-Options': 'nosniff',
+    'Cache-Control': 'no-store, max-age=0',
+};
+
+function getSecurityHeaders(): HeadersInit {
+    return securityHeaders;
 }
 
 // =============================================
@@ -133,27 +98,27 @@ export async function GET(request: NextRequest) {
         if (!tableValidation.valid) {
             return NextResponse.json(
                 { error: tableValidation.error },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
-        const authClient = await createSupabaseAuthClient();
+        const authClient = await createServerClient();
 
         // Verify admin access
         const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
-                { status: authResult.status, headers: securityHeaders() }
+                { status: authResult.status, headers: securityHeaders }
             );
         }
 
         // Use admin client for queries (bypasses RLS)
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         // Build query
         let query = adminClient
-            .from(table!)
+            .from(table! as any)
             .select(select, { count: 'exact' })
             .order(orderBy, { ascending })
             .limit(limit);
@@ -171,20 +136,20 @@ export async function GET(request: NextRequest) {
             console.error(`[Admin API] Query Error (${table}):`, error.message);
             return NextResponse.json(
                 { error: error.message },
-                { status: 500, headers: securityHeaders() }
+                { status: 500, headers: securityHeaders }
             );
         }
 
         return NextResponse.json(
             { data, count, success: true },
-            { status: 200, headers: securityHeaders() }
+            { status: 200, headers: securityHeaders }
         );
 
     } catch (error) {
         console.error('[Admin API] Unexpected Error:', error);
         return NextResponse.json(
             { error: 'Internal Server Error' },
-            { status: 500, headers: securityHeaders() }
+            { status: 500, headers: securityHeaders }
         );
     }
 }
@@ -203,33 +168,33 @@ export async function POST(request: NextRequest) {
         if (!tableValidation.valid) {
             return NextResponse.json(
                 { error: tableValidation.error },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
         if (!insertData || typeof insertData !== 'object') {
             return NextResponse.json(
                 { error: 'Data object is required' },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
-        const authClient = await createSupabaseAuthClient();
+        const authClient = await createServerClient();
 
         // Verify admin access
         const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
-                { status: authResult.status, headers: securityHeaders() }
+                { status: authResult.status, headers: securityHeaders }
             );
         }
 
         // Use admin client for operations (bypasses RLS)
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         const { data, error } = await adminClient
-            .from(table)
+            .from(table as any)
             .insert(insertData)
             .select()
             .single();
@@ -238,20 +203,20 @@ export async function POST(request: NextRequest) {
             console.error(`[Admin API] Insert Error (${table}):`, error.message);
             return NextResponse.json(
                 { error: error.message },
-                { status: 500, headers: securityHeaders() }
+                { status: 500, headers: securityHeaders }
             );
         }
 
         return NextResponse.json(
             { data, success: true },
-            { status: 201, headers: securityHeaders() }
+            { status: 201, headers: securityHeaders }
         );
 
     } catch (error) {
         console.error('[Admin API] Insert Error:', error);
         return NextResponse.json(
             { error: 'Internal Server Error' },
-            { status: 500, headers: securityHeaders() }
+            { status: 500, headers: securityHeaders }
         );
     }
 }
@@ -270,40 +235,40 @@ export async function PATCH(request: NextRequest) {
         if (!tableValidation.valid) {
             return NextResponse.json(
                 { error: tableValidation.error },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
         if (!id || !isValidUUID(id)) {
             return NextResponse.json(
                 { error: 'Valid ID is required' },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
         if (!updates || typeof updates !== 'object') {
             return NextResponse.json(
                 { error: 'Updates object is required' },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
-        const authClient = await createSupabaseAuthClient();
+        const authClient = await createServerClient();
 
         // Verify admin access
         const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
-                { status: authResult.status, headers: securityHeaders() }
+                { status: authResult.status, headers: securityHeaders }
             );
         }
 
         // Use admin client for operations (bypasses RLS)
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         const { data, error } = await adminClient
-            .from(table)
+            .from(table as any)
             .update(updates)
             .eq('id', id)
             .select()
@@ -313,20 +278,20 @@ export async function PATCH(request: NextRequest) {
             console.error(`[Admin API] Update Error (${table}):`, error.message);
             return NextResponse.json(
                 { error: error.message },
-                { status: 500, headers: securityHeaders() }
+                { status: 500, headers: securityHeaders }
             );
         }
 
         return NextResponse.json(
             { data, success: true },
-            { status: 200, headers: securityHeaders() }
+            { status: 200, headers: securityHeaders }
         );
 
     } catch (error) {
         console.error('[Admin API] Update Error:', error);
         return NextResponse.json(
             { error: 'Internal Server Error' },
-            { status: 500, headers: securityHeaders() }
+            { status: 500, headers: securityHeaders }
         );
     }
 }
@@ -346,33 +311,33 @@ export async function DELETE(request: NextRequest) {
         if (!tableValidation.valid) {
             return NextResponse.json(
                 { error: tableValidation.error },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
         if (!id || !isValidUUID(id)) {
             return NextResponse.json(
                 { error: 'Valid ID is required' },
-                { status: 400, headers: securityHeaders() }
+                { status: 400, headers: securityHeaders }
             );
         }
 
-        const authClient = await createSupabaseAuthClient();
+        const authClient = await createServerClient();
 
         // Verify admin access
         const authResult = await verifyAdmin(authClient);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },
-                { status: authResult.status, headers: securityHeaders() }
+                { status: authResult.status, headers: securityHeaders }
             );
         }
 
         // Use admin client for operations (bypasses RLS)
-        const adminClient = createSupabaseAdminClient();
+        const adminClient = createAdminClient();
 
         const { error } = await adminClient
-            .from(table!)
+            .from(table! as any)
             .delete()
             .eq('id', id);
 
@@ -380,20 +345,20 @@ export async function DELETE(request: NextRequest) {
             console.error(`[Admin API] Delete Error (${table}):`, error.message);
             return NextResponse.json(
                 { error: error.message },
-                { status: 500, headers: securityHeaders() }
+                { status: 500, headers: securityHeaders }
             );
         }
 
         return NextResponse.json(
             { success: true },
-            { status: 200, headers: securityHeaders() }
+            { status: 200, headers: securityHeaders }
         );
 
     } catch (error) {
         console.error('[Admin API] Delete Error:', error);
         return NextResponse.json(
             { error: 'Internal Server Error' },
-            { status: 500, headers: securityHeaders() }
+            { status: 500, headers: securityHeaders }
         );
     }
 }

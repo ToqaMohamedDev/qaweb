@@ -4,7 +4,10 @@
  * Handles support chats and messages (دعم فني)
  */
 
-import { getSupabaseClient } from '../supabase-client';
+import { createBrowserClient } from '../supabase';
+
+// Helper to get client
+const getSupabaseClient = () => createBrowserClient();
 import type { SupportChat, ChatMessage, SenderType, TablesInsert } from '../database.types';
 
 // ==========================================

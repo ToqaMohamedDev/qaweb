@@ -5,13 +5,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { createServerClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         const { searchParams } = new URL(request.url);
 
         // الحصول على المعاملات
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
                     .select('educational_stage_id')
                     .eq('id', user.id)
                     .single();
-                stageId = profile?.educational_stage_id;
+                stageId = profile?.educational_stage_id ?? null;
             }
         }
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
             if (compError) {
                 console.error('[Exams API] Comprehensive error:', compError);
             } else {
-                results.comprehensive = (compExams || []).map(exam => ({
+                results.comprehensive = (compExams || []).map((exam: any) => ({
                     ...exam,
                     source: 'comprehensive',
                 }));
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
             if (teacherError) {
                 console.error('[Exams API] Teacher error:', teacherError);
             } else {
-                results.teacher = (teacherExams || []).map(exam => ({
+                results.teacher = (teacherExams || []).map((exam: any) => ({
                     ...exam,
                     source: 'teacher',
                 }));

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/server';
 
 /**
  * Update User Role & Profile - Robust Server Action
@@ -33,12 +33,7 @@ export async function updateUserRoleAction(params: {
 
         // استخدام عميل Supabase الرسمي بصلاحيات Service Role
         // هذا يتخطى أي مشاكل شبكة قد تواجهها طلبات fetch العادية
-        const supabase = createClient(url, key, {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        });
+        const supabase = createAdminClient();
 
         if (educationalStageId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(educationalStageId)) {
             console.warn('[updateUserRole] Invalid UUID for stage, setting to null');

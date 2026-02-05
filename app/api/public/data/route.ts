@@ -5,9 +5,8 @@
  * Uses server-side Supabase client for Vercel compatibility
  */
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase/server';
 
 // =============================================
 // Constants
@@ -24,27 +23,6 @@ const ALLOWED_ENTITIES = new Set([
     'question_banks',   // For lesson page
     'exams'
 ]);
-
-// =============================================
-// Helper
-// =============================================
-
-async function createSupabaseServerClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll() { /* Read-only in API routes */ },
-            },
-        }
-    );
-}
 
 // =============================================
 // GET - Fetch Public Data
@@ -66,7 +44,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createServerClient();
 
         let data: any[] = [];
         let error: any = null;
@@ -158,14 +136,15 @@ export async function GET(request: NextRequest) {
                         .eq('created_by', id)
                         .eq('is_published', true);
 
+                    const teacher = t as any;
                     data = [{
-                        ...t,
-                        coverImageURL: t.cover_image_url || null,
-                        photoURL: t.avatar_url,
-                        displayName: t.name,
-                        isVerified: t.is_verified || false,
-                        specialty: t.specialization || t.bio,
-                        subscriberCount: t.subscriber_count || 0,
+                        ...teacher,
+                        coverImageURL: teacher.cover_image_url || null,
+                        photoURL: teacher.avatar_url,
+                        displayName: teacher.name,
+                        isVerified: teacher.is_verified || false,
+                        specialty: teacher.specialization || teacher.bio,
+                        subscriberCount: teacher.subscriber_count || 0,
                         examsCount: (compCount || 0) + (teacherCount || 0),
                     }];
                 }
