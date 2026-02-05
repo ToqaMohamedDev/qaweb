@@ -14,36 +14,21 @@ const securityHeaders = {
     'X-Frame-Options': 'DENY',
 };
 
-// Helper function with timeout
-async function withTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    fallback: T
-): Promise<T> {
-    const timeoutPromise = new Promise<T>((resolve) => {
-        setTimeout(() => resolve(fallback), timeoutMs);
-    });
-    return Promise.race([promise, timeoutPromise]);
-}
-
 export async function GET() {
+    // Safety timeout - ensure we don't hang forever
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
         const supabase = await createServerClient();
 
-        // Create the query promise
-        const queryPromise = supabase
+        const { data, error } = await supabase
             .from('subjects')
             .select('*')
             .eq('is_active', true)
-            .order('order_index', { ascending: true })
-            .then(result => result);
+            .order('order_index', { ascending: true });
 
-        // Fetch subjects with 5-second timeout
-        const { data, error } = await withTimeout(
-            queryPromise,
-            5000,
-            { data: [], error: null }
-        );
+        clearTimeout(timeoutId);
 
         if (error) {
             console.error('[Subjects API] Query error:', error.message);
@@ -59,6 +44,7 @@ export async function GET() {
         );
 
     } catch (error) {
+        clearTimeout(timeoutId);
         console.error('[Subjects API] Unexpected error:', error);
         return NextResponse.json(
             { data: [], success: false, error: 'Server error' },

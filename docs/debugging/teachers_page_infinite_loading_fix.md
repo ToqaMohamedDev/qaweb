@@ -181,10 +181,10 @@ interface CategoryDropdownProps {
 | :--- | :--- | :---: |
 | `app/teachers/page.tsx` | فصل حالات التحميل | ✅ |
 | `app/api/subjects/route.ts` | ملف جديد - API للمواد | ✅ |
-| `hooks/useSubjects.ts` | إعادة كتابة كاملة | ✅ |
-| `lib/data/hooks.ts` | إضافة safety timeout | ✅ |
+| `hooks/useSubjects.ts` | إعادة كتابة كاملة + safety timeout 10s | ✅ |
+| `hooks/useTeachers.ts` | إضافة isMounted ref + safety timeout 15s | ✅ |
+| `lib/data/hooks.ts` | إضافة safety timeout 15s | ✅ |
 | `hooks/useApiQuery.ts` | إضافة refs و cleanup | ✅ |
-| `hooks/useTeachers.ts` | إضافة isMounted ref | ✅ |
 | `hooks/useSubscriptions.ts` | تتبع userId بـ ref | ✅ |
 | `components/common/CategoryDropdown.tsx` | إضافة isLoading prop | ✅ |
 

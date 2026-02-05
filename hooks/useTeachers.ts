@@ -20,21 +20,34 @@ export function useTeachers() {
     const hasFetched = useRef(false);
 
     const fetchTeachers = useCallback(async () => {
+        // Safety timeout - ensure we don't hang forever
+        let timeoutTriggered = false;
+        const timeoutId = setTimeout(() => {
+            timeoutTriggered = true;
+            if (isMounted.current) {
+                console.warn('[useTeachers] Safety timeout triggered after 15s');
+                setStatus('error');
+                setError('Request timeout - حدث خطأ في التحميل');
+            }
+        }, 15000);
+
         try {
             setStatus('loading');
             setError(null);
             const data = await getTeachers();
-            if (isMounted.current) {
+            if (isMounted.current && !timeoutTriggered) {
                 setTeachers(data);
                 setFilteredTeachers(data);
                 setStatus('success');
             }
         } catch (err) {
-            if (isMounted.current) {
+            if (isMounted.current && !timeoutTriggered) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch teachers');
                 setStatus('error');
             }
             console.error('Error fetching teachers:', err);
+        } finally {
+            clearTimeout(timeoutId);
         }
     }, []);
 
