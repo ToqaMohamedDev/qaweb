@@ -33,6 +33,9 @@ interface UseQueryResult<T> {
     refetch: () => Promise<void>;
 }
 
+// Safety timeout constant - prevent infinite hangs
+const QUERY_TIMEOUT_MS = 15000; // 15 seconds
+
 function useQuery<T>(
     queryFn: () => Promise<T>,
     deps: unknown[] = [],
@@ -59,20 +62,32 @@ function useQuery<T>(
         setIsError(false);
         setError(null);
 
+        // Safety timeout - ensure we don't hang forever
+        let timeoutTriggered = false;
+        const timeoutId = setTimeout(() => {
+            timeoutTriggered = true;
+            if (isMounted.current) {
+                console.warn('[useQuery] Safety timeout triggered after', QUERY_TIMEOUT_MS, 'ms');
+                setIsLoading(false);
+                setIsError(true);
+                setError(new Error('Request timeout'));
+            }
+        }, QUERY_TIMEOUT_MS);
+
         try {
             const result = await queryFnRef.current();
-            if (isMounted.current) {
+            if (isMounted.current && !timeoutTriggered) {
                 setData(result);
-            }
-        } catch (err) {
-            if (isMounted.current) {
-                setIsError(true);
-                setError(err instanceof Error ? err : new Error('Unknown error'));
-            }
-        } finally {
-            if (isMounted.current) {
                 setIsLoading(false);
             }
+        } catch (err) {
+            if (isMounted.current && !timeoutTriggered) {
+                setIsError(true);
+                setError(err instanceof Error ? err : new Error('Unknown error'));
+                setIsLoading(false);
+            }
+        } finally {
+            clearTimeout(timeoutId);
         }
     }, [enabled]);
 

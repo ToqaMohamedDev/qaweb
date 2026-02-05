@@ -71,7 +71,10 @@ export default function TeachersPage() {
         [teachers, subscriptions]
     );
 
-    const isLoading = teachersStatus === 'loading' || subjectsStatus === 'loading';
+    // ✅ FIX: Decouple loading states - teachers load independently of subjects
+    // Teachers are the primary content, subjects are just for filtering
+    const isTeachersLoading = teachersStatus === 'loading';
+    const isSubjectsLoading = subjectsStatus === 'loading';
 
     // Category options for dropdown
     const categoryOptions = useMemo(() =>
@@ -124,7 +127,7 @@ export default function TeachersPage() {
                     <div className="sticky top-16 z-30 bg-white/90 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200/80 dark:border-[#1f1f1f] shadow-sm">
                         <div className="px-3 sm:px-6 py-3 sm:py-4">
                             <div className="flex items-center gap-3 max-w-3xl mx-auto">
-                                {/* Subject Filter Dropdown */}
+                                {/* Subject Filter Dropdown - loads independently */}
                                 <CategoryDropdown
                                     options={categoryOptions}
                                     selectedId={subjects.find(s => s.name === selectedCategory)?.id || 'all'}
@@ -132,6 +135,7 @@ export default function TeachersPage() {
                                     isOpen={showSubjectsDropdown}
                                     onToggle={() => setShowSubjectsDropdown(!showSubjectsDropdown)}
                                     allLabel="كل المواد"
+                                    isLoading={isSubjectsLoading}
                                 />
 
                                 {/* Search Input */}
@@ -209,7 +213,7 @@ export default function TeachersPage() {
 
                     {/* Content Grid */}
                     <div className="px-3 sm:px-6 pb-28 md:pb-10">
-                        {isLoading ? (
+                        {isTeachersLoading ? (
                             <TeacherGridSkeleton count={8} />
                         ) : filteredTeachers.length === 0 ? (
                             <EmptyState

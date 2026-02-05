@@ -5,7 +5,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, CheckCircle2, Sparkles, BookOpen } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Sparkles, BookOpen, Loader2 } from 'lucide-react';
 
 export interface CategoryOption {
     id: string;
@@ -22,6 +22,7 @@ export interface CategoryDropdownProps {
     allLabel?: string;
     placeholder?: string;
     className?: string;
+    isLoading?: boolean;
 }
 
 export function CategoryDropdown({
@@ -33,6 +34,7 @@ export function CategoryDropdown({
     allLabel = 'الكل',
     placeholder = 'اختر',
     className = '',
+    isLoading = false,
 }: CategoryDropdownProps) {
     const selectedOption = options.find(o => o.id === selectedId);
     const displayLabel = selectedId === 'all' ? allLabel : selectedOption?.name || placeholder;
@@ -42,13 +44,18 @@ export function CategoryDropdown({
             {/* Trigger Button */}
             <motion.button
                 onClick={onToggle}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-100 dark:bg-[#272727] hover:bg-gray-200 dark:hover:bg-[#333] text-gray-700 dark:text-white font-medium text-xs sm:text-sm transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={isLoading}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-100 dark:bg-[#272727] hover:bg-gray-200 dark:hover:bg-[#333] text-gray-700 dark:text-white font-medium text-xs sm:text-sm transition-all ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 type="button"
             >
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">{displayLabel}</span>
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    <BookOpen className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">{isLoading ? 'جاري التحميل...' : displayLabel}</span>
                 <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </motion.button>
 

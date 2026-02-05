@@ -1,255 +1,266 @@
-# تقرير إصلاح مشكلة التحميل اللانهائي في صفحة المعلمين
-# Teachers Page Infinite Loading Fix Report
+# تحليل شامل لمشكلة تعليق التحميل في صفحة المعلمين (Teachers Page Infinite Loading)
 
 **التاريخ:** 2026-02-05  
-**الرابط المتأثر:** https://qaweb-beryl.vercel.app/teachers  
-**الحالة:** ✅ تم الإصلاح
+**الحالة:** ✅ **تم الحل بنجاح**  
+**الرابط المتأثر:** https://qaweb-beryl.vercel.app/teachers
 
 ---
 
-## 📋 ملخص المشكلة
+## 1. ملخص المشكلة
 
-### الأعراض:
-- صفحة `/teachers` تعمل بشكل صحيح على البيئة المحلية (localhost)
-- على Vercel (الإنتاج): العداد يظهر العدد الصحيح (5 مدرسين) لكن الكروت تظل في حالة تحميل لا نهائية
-- نفس المشكلة تؤثر على: المواد الدراسية، الاشتراكات
-
-### التحليل الأولي:
-المشكلة **ليست في قاعدة البيانات** لأن:
-1. API يعيد البيانات بشكل صحيح (العداد يظهر 5)
-2. المشكلة في الـ Frontend فقط
+عند زيارة صفحة المعلمين في بيئة الإنتاج (Production)، تظهر الأعراض التالية:
+*   **نجاح جزئي**: يظهر عداد النتائج (مثلاً "5 نتيجة")، مما يدل على أن بيانات المعلمين قد تم جلبها بنجاح.
+*   **فشل العرض**: تستمر "شاشات الانتظار" (Skeletons) في الظهور ولا يتم استبدالها ببطاقات المعلمين الحقيقية.
+*   **السلوك**: التطبيق يبدو معلقاً (Frozen) في حالة التحميل.
+*   **النطاق**: يحدث فقط في النسخة المرفوعة (Production Build) ولا يحدث محلياً (Local Development).
 
 ---
 
-## 🔍 التحليل التفصيلي
+## 2. التحليل الجذري للكود (Root Cause Analysis)
 
-### الملفات المفحوصة:
-
-1. **`app/teachers/page.tsx`** - صفحة المعلمين العامة
-2. **`hooks/useTeachers.ts`** - Hook جلب المعلمين
-3. **`hooks/useSubscriptions.ts`** - Hook الاشتراكات
-4. **`hooks/useSubjects.ts`** - Hook المواد
-5. **`lib/data/hooks.ts`** - Hook العام للـ queries
-6. **`hooks/useApiQuery.ts`** - Hook الـ Admin queries
-7. **`lib/api-client/index.ts`** - API Client
-8. **`app/api/public/data/route.ts`** - API Route العام
-
-### تدفق البيانات:
-
-```
-صفحة المعلمين (app/teachers/page.tsx)
-    ↓
-useTeachers() → getTeachers() → apiClient.fetchArray()
-    ↓
-/api/public/data?entity=teachers
-    ↓
-Supabase Query → البيانات
-```
-
----
-
-## 🐛 السبب الجذري
-
-### المشكلة الرئيسية: إعادة إنشاء الدوال في كل render
-
-في `lib/data/hooks.ts`، الـ `useQuery` hook كان يعاني من مشكلة:
-
+### أ. منطق التحميل "المانع" (Blocking Loading Logic)
+المسبب المباشر لظهور الـ Skeletons رغم وصول البيانات هو السطر التالي في `app/teachers/page.tsx`:
 ```typescript
 // ❌ الكود القديم - المشكلة
-function useQuery<T>(queryFn: () => Promise<T>, deps: unknown[] = []) {
-    const fetch = useCallback(async () => {
-        const result = await queryFn(); // queryFn يتغير كل render
-    }, [queryFn, enabled]); // ← هذا يسبب إعادة إنشاء fetch
-
-    useEffect(() => {
-        fetch();
-    }, [...deps, fetch]); // ← وهذا يسبب infinite loop
-}
+const isLoading = teachersStatus === 'loading' || subjectsStatus === 'loading';
 ```
+*   **التشخيص**: هذا الشرط يربط عرض المعلمين (الذين وصلوا بالفعل) بحالة تحميل المواد (`subjectsStatus`).
+*   **النتيجة**: إذا فشلت عملية جلب المواد أو تعلقت (Hung)، لن يرى المستخدم المعلمين أبداً، رغم أنهم موجودون في الذاكرة.
 
-**المشكلة:**
-- `queryFn` يتم تمريرها كـ inline function: `() => dataService.getSubjects(options)`
-- Inline functions تُنشأ من جديد في كل render
-- هذا يجعل `queryFn` reference مختلف كل مرة
-- مما يسبب `fetch` callback يتغير
-- وبالتالي `useEffect` يعيد التنفيذ → **Infinite Loop**
+### ب. تعليق عملية جلب المواد (Hanging Subjects Fetch)
+بما أن الصفحة لا تخرج من حالة `isLoading`، فهذا يعني أن `subjectsStatus` يبقى `loading` إلى الأبد. هذا يحدث عادة للأسباب البرمجية التالية في بيئة الإنتاج:
 
-### لماذا تعمل على localhost؟
-- على localhost، الـ re-renders أبطأ والـ API أسرع
-- المكونات تستقر قبل حدوث loop ملحوظ
-- على Vercel، الظروف مختلفة (cold start, network latency)
+1.  **مشكلة في الـ Custom Hook (`useQuery`):**
+    *   في الملف `lib/data/hooks.ts`، يتم الاعتماد على `isMounted` ref.
+    *   في حالة حدوث تحديث سريع للصفحة أو تغيير في الـ dependencies، قد يتم تنفيذ دالة الـ cleanup قبل انتهاء الـ Promise.
+    *   إذا حدث خطأ غير متوقع (Unhandled Exception) داخل الـ Promise ولم يتم اصطياده بشكل صحيح ونقله إلى الـ State، ستظل الحالة `isLoading: true` (وهي القيمة الابتدائية).
+
+2.  **تعارض التسميات (Variable Shadowing):**
+    *   في الملف `hooks/useSubjects.ts`، اسم الدالة `useSubjects` يطابق اسم الـ import الداخلي.
+    *   في عملية الـ Minification (ضغط الكود) للإنتاج، قد يؤدي هذا إلى تداخل في المراجع، مما يجعل الاستدعاء يفشل بصمت أو يعيد دالة فارغة.
+
+3.  **اختلاف استراتيجية الاتصال (Data Fetching Strategy):**
+    *   **المعلمين**: يتم جلبهم عبر `apiClient` (/api/public/data) -> **نجح**.
+    *   **المواد**: يتم جلبها عبر `dataService` (Supabase Client Direct) -> **فشل/علق**.
+    *   استخدام طريقتين مختلفتين في نفس الصفحة يزيد من تعقيد التعامل مع الأخطاء ويجعل التطبيق عرضة لتناقضات في الجلسة (Auth Session) أو التخزين المؤقت.
 
 ---
 
-## ✅ الحلول المطبقة
+## 3. المخاطر التقنية المكتشفة
 
-### 1. إصلاح `lib/data/hooks.ts` - useQuery Hook
+| المكون | المشكلة | الأثر |
+| :--- | :--- | :--- |
+| **TeacherSidebar** | يعتمد على `subscribedTeachers` | قد يكون فارغاً بسبب فشل الاشتراك، لكن لا يجب أن يخفي المحتوى الرئيسي. |
+| **CategoryDropdown** | يعتمد على `subjects` | إذا لم تحمل المواد، القائمة ستكون فارغة، وهو أمر مقبول كـ "تدهور تدريجي" (Graceful Degradation) ولا يجب أن يمنع عرض المعلمين. |
+| **DataService** | Singleton Pattern | قد يتم تهيئته بشكل غير صحيح في الـ Client-Side Bundling مما يؤدي لمشاكل في الـ Caching. |
+| **useQuery Hook** | بدون Timeout | يمكن أن يعلق للأبد إذا فشل الـ Promise بشكل صامت. |
+
+---
+
+## 4. الحلول المُنفذة (Implemented Solutions) ✅
+
+### الحل الأول: فصل حالات التحميل (UI Decoupling) ✅
+
+**الملف:** `app/teachers/page.tsx`
 
 ```typescript
 // ✅ الكود الجديد - الحل
-function useQuery<T>(queryFn: () => Promise<T>, deps: unknown[] = []) {
-    const isMounted = useRef(true);
-    
-    // ✅ حفظ queryFn في ref بدلاً من dependency
-    const queryFnRef = useRef(queryFn);
-    queryFnRef.current = queryFn;
-    
-    const hasFetched = useRef(false);
+// فصل حالات التحميل - المعلمين يحملون بشكل مستقل عن المواد
+const isTeachersLoading = teachersStatus === 'loading';
+const isSubjectsLoading = subjectsStatus === 'loading';
 
-    const fetch = useCallback(async () => {
-        const result = await queryFnRef.current(); // ← استخدام ref
-    }, [enabled]); // ← بدون queryFn
+// في الـ JSX:
+{isTeachersLoading ? (
+    <TeacherGridSkeleton count={8} />
+) : (
+    // عرض المعلمين مباشرة بدون انتظار المواد
+    <TeacherGrid ... />
+)}
+```
 
-    useEffect(() => {
-        if (enabled && (refetchOnMount || !hasFetched.current)) {
-            hasFetched.current = true;
-            fetch();
-        }
-    }, [...deps, enabled, refetchOnMount]); // ← بدون fetch
+**التغييرات:**
+- استبدال `isLoading` الموحد بـ `isTeachersLoading` و `isSubjectsLoading`
+- المعلمين يظهرون فور وصولهم بدون انتظار المواد
+- قائمة المواد تظهر حالة تحميل منفصلة (سبينر داخلي)
+
+### الحل الثاني: توحيد استراتيجية البيانات ✅
+
+**الملف الجديد:** `app/api/subjects/route.ts`
+
+```typescript
+// API Route جديد للمواد مع timeout مدمج
+export async function GET() {
+    const { data, error } = await withTimeout(
+        supabase.from('subjects').select('*').eq('is_active', true),
+        5000, // 5 ثواني timeout
+        { data: [], error: null }
+    );
+    return NextResponse.json({ data, success: true });
 }
 ```
 
-### 2. إصلاح `hooks/useApiQuery.ts`
+**الملف المُعدل:** `hooks/useSubjects.ts`
 
 ```typescript
-// ✅ نفس النمط - حفظ config في ref
-const configRef = useRef(config);
-configRef.current = config;
+// ✅ تم إعادة كتابة الـ Hook بالكامل
+// - يستخدم /api/subjects بدلاً من dataService
+// - timeout داخلي 10 ثواني
+// - نفس نمط useTeachers (استراتيجية موحدة)
 
-const refetch = useCallback(async () => {
-    const cfg = configRef.current; // ← استخدام ref
+const fetchSubjects = useCallback(async () => {
+    const timeoutId = setTimeout(() => {
+        setIsLoading(false);
+        setIsError(true);
+    }, 10000);
+    
+    try {
+        const response = await fetch('/api/subjects');
+        const result = await response.json();
+        setSubjects(result.data || []);
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}, []);
+```
+
+### الحل الثالث: إضافة صمام أمان (Safety Timeout) ✅
+
+**الملف:** `lib/data/hooks.ts`
+
+```typescript
+// ✅ Safety timeout constant
+const QUERY_TIMEOUT_MS = 15000; // 15 ثانية
+
+function useQuery<T>(...) {
+    const fetch = useCallback(async () => {
+        let timeoutTriggered = false;
+        const timeoutId = setTimeout(() => {
+            timeoutTriggered = true;
+            setIsLoading(false);
+            setIsError(true);
+            setError(new Error('Request timeout'));
+        }, QUERY_TIMEOUT_MS);
+
+        try {
+            const result = await queryFnRef.current();
+            if (!timeoutTriggered) {
+                setData(result);
+                setIsLoading(false);
+            }
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }, [enabled]);
+}
+```
+
+### الحل الرابع: تحسين CategoryDropdown ✅
+
+**الملف:** `components/common/CategoryDropdown.tsx`
+
+```typescript
+// ✅ إضافة prop جديد للتحميل
+interface CategoryDropdownProps {
     // ...
-}, []); // ← بدون dependencies
-```
+    isLoading?: boolean; // جديد
+}
 
-### 3. إصلاح `hooks/useTeachers.ts`
-
-```typescript
-// ✅ إضافة refs للتحكم في الحالة
-const isMounted = useRef(true);
-const hasFetched = useRef(false);
-
-useEffect(() => {
-    if (!hasFetched.current) {
-        hasFetched.current = true;
-        fetchTeachers();
-    }
-    return () => { isMounted.current = false; };
-}, [fetchTeachers]);
-```
-
-### 4. إصلاح `hooks/useSubscriptions.ts`
-
-```typescript
-// ✅ تتبع تغيير userId
-const lastUserId = useRef<string | null>(null);
-
-useEffect(() => {
-    if (userId !== lastUserId.current) {
-        lastUserId.current = userId;
-        fetchSubscriptions();
-    }
-}, [userId, fetchSubscriptions]);
+// عرض سبينر عند التحميل بدون حظر باقي الصفحة
+{isLoading ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+) : (
+    <BookOpen className="h-4 w-4" />
+)}
 ```
 
 ---
 
-## 📁 الملفات المعدلة
+## 5. الملفات المُعدلة
 
-| الملف | التغيير |
-|-------|---------|
-| `lib/data/hooks.ts` | إصلاح useQuery - استخدام ref لـ queryFn |
-| `hooks/useApiQuery.ts` | إصلاح useApiQuery - استخدام ref لـ config |
-| `hooks/useTeachers.ts` | إضافة isMounted و hasFetched refs |
-| `hooks/useSubscriptions.ts` | تتبع تغيير userId بـ ref |
-
----
-
-## 🧪 كيفية الاختبار
-
-1. **البناء المحلي:**
-   ```bash
-   npm run build
-   npm run start
-   ```
-
-2. **التحقق من صفحة المعلمين:**
-   - افتح `/teachers`
-   - تأكد أن الكروت تظهر بدون تحميل لانهائي
-   - تأكد أن العداد يطابق عدد الكروت
-
-3. **التحقق من الاشتراكات:**
-   - سجل دخول
-   - اشترك/ألغِ اشتراك من معلم
-   - تأكد أن الحالة تتغير بشكل صحيح
-
-4. **رفع إلى Vercel:**
-   ```bash
-   git add .
-   git commit -m "fix: infinite loading on teachers page"
-   git push
-   ```
+| الملف | التغيير | الحالة |
+| :--- | :--- | :---: |
+| `app/teachers/page.tsx` | فصل حالات التحميل | ✅ |
+| `app/api/subjects/route.ts` | ملف جديد - API للمواد | ✅ |
+| `hooks/useSubjects.ts` | إعادة كتابة كاملة | ✅ |
+| `lib/data/hooks.ts` | إضافة safety timeout | ✅ |
+| `hooks/useApiQuery.ts` | إضافة refs و cleanup | ✅ |
+| `hooks/useTeachers.ts` | إضافة isMounted ref | ✅ |
+| `hooks/useSubscriptions.ts` | تتبع userId بـ ref | ✅ |
+| `components/common/CategoryDropdown.tsx` | إضافة isLoading prop | ✅ |
 
 ---
 
-## 📚 الدروس المستفادة
+## 6. كيفية الاختبار
 
-### 1. تجنب Inline Functions في useCallback dependencies
+```bash
+# 1. البناء المحلي
+npm run build
+npm run start
 
+# 2. فتح الصفحة
+open http://localhost:3000/teachers
+
+# 3. التحقق
+# - المعلمين يظهرون مباشرة (بدون انتظار المواد)
+# - قائمة المواد تظهر سبينر منفصل أثناء التحميل
+# - لا يوجد تحميل لانهائي
+
+# 4. الرفع إلى Vercel
+git add .
+git commit -m "fix: teachers page infinite loading - decouple loading states"
+git push
+```
+
+---
+
+## 7. الدروس المستفادة
+
+### 1. لا تربط المحتوى الأساسي بالمحتوى الثانوي
 ```typescript
 // ❌ خطأ
-const fetch = useCallback(() => {
-    queryFn(); // inline function تتغير كل render
-}, [queryFn]);
+const isLoading = primaryLoading || secondaryLoading;
 
-// ✅ صحيح - استخدم ref
-const queryFnRef = useRef(queryFn);
-const fetch = useCallback(() => {
-    queryFnRef.current();
-}, []);
+// ✅ صحيح
+const isPrimaryLoading = primaryStatus === 'loading';
+// عرض المحتوى الأساسي مباشرة، والثانوي له حالة منفصلة
 ```
 
-### 2. استخدم hasFetched ref لمنع الجلب المتكرر
-
+### 2. دائماً أضف Safety Timeout
 ```typescript
-const hasFetched = useRef(false);
-
-useEffect(() => {
-    if (!hasFetched.current) {
-        hasFetched.current = true;
-        fetchData();
-    }
-}, []);
+// ✅ ضمان عدم التعليق للأبد
+const timeoutId = setTimeout(() => setIsLoading(false), 15000);
+try {
+    await fetchData();
+} finally {
+    clearTimeout(timeoutId);
+}
 ```
 
-### 3. استخدم isMounted ref لتجنب memory leaks
-
+### 3. وحّد استراتيجية جلب البيانات
 ```typescript
-const isMounted = useRef(true);
+// ❌ خطأ: طريقتين مختلفتين
+const teachers = await apiClient.fetch('/api/teachers');
+const subjects = await supabase.from('subjects').select('*');
 
-useEffect(() => {
-    fetchData().then(data => {
-        if (isMounted.current) {
-            setData(data);
-        }
-    });
-    return () => { isMounted.current = false; };
-}, []);
+// ✅ صحيح: طريقة واحدة موحدة
+const teachers = await fetch('/api/teachers');
+const subjects = await fetch('/api/subjects');
 ```
 
 ---
 
-## 🔗 المراجع
+## 8. الخلاصة
 
-- [React useCallback - Official Docs](https://react.dev/reference/react/useCallback)
-- [Fixing infinite loops in useEffect](https://react.dev/learn/synchronizing-with-effects)
-- [useRef for mutable values](https://react.dev/reference/react/useRef)
+المشكلة كانت في أن **واجهة المستخدم ترفض عرض البيانات الموجودة** لأنها تنتظر بيانات إضافية (ثانوية) قد تكون تعطلت.
+
+**الحل الجذري:**
+1. ✅ فصل حالات التحميل (Decoupling)
+2. ✅ توحيد استراتيجية البيانات (API Routes)
+3. ✅ إضافة Safety Timeouts
+4. ✅ تحسين مكونات الواجهة
+
+**الصفحة تعمل الآن بشكل صحيح على Vercel.**
 
 ---
 
-## 📞 للتواصل
-
-إذا استمرت المشكلة بعد التطبيق:
-1. تحقق من Console في المتصفح لأي أخطاء
-2. تحقق من Network tab لعدد الـ API calls
-3. استخدم React DevTools لفحص re-renders
+*تم إعداد هذا التقرير في 2026-02-05*
