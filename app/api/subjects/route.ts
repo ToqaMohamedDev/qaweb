@@ -30,13 +30,17 @@ export async function GET() {
     try {
         const supabase = await createServerClient();
 
+        // Create the query promise
+        const queryPromise = supabase
+            .from('subjects')
+            .select('*')
+            .eq('is_active', true)
+            .order('order_index', { ascending: true })
+            .then(result => result);
+
         // Fetch subjects with 5-second timeout
         const { data, error } = await withTimeout(
-            supabase
-                .from('subjects')
-                .select('*')
-                .eq('is_active', true)
-                .order('order_index', { ascending: true }),
+            queryPromise,
             5000,
             { data: [], error: null }
         );
