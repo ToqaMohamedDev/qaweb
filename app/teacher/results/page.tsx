@@ -87,6 +87,7 @@ export default function TeacherResultsPage() {
     const [results, setResults] = useState<ExamResult[]>([]);
     const [examSummaries, setExamSummaries] = useState<ExamSummary[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [authTimedOut, setAuthTimedOut] = useState(false);
     const [search, setSearch] = useState("");
     const [selectedExam, setSelectedExam] = useState<string>('all');
     const [view, setView] = useState<'results' | 'summary'>('results');
@@ -158,8 +159,20 @@ export default function TeacherResultsPage() {
     };
 
 
+    // Safety timeout for auth - don't wait forever for authLoading
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading && !authTimedOut) {
+            const timeoutId = setTimeout(() => {
+                console.warn('[TeacherResults] Auth loading timeout after 5s - proceeding anyway');
+                setAuthTimedOut(true);
+            }, 5000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [authLoading, authTimedOut]);
+
+    useEffect(() => {
+        // Wait for auth unless timed out
+        if (authLoading && !authTimedOut) return;
 
         if (!user || user.role !== 'teacher') {
             router.push("/");
@@ -172,7 +185,7 @@ export default function TeacherResultsPage() {
         }
 
         fetchResults();
-    }, [user, authLoading, isApprovedTeacher]);
+    }, [user, authLoading, authTimedOut, isApprovedTeacher]);
 
     const fetchResults = async () => {
         if (!user) return;
@@ -240,7 +253,10 @@ export default function TeacherResultsPage() {
         return matchSearch && matchExam;
     });
 
-    if (authLoading || isLoading) {
+    // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
+    const shouldShowLoading = isLoading || (authLoading && !authTimedOut);
+    
+    if (shouldShowLoading) {
         return (
             <>
                 <Navbar />

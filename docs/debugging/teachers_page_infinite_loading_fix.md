@@ -263,4 +263,74 @@ const subjects = await fetch('/api/subjects');
 
 ---
 
-*تم إعداد هذا التقرير في 2026-02-05*
+## 9. إصلاح صفحات المعلم (Teacher Pages Fix) - 2026-02-05
+
+### المشكلة
+نفس مشكلة التحميل اللانهائي تحدث في صفحات `/teacher/*`:
+- `/teacher/profile`
+- `/teacher` (dashboard)
+- `/teacher/exams`
+- `/teacher/results`
+
+### السبب الجذري
+```typescript
+// ❌ الكود القديم - يعلق على authLoading للأبد
+if (!mounted || authLoading || isLoading) {
+    return <Loader2 />;
+}
+```
+
+إذا `authLoading` من `useAuthStore` لم يتحول إلى `false` (بسبب مشكلة في الـ session أو cold start)، الصفحة تعلق للأبد.
+
+### الحل المُطبق
+
+#### 1. إضافة Safety Timeout في AuthProvider
+```typescript
+// lib/providers/AuthProvider.tsx
+const safetyTimeoutId = setTimeout(() => {
+    console.warn('[AuthProvider] Safety timeout triggered after 10s');
+    setLoading(false);
+}, 10000);
+```
+
+#### 2. إضافة authTimedOut في كل صفحة
+```typescript
+const [authTimedOut, setAuthTimedOut] = useState(false);
+
+// Safety timeout - لا ننتظر authLoading للأبد
+useEffect(() => {
+    if (authLoading && !authTimedOut) {
+        const timeoutId = setTimeout(() => {
+            console.warn('[Page] Auth loading timeout after 5s');
+            setAuthTimedOut(true);
+        }, 5000);
+        return () => clearTimeout(timeoutId);
+    }
+}, [authLoading, authTimedOut]);
+
+// ✅ الكود الجديد - لا يعلق على authLoading
+const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
+```
+
+### الملفات المُعدلة
+
+| الملف | التغيير |
+| :--- | :--- |
+| `lib/providers/AuthProvider.tsx` | إضافة safety timeout 10s |
+| `app/teacher/profile/page.tsx` | إضافة authTimedOut pattern |
+| `app/teacher/page.tsx` | إضافة authTimedOut pattern |
+| `app/teacher/exams/page.tsx` | إضافة authTimedOut pattern |
+| `app/teacher/results/page.tsx` | إضافة authTimedOut pattern |
+
+### طبقات الحماية الجديدة
+
+```
+1. AuthProvider         → 10s timeout (global)
+2. Individual Pages     → 5s timeout (per-page fallback)
+3. fetchData functions  → 8s timeout (per-fetch)
+4. apiClient            → 30s timeout (built-in)
+```
+
+---
+
+*تم تحديث هذا التقرير في 2026-02-05*

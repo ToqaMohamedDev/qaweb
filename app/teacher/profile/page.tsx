@@ -80,6 +80,7 @@ export default function TeacherProfilePage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
+    const [authTimedOut, setAuthTimedOut] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -96,8 +97,19 @@ export default function TeacherProfilePage() {
         setMounted(true);
     }, []);
 
+    // Safety timeout for auth - don't wait forever for authLoading
     useEffect(() => {
-        console.log('[Profile] useEffect triggered - mounted:', mounted, 'authLoading:', authLoading, 'user:', user?.id);
+        if (authLoading && !authTimedOut) {
+            const timeoutId = setTimeout(() => {
+                console.warn('[Profile] Auth loading timeout after 5s - proceeding anyway');
+                setAuthTimedOut(true);
+            }, 5000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [authLoading, authTimedOut]);
+
+    useEffect(() => {
+        console.log('[Profile] useEffect triggered - mounted:', mounted, 'authLoading:', authLoading, 'authTimedOut:', authTimedOut, 'user:', user?.id);
 
         // Don't do anything until component is mounted (hydrated)
         if (!mounted) {
@@ -106,8 +118,8 @@ export default function TeacherProfilePage() {
         }
 
         // If authLoading is true, wait for it to finish
-        // But only if we don't have a user cached
-        if (authLoading && !user) {
+        // But only if we don't have a user cached AND auth hasn't timed out
+        if (authLoading && !user && !authTimedOut) {
             console.log('[Profile] Waiting for auth to finish...');
             return;
         }
@@ -115,7 +127,7 @@ export default function TeacherProfilePage() {
         // Call fetchAllData - it will verify auth via Supabase directly
         console.log('[Profile] Calling fetchAllData...');
         fetchAllData();
-    }, [mounted, authLoading]);
+    }, [mounted, authLoading, authTimedOut]);
 
     const fetchAllData = async () => {
         console.log('[Profile] fetchAllData started');
@@ -332,7 +344,10 @@ export default function TeacherProfilePage() {
         }
     };
 
-    if (!mounted || authLoading || isLoading) {
+    // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
+    const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
+    
+    if (shouldShowLoading) {
         return (
             <>
                 <Navbar />

@@ -21,6 +21,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         initRef.current = true;
 
         const initAuth = async () => {
+            // Safety timeout - ensure we don't hang forever (10 seconds max)
+            const safetyTimeoutId = setTimeout(() => {
+                console.warn('[AuthProvider] Safety timeout triggered after 10s');
+                setLoading(false);
+            }, 10000);
+
             try {
                 // 1. Try fetching session from our custom API (Works with HttpOnly cookies)
                 console.log('[AuthProvider] Fetching session from /api/auth/session...');
@@ -38,6 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                         const deviceInfo = detectDeviceInfo();
                         trackDevice({ userId: data.user.id, ...deviceInfo }).catch(() => { });
 
+                        clearTimeout(safetyTimeoutId);
                         setLoading(false);
                         return;
                     } else if (data.user && !data.profile) {
@@ -49,6 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                             name: data.user.email?.split('@')[0] || 'User',
                             role: 'student',
                         } as any);
+                        clearTimeout(safetyTimeoutId);
                         setLoading(false);
                         return;
                     }
@@ -81,6 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 console.error('[AuthProvider] Standard client init failed:', error);
                 setUser(null);
             } finally {
+                clearTimeout(safetyTimeoutId);
                 setLoading(false);
             }
         };

@@ -67,23 +67,35 @@ export default function TeacherDashboard() {
     const [examPerformance, setExamPerformance] = useState<ExamPerformance[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
+    const [authTimedOut, setAuthTimedOut] = useState(false);
 
     // Wait for hydration
     useEffect(() => {
         setMounted(true);
     }, []);
 
+    // Safety timeout for auth - don't wait forever for authLoading
+    useEffect(() => {
+        if (authLoading && !authTimedOut) {
+            const timeoutId = setTimeout(() => {
+                console.warn('[TeacherDashboard] Auth loading timeout after 5s - proceeding anyway');
+                setAuthTimedOut(true);
+            }, 5000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [authLoading, authTimedOut]);
+
     useEffect(() => {
         // Don't do anything until component is mounted (hydrated)
         if (!mounted) return;
 
         // If authLoading is true, wait for it to finish
-        // But only if we don't have a user cached
-        if (authLoading && !user) return;
+        // But only if we don't have a user cached AND auth hasn't timed out
+        if (authLoading && !user && !authTimedOut) return;
 
         // Call fetchTeacherData - it will verify auth via Supabase directly
         fetchTeacherData();
-    }, [mounted, authLoading]);
+    }, [mounted, authLoading, authTimedOut]);
 
     const fetchTeacherData = async () => {
         // Safety timeout - 8 seconds (increased for Vercel cold starts)
@@ -190,7 +202,10 @@ export default function TeacherDashboard() {
     };
 
     // Show loader while fetching data
-    if (!mounted || (authLoading && !user) || isLoading) {
+    // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
+    const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
+    
+    if (shouldShowLoading) {
         return (
             <>
                 <Navbar />
