@@ -8,9 +8,9 @@
  */
 
 import { useState, useCallback } from 'react';
-import { createBrowserClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 
-const supabase = createBrowserClient();
+const supabase = createClient();
 import type {
   QuestionBankProgress,
   TeacherExamResult,
@@ -88,26 +88,26 @@ export function useQuestionBankAttempt(questionBankId: string) {
           setAttempt((prev) =>
             prev
               ? {
-                  ...prev,
-                  answered_count: prev.answered_count + (prev.answers[questionId] ? 0 : 1),
-                  answers: {
-                    ...prev.answers,
-                    [questionId]: {
-                      answer,
-                      answered_at: new Date().toISOString(),
-                      time_spent_seconds: timeSpentSeconds ?? null,
-                      flagged: flagged ?? false,
-                      auto: data.is_correct !== null
-                        ? {
-                            is_correct: data.is_correct,
-                            points_earned: data.points_earned,
-                            max_points: data.max_points,
-                          }
-                        : null,
-                      manual: null,
-                    },
+                ...prev,
+                answered_count: prev.answered_count + (prev.answers[questionId] ? 0 : 1),
+                answers: {
+                  ...prev.answers,
+                  [questionId]: {
+                    answer,
+                    answered_at: new Date().toISOString(),
+                    time_spent_seconds: timeSpentSeconds ?? null,
+                    flagged: flagged ?? false,
+                    auto: data.is_correct !== null
+                      ? {
+                        is_correct: data.is_correct,
+                        points_earned: data.points_earned,
+                        max_points: data.max_points,
+                      }
+                      : null,
+                    manual: null,
                   },
-                }
+                },
+              }
               : null
           );
         }
@@ -162,6 +162,7 @@ export function useQuestionBankAttempt(questionBankId: string) {
 
 /**
  * Hook for getting student's question bank progress
+ * Uses API route for Vercel compatibility
  */
 export function useQuestionBankProgress(studentId?: string) {
   const [progress, setProgress] = useState<QuestionBankProgress[]>([]);
@@ -172,13 +173,20 @@ export function useQuestionBankProgress(studentId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: rpcError } = await db.rpc('get_student_question_bank_progress', {
-        p_student_id: studentId ?? null,
-      });
+      const params = new URLSearchParams({ type: 'progress' });
+      if (studentId) params.append('studentId', studentId);
 
-      if (rpcError) throw rpcError;
-      setProgress(data as QuestionBankProgress[]);
-      return data as QuestionBankProgress[];
+      const res = await fetch(`/api/user/student-attempts?${params.toString()}`, {
+        cache: 'no-store'
+      });
+      const result = await res.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch progress');
+      }
+
+      setProgress(result.data as QuestionBankProgress[]);
+      return result.data as QuestionBankProgress[];
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch progress';
       setError(message);
@@ -246,10 +254,10 @@ export function useTeacherExamAttempt(examId: string) {
             flagged: flagged ?? false,
             auto: data.is_correct !== null
               ? {
-                  is_correct: data.is_correct,
-                  points_earned: data.points_earned,
-                  max_points: data.max_points,
-                }
+                is_correct: data.is_correct,
+                points_earned: data.points_earned,
+                max_points: data.max_points,
+              }
               : null,
             manual: null,
           },
@@ -416,10 +424,10 @@ export function useComprehensiveExamAttempt(examId: string) {
             flagged: flagged ?? false,
             auto: data.is_correct !== null
               ? {
-                  is_correct: data.is_correct,
-                  points_earned: data.points_earned,
-                  max_points: data.max_points,
-                }
+                is_correct: data.is_correct,
+                points_earned: data.points_earned,
+                max_points: data.max_points,
+              }
               : null,
             manual: null,
           },
@@ -471,12 +479,9 @@ export function useComprehensiveExamAttempt(examId: string) {
   };
 }
 
-// ============================================================================
-// Student Profile Hook
-// ============================================================================
-
 /**
  * Hook for getting all student exam attempts (for profile page)
+ * Uses API route for Vercel compatibility
  */
 export function useStudentExamAttempts(studentId?: string) {
   const [data, setData] = useState<StudentExamAttemptsResponse | null>(null);
@@ -487,13 +492,20 @@ export function useStudentExamAttempts(studentId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data: rpcData, error: rpcError } = await db.rpc('get_student_exam_attempts', {
-        p_student_id: studentId ?? null,
-      });
+      const params = new URLSearchParams({ type: 'exams' });
+      if (studentId) params.append('studentId', studentId);
 
-      if (rpcError) throw rpcError;
-      setData(rpcData as StudentExamAttemptsResponse);
-      return rpcData as StudentExamAttemptsResponse;
+      const res = await fetch(`/api/user/student-attempts?${params.toString()}`, {
+        cache: 'no-store'
+      });
+      const result = await res.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch attempts');
+      }
+
+      setData(result.data as StudentExamAttemptsResponse);
+      return result.data as StudentExamAttemptsResponse;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch attempts';
       setError(message);
