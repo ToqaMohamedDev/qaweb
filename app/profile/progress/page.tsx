@@ -26,7 +26,6 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
-import { createClient } from "@/lib/supabase";
 
 // ==========================================
 // Types
@@ -257,48 +256,25 @@ export default function LearningProgressPage() {
     const fetchProgress = async () => {
         setIsLoading(true);
         try {
-            const supabase = createClient();
+            const res = await fetch('/api/user/progress', { cache: 'no-store' });
+            const result = await res.json();
 
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                router.push("/login");
+            if (!result.success) {
+                if (result.error === 'Not authenticated') {
+                    router.push("/login");
+                    return;
+                }
+                console.error("Error fetching progress:", result.error);
+                setIsLoading(false);
                 return;
             }
 
-            // Fetch progress with lesson details
-            const { data, error } = await supabase
-                .from("user_lesson_progress")
-                .select(`
-                    *,
-                    lesson:lessons(
-                        id,
-                        title,
-                        description,
-                        image_url,
-                        subject:subjects(id, name, icon, color),
-                        stage:educational_stages(id, name)
-                    )
-                `)
-                .eq("user_id", user.id)
-                .order("updated_at", { ascending: false });
+            const { progress: progressData, stats: statsData } = result.data;
+            setProgress(progressData || []);
 
-            if (error) throw error;
-
-            const progressData = (data || []) as LessonProgress[];
-            setProgress(progressData);
-
-            // Calculate stats
-            const completed = progressData.filter(p => p.is_completed).length;
-            const inProgress = progressData.filter(p => !p.is_completed && p.progress_percentage > 0).length;
-            const totalPct = progressData.reduce((sum, p) => sum + (p.progress_percentage || 0), 0);
-
-            setStats({
-                totalLessons: progressData.length,
-                completedLessons: completed,
-                inProgressLessons: inProgress,
-                overallProgress: progressData.length > 0 ? Math.round(totalPct / progressData.length) : 0,
-            });
+            if (statsData) {
+                setStats(statsData);
+            }
         } catch (err) {
             console.error("Error fetching progress:", err);
         } finally {
@@ -440,8 +416,8 @@ export default function LearningProgressPage() {
                                     key={tab.key}
                                     onClick={() => setFilter(tab.key as typeof filter)}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === tab.key
-                                            ? "bg-violet-600 text-white"
-                                            : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700"
+                                        ? "bg-violet-600 text-white"
+                                        : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700"
                                         }`}
                                 >
                                     {tab.label} ({tab.count})

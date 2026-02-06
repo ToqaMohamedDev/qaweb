@@ -31,7 +31,6 @@ import {
     Eye,
     Sparkles,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/common";
 
@@ -251,45 +250,16 @@ export default function MySubscriptionsPage() {
         const fetchSubscriptions = async () => {
             setIsLoading(true);
             try {
-                const supabase = createClient();
+                const res = await fetch('/api/user/subscriptions', { cache: 'no-store' });
+                const result = await res.json();
 
-                const { data, error } = await supabase
-                    .from("teacher_subscriptions")
-                    .select(`
-                        id,
-                        teacher_id,
-                        created_at,
-                        teacher:profiles!teacher_subscriptions_teacher_id_fkey(
-                            id,
-                            name,
-                            email,
-                            avatar_url,
-                            bio,
-                            specialization,
-                            rating_average,
-                            rating_count,
-                            subscriber_count,
-                            exam_count,
-                            is_verified,
-                            subjects
-                        )
-                    `)
-                    .eq("user_id", user.id)
-                    .order("created_at", { ascending: false });
+                if (!result.success) {
+                    console.error("Error fetching subscriptions:", result.error);
+                    setSubscriptions([]);
+                    return;
+                }
 
-                if (error) throw error;
-
-                // Filter out null teachers and normalize data
-                const validSubs = (data || [])
-                    .filter((s: any) => s.teacher !== null)
-                    .map((s: any) => ({
-                        id: s.id,
-                        teacher_id: s.teacher_id,
-                        created_at: s.created_at,
-                        teacher: s.teacher,
-                    }));
-
-                setSubscriptions(validSubs);
+                setSubscriptions(result.data || []);
             } catch (error) {
                 console.error("Error fetching subscriptions:", error);
             } finally {
@@ -303,13 +273,17 @@ export default function MySubscriptionsPage() {
     // Handle unsubscribe
     const handleUnsubscribe = async (subscriptionId: string) => {
         try {
-            const supabase = createClient();
-            const { error } = await supabase
-                .from("teacher_subscriptions")
-                .delete()
-                .eq("id", subscriptionId);
+            const res = await fetch('/api/user/subscriptions', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionId }),
+            });
 
-            if (error) throw error;
+            const result = await res.json();
+            if (!result.success) {
+                console.error("Error unsubscribing:", result.error);
+                return;
+            }
 
             setSubscriptions((prev) => prev.filter((s) => s.id !== subscriptionId));
         } catch (error) {

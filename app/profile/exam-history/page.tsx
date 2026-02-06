@@ -34,7 +34,6 @@ import {
     AlertCircle,
     RefreshCw,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 
 // ==========================================
@@ -294,117 +293,16 @@ export default function ExamHistoryPage() {
         const fetchAttempts = async () => {
             setIsLoading(true);
             try {
-                const supabase = createClient();
+                const res = await fetch('/api/user/exam-history', { cache: 'no-store' });
+                const result = await res.json();
 
-                // Fetch teacher exam attempts - استخدام query منفصل لتجنب مشاكل العلاقات
-                const { data: teacherAttempts, error: teacherError } = await supabase
-                    .from("teacher_exam_attempts")
-                    .select("id, exam_id, student_id, status, total_score, max_score, started_at, completed_at, created_at")
-                    .eq("student_id", user.id)
-                    .order("created_at", { ascending: false });
-
-                if (teacherError) {
-                    console.error("Error fetching teacher attempts:", teacherError);
+                if (!result.success) {
+                    console.error("Error fetching attempts:", result.error);
+                    setAttempts([]);
+                    return;
                 }
 
-                // جلب بيانات الامتحانات المرتبطة
-                const teacherExamIds = (teacherAttempts || []).map(a => a.exam_id);
-                let teacherExamsData: Record<string, any> = {};
-
-                if (teacherExamIds.length > 0) {
-                    const { data: exams } = await supabase
-                        .from("teacher_exams")
-                        .select("id, exam_title, type, created_by")
-                        .in("id", teacherExamIds);
-
-                    if (exams) {
-                        // جلب بيانات المدرسين
-                        const teacherIds = [...new Set(exams.map(e => e.created_by).filter(Boolean))];
-                        let teachersData: Record<string, any> = {};
-
-                        if (teacherIds.length > 0) {
-                            const { data: teachers } = await supabase
-                                .from("profiles")
-                                .select("id, name")
-                                .in("id", teacherIds);
-
-                            if (teachers) {
-                                teachersData = Object.fromEntries(teachers.map(t => [t.id, t]));
-                            }
-                        }
-
-                        teacherExamsData = Object.fromEntries(
-                            exams.map(e => [e.id, { ...e, teacher: teachersData[e.created_by] }])
-                        );
-                    }
-                }
-
-                // Fetch comprehensive exam attempts
-                const { data: compAttempts, error: compError } = await supabase
-                    .from("comprehensive_exam_attempts")
-                    .select("id, exam_id, student_id, status, total_score, max_score, started_at, completed_at, created_at")
-                    .eq("student_id", user.id)
-                    .order("created_at", { ascending: false });
-
-                if (compError) {
-                    console.error("Error fetching comprehensive attempts:", JSON.stringify(compError, null, 2));
-                }
-
-                // Fetch comprehensive exam details separately
-                const compExamIds = (compAttempts || []).map(a => a.exam_id);
-                let compExamsData: Record<string, any> = {};
-
-                if (compExamIds.length > 0) {
-                    const { data: exams } = await supabase
-                        .from("comprehensive_exams")
-                        .select("id, exam_title, type")
-                        .in("id", compExamIds);
-
-                    if (exams) {
-                        compExamsData = Object.fromEntries(exams.map(e => [e.id, e]));
-                    }
-                }
-
-                // Combine and normalize data
-                const normalizedTeacher: ExamAttempt[] = (teacherAttempts || []).map((a: any) => {
-                    const examData = teacherExamsData[a.exam_id];
-                    return {
-                        id: a.id,
-                        exam_id: a.exam_id,
-                        student_id: a.student_id,
-                        status: a.status,
-                        total_score: a.total_score,
-                        max_score: a.max_score,
-                        started_at: a.started_at,
-                        completed_at: a.completed_at,
-                        created_at: a.created_at,
-                        exam_title: examData?.exam_title,
-                        exam_type: examData?.type,
-                        teacher_name: examData?.teacher?.name,
-                        teacher_id: examData?.teacher?.id,
-                        source: "teacher" as const,
-                    };
-                });
-
-                const normalizedComp: ExamAttempt[] = (compAttempts || []).map((a: any) => {
-                    const examData = compExamsData[a.exam_id];
-                    return {
-                        id: a.id,
-                        exam_id: a.exam_id,
-                        student_id: a.student_id,
-                        status: a.status,
-                        total_score: a.total_score,
-                        max_score: a.max_score,
-                        started_at: a.started_at,
-                        completed_at: a.completed_at,
-                        created_at: a.created_at,
-                        exam_title: examData?.exam_title,
-                        exam_type: examData?.type,
-                        source: "comprehensive" as const,
-                    };
-                });
-
-                setAttempts([...normalizedTeacher, ...normalizedComp]);
+                setAttempts(result.data || []);
             } catch (error) {
                 console.error("Error fetching attempts:", error);
             } finally {
