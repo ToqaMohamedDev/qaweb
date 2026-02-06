@@ -108,19 +108,13 @@ export default function TeacherProfilePage() {
         }
     }, [authLoading, authTimedOut]);
 
-    // Main Data Fetching Trigger
+    // Main Data Fetching Trigger - Independent of authLoading to avoid race conditions
     useEffect(() => {
         if (!mounted) return;
 
-        // If still loading auth and haven't timed out, wait (unless we already have user in store)
-        if (authLoading && !authTimedOut && !user) {
-            console.log('[Profile] Waiting for auth...');
-            return;
-        }
-
-        console.log('[Profile] Triggering data fetch. User:', user?.id);
+        console.log('[Profile] Mounted - triggering data fetch');
         fetchAllData();
-    }, [mounted, authLoading, authTimedOut, user?.id]);
+    }, [mounted]);
 
     const fetchAllData = async () => {
         setIsLoading(true);
@@ -128,8 +122,7 @@ export default function TeacherProfilePage() {
         const supabase = createClient();
 
         try {
-            // 1. Fetch Public Data (Subjects & Stages)
-            // We do this first so at least dropdowns populate even if auth fails
+            // 1. Fetch Public Data (Subjects & Stages) - Always do this first
             console.log('[Profile] Fetching public reference data...');
             const [subjectsResult, stagesResult] = await Promise.all([
                 supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
@@ -145,23 +138,43 @@ export default function TeacherProfilePage() {
             setAvailableSubjects(subjectsResult.data || []);
             setAvailableStages(stagesResult.data || []);
 
-            // 2. Identify User
+            // 2. Get User via API session (More reliable on Vercel than depending on Zustand)
             let userId = user?.id;
 
-            // If Zustand is empty, try manual check (rare but possible on hard refresh)
             if (!userId) {
+                console.log('[Profile] No user in Zustand, fetching from API session...');
+                try {
+                    const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
+                    if (sessionRes.ok) {
+                        const sessionData = await sessionRes.json();
+                        if (sessionData.user?.id) {
+                            userId = sessionData.user.id;
+                            console.log('[Profile] Got user from API session:', userId);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Profile] API session fetch failed:', e);
+                }
+            }
+
+            // 3. Final fallback: Try Supabase getUser directly
+            if (!userId) {
+                console.log('[Profile] Trying Supabase getUser...');
                 const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
-                if (supabaseUser) userId = supabaseUser.id;
+                if (supabaseUser) {
+                    userId = supabaseUser.id;
+                    console.log('[Profile] Got user from Supabase getUser:', userId);
+                }
                 if (authError) console.error('[Profile] Supabase auth check failed:', authError.message);
             }
 
             if (!userId) {
-                console.warn('[Profile] No user ID found. Aborting profile fetch.');
+                console.warn('[Profile] No user ID found after all attempts. User may not be logged in.');
                 setIsLoading(false);
                 return;
             }
 
-            // 3. Fetch Profile
+            // 4. Fetch Profile
             console.log('[Profile] Fetching profile for:', userId);
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
@@ -313,8 +326,8 @@ export default function TeacherProfilePage() {
         }
     };
 
-    // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
-    const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
+    // Simplified loading condition - fetchAllData handles auth internally
+    const shouldShowLoading = !mounted || isLoading;
 
     if (shouldShowLoading) {
         return (

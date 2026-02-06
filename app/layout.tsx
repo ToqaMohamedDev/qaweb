@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Cairo } from "next/font/google";
 import { ClientProviders } from "@/components/ClientProviders";
-import { SplashScreenWrapper } from "@/components/SplashScreen";
+// SplashScreenWrapper is already inside ClientProviders - no need to import here
 import { homeMetadata } from "@/lib/metadata";
 import "./globals.css";
 
@@ -79,9 +79,7 @@ export default function RootLayout({
         />
 
         <ClientProviders>
-          <SplashScreenWrapper>
-            {children}
-          </SplashScreenWrapper>
+          {children}
         </ClientProviders>
       </body>
     </html>
