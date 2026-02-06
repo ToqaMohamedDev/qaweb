@@ -43,13 +43,13 @@ interface TeacherExam {
 
 export default function TeacherExamsPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuthStore();
+    const { user } = useAuthStore();
     const isApprovedTeacher = useAuthStore(selectIsApprovedTeacher);
 
     const [exams, setExams] = useState<TeacherExam[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
-    const [authTimedOut, setAuthTimedOut] = useState(false);
+
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -60,28 +60,12 @@ export default function TeacherExamsPage() {
         setMounted(true);
     }, []);
 
-    // Safety timeout for auth - don't wait forever for authLoading
+    // Fetch data immediately when mounted - no need to wait for auth store
     useEffect(() => {
-        if (authLoading && !authTimedOut) {
-            const timeoutId = setTimeout(() => {
-                console.warn('[TeacherExams] Auth loading timeout after 5s - proceeding anyway');
-                setAuthTimedOut(true);
-            }, 5000);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [authLoading, authTimedOut]);
-
-    useEffect(() => {
-        // Don't do anything until component is mounted (hydrated)
         if (!mounted) return;
-
-        // If authLoading is true, wait for it to finish
-        // But only if we don't have a user cached AND auth hasn't timed out
-        if (authLoading && !user && !authTimedOut) return;
-
-        // Call fetchExams - it will verify auth via Supabase directly
+        console.log('[TeacherExams] Mounted - triggering data fetch');
         fetchExams();
-    }, [mounted, authLoading, authTimedOut]);
+    }, [mounted]);
 
     const fetchExams = async () => {
         // Safety timeout - 8 seconds (increased for Vercel cold starts)
@@ -243,9 +227,9 @@ export default function TeacherExamsPage() {
         return matchSearch && matchFilter;
     });
 
-    // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
-    const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
-    
+    // Show loader while fetching data - simplified, no auth dependency
+    const shouldShowLoading = !mounted || isLoading;
+
     if (shouldShowLoading) {
         return (
             <>

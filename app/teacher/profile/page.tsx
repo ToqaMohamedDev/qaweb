@@ -56,7 +56,7 @@ interface TeacherProfileData {
 
 export default function TeacherProfilePage() {
     const router = useRouter();
-    const { user, isLoading: authLoading, refreshUser } = useAuthStore();
+    const { user, refreshUser } = useAuthStore();
     const isApprovedTeacher = useAuthStore(selectIsApprovedTeacher);
 
     const [formData, setFormData] = useState<TeacherProfileData>({
@@ -80,7 +80,7 @@ export default function TeacherProfilePage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
-    const [authTimedOut, setAuthTimedOut] = useState(false);
+
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -96,17 +96,6 @@ export default function TeacherProfilePage() {
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    // Safety timeout for auth - don't wait forever for authLoading
-    useEffect(() => {
-        if (authLoading && !authTimedOut) {
-            const timeoutId = setTimeout(() => {
-                console.warn('[Profile] Auth loading timeout after 4s - forcing proceed');
-                setAuthTimedOut(true);
-            }, 4000);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [authLoading, authTimedOut]);
 
     // Main Data Fetching Trigger - Independent of authLoading to avoid race conditions
     useEffect(() => {

@@ -4,9 +4,10 @@
 // Dashboard Protection - حماية موحدة لـ Admin و Teacher
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { createClient } from '@/lib/supabase';
 import type { DashboardProtectionProps } from './types';
 
 function LoadingSpinner({ gradient }: { gradient: string }) {
@@ -25,9 +26,10 @@ function LoadingSpinner({ gradient }: { gradient: string }) {
 
 export function DashboardProtection({ children, config }: DashboardProtectionProps) {
     const router = useRouter();
-    const { user, isLoading } = useAuthStore();
-    const [isChecking, setIsChecking] = useState(true);
+    const { user, setUser } = useAuthStore();
+    const [authState, setAuthState] = useState<'checking' | 'authenticated' | 'unauthorized'>('checking');
     const [mounted, setMounted] = useState(false);
+    const checkRef = useRef(false);
 
     useEffect(() => {
         setMounted(true);
@@ -35,32 +37,81 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
 
     useEffect(() => {
         if (!mounted) return;
-        if (isLoading) return;
+        if (checkRef.current) return;
+        checkRef.current = true;
 
-        setIsChecking(false);
+        const verifyAuth = async () => {
+            console.log(`[${config.role}Protection] Starting auth verification...`);
 
-        if (!user) {
-            console.log(`[${config.role}Protection] No user in store, redirecting to login`);
+            // 1. If we already have user in Zustand with correct role, proceed immediately
+            if (user && config.allowedRoles.includes(user.role)) {
+                console.log(`[${config.role}Protection] ✅ User already in store:`, user.email);
+                setAuthState('authenticated');
+                return;
+            }
+
+            // 2. Try API session first (most reliable on Vercel)
+            try {
+                const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
+                if (sessionRes.ok) {
+                    const sessionData = await sessionRes.json();
+
+                    if (sessionData.user && sessionData.profile) {
+                        const userRole = sessionData.profile.role;
+
+                        if (config.allowedRoles.includes(userRole)) {
+                            console.log(`[${config.role}Protection] ✅ Verified via API:`, sessionData.user.email);
+                            setAuthState('authenticated');
+                            return;
+                        } else {
+                            console.log(`[${config.role}Protection] ❌ Role not allowed:`, userRole);
+                            router.push('/');
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(`[${config.role}Protection] API session check failed:`, e);
+            }
+
+            // 3. Fallback: Try Supabase client directly
+            try {
+                const supabase = createClient();
+                const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+
+                if (supabaseUser) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', supabaseUser.id)
+                        .single();
+
+                    if (profile?.role && config.allowedRoles.includes(profile.role)) {
+                        console.log(`[${config.role}Protection] ✅ Verified via Supabase client`);
+                        setAuthState('authenticated');
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error(`[${config.role}Protection] Supabase check failed:`, e);
+            }
+
+            // 4. No valid session found
+            console.log(`[${config.role}Protection] ❌ No valid session, redirecting to login`);
             router.push(`/login?redirect=${config.loginRedirect}`);
-            return;
-        }
+        };
 
-        if (!config.allowedRoles.includes(user.role)) {
-            console.log(`[${config.role}Protection] User role not allowed:`, user.role);
-            router.push('/');
-            return;
-        }
+        verifyAuth();
+    }, [mounted, user, config, router, setUser]);
 
-        console.log(`[${config.role}Protection] ✅ User verified:`, user.email);
-    }, [user, isLoading, router, config, mounted]);
-
-    if (!mounted || isLoading || isChecking) {
+    if (!mounted || authState === 'checking') {
         return <LoadingSpinner gradient={config.logoGradient} />;
     }
 
-    if (!user || !config.allowedRoles.includes(user.role)) {
+    if (authState === 'unauthorized') {
         return null;
     }
 
     return <>{children}</>;
 }
+
