@@ -108,33 +108,32 @@ export default function TeacherProfilePage() {
     const fetchAllData = async () => {
         setIsLoading(true);
         console.log('[Profile] STARTED fetchAllData');
-        const supabase = createClient();
+
+        // Helper function to wrap promises with timeout
+        const withTimeout = <T,>(promiseFn: () => Promise<T>, ms: number, fallback: T): Promise<T> => {
+            return Promise.race([
+                promiseFn(),
+                new Promise<T>((resolve) => setTimeout(() => {
+                    console.warn(`[Profile] Query timed out after ${ms}ms`);
+                    resolve(fallback);
+                }, ms))
+            ]);
+        };
 
         try {
-            // 1. Fetch Public Data (Subjects & Stages) - Always do this first
-            console.log('[Profile] Fetching public reference data...');
-            const [subjectsResult, stagesResult] = await Promise.all([
-                supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
-                supabase.from('educational_stages').select('id, name').order('order_index'),
-            ]);
-
-            if (subjectsResult.error) console.error('[Profile] Error fetching subjects:', subjectsResult.error);
-            else console.log(`[Profile] Subjects loaded: ${subjectsResult.data?.length || 0}`);
-
-            if (stagesResult.error) console.error('[Profile] Error fetching stages:', stagesResult.error);
-            else console.log(`[Profile] Stages loaded: ${stagesResult.data?.length || 0}`);
-
-            setAvailableSubjects(subjectsResult.data || []);
-            setAvailableStages(stagesResult.data || []);
-
-            // 2. Get User via API session (More reliable on Vercel than depending on Zustand)
+            // 1. Get User ID FIRST (most important) - try multiple sources
+            console.log('[Profile] Getting user ID...');
             let userId = user?.id;
 
             if (!userId) {
-                console.log('[Profile] No user in Zustand, fetching from API session...');
+                // Try API session with timeout
                 try {
-                    const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
-                    if (sessionRes.ok) {
+                    const sessionRes = await withTimeout(
+                        () => fetch('/api/auth/session', { cache: 'no-store' }),
+                        5000,
+                        null as any
+                    );
+                    if (sessionRes?.ok) {
                         const sessionData = await sessionRes.json();
                         if (sessionData.user?.id) {
                             userId = sessionData.user.id;
@@ -146,35 +145,67 @@ export default function TeacherProfilePage() {
                 }
             }
 
-            // 3. Final fallback: Try Supabase getUser directly
             if (!userId) {
+                // Try Supabase getUser with timeout
                 console.log('[Profile] Trying Supabase getUser...');
-                const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
-                if (supabaseUser) {
-                    userId = supabaseUser.id;
-                    console.log('[Profile] Got user from Supabase getUser:', userId);
+                try {
+                    const supabase = createClient();
+                    const authResult = await withTimeout(
+                        () => supabase.auth.getUser(),
+                        5000,
+                        { data: { user: null }, error: null } as any
+                    );
+                    if (authResult.data?.user) {
+                        userId = authResult.data.user.id;
+                        console.log('[Profile] Got user from Supabase getUser:', userId);
+                    }
+                } catch (e) {
+                    console.error('[Profile] Supabase getUser failed:', e);
                 }
-                if (authError) console.error('[Profile] Supabase auth check failed:', authError.message);
             }
 
             if (!userId) {
-                console.warn('[Profile] No user ID found after all attempts. User may not be logged in.');
+                console.warn('[Profile] No user ID found. User may not be logged in.');
                 setIsLoading(false);
                 return;
             }
 
-            // 4. Fetch Profile
-            console.log('[Profile] Fetching profile for:', userId);
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            console.log('[Profile] User ID confirmed:', userId);
 
-            if (profileError) {
-                console.error('[Profile] Profile fetch error:', profileError);
-            } else if (profileData) {
-                console.log('[Profile] Profile loaded successfully. Name:', profileData.name);
+            // 2. Now fetch all data in parallel with timeouts
+            console.log('[Profile] Fetching subjects, stages, and profile...');
+            const supabase = createClient();
+
+            const [subjectsResult, stagesResult, profileResult] = await Promise.all([
+                withTimeout(
+                    async () => await supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
+                    5000,
+                    { data: [], error: { message: 'Timeout' } } as any
+                ),
+                withTimeout(
+                    async () => await supabase.from('educational_stages').select('id, name').order('order_index'),
+                    5000,
+                    { data: [], error: { message: 'Timeout' } } as any
+                ),
+                withTimeout(
+                    async () => await supabase.from('profiles').select('*').eq('id', userId).single(),
+                    5000,
+                    { data: null, error: { message: 'Timeout' } } as any
+                )
+            ]);
+
+            console.log('[Profile] Subjects result:', subjectsResult.error ? 'ERROR' : `${subjectsResult.data?.length || 0} items`);
+            console.log('[Profile] Stages result:', stagesResult.error ? 'ERROR' : `${stagesResult.data?.length || 0} items`);
+            console.log('[Profile] Profile result:', profileResult.error ? 'ERROR' : 'OK');
+
+            // Set subjects and stages
+            setAvailableSubjects((subjectsResult.data as any[]) || []);
+            setAvailableStages((stagesResult.data as any[]) || []);
+
+            // Set profile data
+            const profileData = profileResult.data;
+            if (profileData) {
+                console.log('[Profile] Profile loaded. Name:', profileData.name);
                 setFormData({
                     name: profileData.name || "",
                     bio: profileData.bio || "",
@@ -193,11 +224,14 @@ export default function TeacherProfilePage() {
                     is_teacher_profile_public: (profileData as any).is_teacher_profile_public || false,
                     social_links: ((profileData as any).social_links as TeacherProfileData['social_links']) || {},
                 });
+            } else if (profileResult.error) {
+                console.error('[Profile] Profile fetch error:', profileResult.error);
             }
 
         } catch (error) {
             console.error('[Profile] Unhandled error in fetchAllData:', error);
         } finally {
+            console.log('[Profile] fetchAllData COMPLETE');
             setIsLoading(false);
         }
     };
