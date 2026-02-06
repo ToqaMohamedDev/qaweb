@@ -197,7 +197,7 @@ export function SplashScreenWrapper({ children }: { children: React.ReactNode })
         <>
             <AnimatePresence mode="wait">
                 {showSplash && (
-                    <SplashScreen onComplete={handleComplete} minDuration={3000} />
+                    <SplashScreen onComplete={handleComplete} minDuration={1000} />
                 )}
             </AnimatePresence>
             <motion.div

@@ -4,7 +4,7 @@
 // Dashboard Protection - حماية موحدة لـ Admin و Teacher
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { createClient } from '@/lib/supabase';
@@ -26,10 +26,9 @@ function LoadingSpinner({ gradient }: { gradient: string }) {
 
 export function DashboardProtection({ children, config }: DashboardProtectionProps) {
     const router = useRouter();
-    const { user, setUser } = useAuthStore();
+    const { user, isLoading: authLoading } = useAuthStore();
     const [authState, setAuthState] = useState<'checking' | 'authenticated' | 'unauthorized'>('checking');
     const [mounted, setMounted] = useState(false);
-    const checkRef = useRef(false);
 
     useEffect(() => {
         setMounted(true);
@@ -37,49 +36,72 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
 
     useEffect(() => {
         if (!mounted) return;
-        if (checkRef.current) return;
-        checkRef.current = true;
 
-        const verifyAuth = async () => {
-            console.log(`[${config.role}Protection] Starting auth verification...`);
+        // Safety timeout - never wait more than 6 seconds
+        const safetyTimeout = setTimeout(() => {
+            console.warn(`[${config.role}Protection] Safety timeout - forcing check`);
+            performAuthCheck();
+        }, 6000);
 
-            // 1. If we already have user in Zustand with correct role, proceed immediately
+        const performAuthCheck = async () => {
+            console.log(`[${config.role}Protection] Starting auth check...`);
+            console.log(`[${config.role}Protection] Zustand user:`, user?.email, 'role:', user?.role);
+            console.log(`[${config.role}Protection] authLoading:`, authLoading);
+
+            // 1. Check Zustand store first (fastest)
             if (user && config.allowedRoles.includes(user.role)) {
-                console.log(`[${config.role}Protection] ✅ User already in store:`, user.email);
+                console.log(`[${config.role}Protection] ✅ User in Zustand store is valid`);
+                clearTimeout(safetyTimeout);
                 setAuthState('authenticated');
                 return;
             }
 
-            // 2. Try API session first (most reliable on Vercel)
+            // 2. If auth is still loading and no user, wait a bit but not forever
+            if (authLoading && !user) {
+                console.log(`[${config.role}Protection] Auth still loading, waiting...`);
+                return; // Will be re-triggered when authLoading becomes false
+            }
+
+            // 3. AuthLoading is false but no user in store - try API
+            console.log(`[${config.role}Protection] No user in store, trying API...`);
+
             try {
-                const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
+                const sessionRes = await fetch('/api/auth/session', {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+
                 if (sessionRes.ok) {
                     const sessionData = await sessionRes.json();
+                    console.log(`[${config.role}Protection] API response:`, sessionData.user?.email, sessionData.profile?.role);
 
                     if (sessionData.user && sessionData.profile) {
                         const userRole = sessionData.profile.role;
 
                         if (config.allowedRoles.includes(userRole)) {
-                            console.log(`[${config.role}Protection] ✅ Verified via API:`, sessionData.user.email);
+                            console.log(`[${config.role}Protection] ✅ Verified via API`);
+                            clearTimeout(safetyTimeout);
                             setAuthState('authenticated');
                             return;
                         } else {
                             console.log(`[${config.role}Protection] ❌ Role not allowed:`, userRole);
+                            clearTimeout(safetyTimeout);
                             router.push('/');
                             return;
                         }
                     }
                 }
             } catch (e) {
-                console.error(`[${config.role}Protection] API session check failed:`, e);
+                console.error(`[${config.role}Protection] API check failed:`, e);
             }
 
-            // 3. Fallback: Try Supabase client directly
+            // 4. Fallback: Try Supabase client directly
             try {
                 const supabase = createClient();
                 const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
                 if (supabaseUser) {
+                    console.log(`[${config.role}Protection] Found Supabase user:`, supabaseUser.email);
                     const { data: profile } = await supabase
                         .from('profiles')
                         .select('role')
@@ -88,6 +110,7 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
 
                     if (profile?.role && config.allowedRoles.includes(profile.role)) {
                         console.log(`[${config.role}Protection] ✅ Verified via Supabase client`);
+                        clearTimeout(safetyTimeout);
                         setAuthState('authenticated');
                         return;
                     }
@@ -96,13 +119,16 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
                 console.error(`[${config.role}Protection] Supabase check failed:`, e);
             }
 
-            // 4. No valid session found
+            // 5. No valid session found
             console.log(`[${config.role}Protection] ❌ No valid session, redirecting to login`);
+            clearTimeout(safetyTimeout);
             router.push(`/login?redirect=${config.loginRedirect}`);
         };
 
-        verifyAuth();
-    }, [mounted, user, config, router, setUser]);
+        performAuthCheck();
+
+        return () => clearTimeout(safetyTimeout);
+    }, [mounted, user, authLoading, config, router]);
 
     if (!mounted || authState === 'checking') {
         return <LoadingSpinner gradient={config.logoGradient} />;
@@ -114,4 +140,3 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
 
     return <>{children}</>;
 }
-
