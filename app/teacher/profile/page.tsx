@@ -107,125 +107,67 @@ export default function TeacherProfilePage() {
 
     const fetchAllData = async () => {
         setIsLoading(true);
-        console.log('[Profile] STARTED fetchAllData');
-
-        // Helper function to wrap promises with timeout
-        const withTimeout = <T,>(promiseFn: () => Promise<T>, ms: number, fallback: T): Promise<T> => {
-            return Promise.race([
-                promiseFn(),
-                new Promise<T>((resolve) => setTimeout(() => {
-                    console.warn(`[Profile] Query timed out after ${ms}ms`);
-                    resolve(fallback);
-                }, ms))
-            ]);
-        };
+        console.log('[Profile] STARTED fetchAllData - Using API routes');
 
         try {
-            // 1. Get User ID FIRST (most important) - try multiple sources
-            console.log('[Profile] Getting user ID...');
-            let userId = user?.id;
+            // Fetch all data via API routes in parallel (server-side Supabase is more reliable on Vercel)
+            console.log('[Profile] Fetching session, subjects, and stages via API...');
 
-            if (!userId) {
-                // Try API session with timeout
-                try {
-                    const sessionRes = await withTimeout(
-                        () => fetch('/api/auth/session', { cache: 'no-store' }),
-                        5000,
-                        null as any
-                    );
-                    if (sessionRes?.ok) {
-                        const sessionData = await sessionRes.json();
-                        if (sessionData.user?.id) {
-                            userId = sessionData.user.id;
-                            console.log('[Profile] Got user from API session:', userId);
-                        }
-                    }
-                } catch (e) {
-                    console.error('[Profile] API session fetch failed:', e);
-                }
-            }
-
-            if (!userId) {
-                // Try Supabase getUser with timeout
-                console.log('[Profile] Trying Supabase getUser...');
-                try {
-                    const supabase = createClient();
-                    const authResult = await withTimeout(
-                        () => supabase.auth.getUser(),
-                        5000,
-                        { data: { user: null }, error: null } as any
-                    );
-                    if (authResult.data?.user) {
-                        userId = authResult.data.user.id;
-                        console.log('[Profile] Got user from Supabase getUser:', userId);
-                    }
-                } catch (e) {
-                    console.error('[Profile] Supabase getUser failed:', e);
-                }
-            }
-
-            if (!userId) {
-                console.warn('[Profile] No user ID found. User may not be logged in.');
-                setIsLoading(false);
-                return;
-            }
-
-            console.log('[Profile] User ID confirmed:', userId);
-
-            // 2. Now fetch all data in parallel with timeouts
-            console.log('[Profile] Fetching subjects, stages, and profile...');
-            const supabase = createClient();
-
-            const [subjectsResult, stagesResult, profileResult] = await Promise.all([
-                withTimeout(
-                    async () => await supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
-                    5000,
-                    { data: [], error: { message: 'Timeout' } } as any
-                ),
-                withTimeout(
-                    async () => await supabase.from('educational_stages').select('id, name').order('order_index'),
-                    5000,
-                    { data: [], error: { message: 'Timeout' } } as any
-                ),
-                withTimeout(
-                    async () => await supabase.from('profiles').select('*').eq('id', userId).single(),
-                    5000,
-                    { data: null, error: { message: 'Timeout' } } as any
-                )
+            const [sessionRes, subjectsRes, stagesRes] = await Promise.all([
+                fetch('/api/auth/session', { cache: 'no-store' }),
+                fetch('/api/subjects', { cache: 'no-store' }),
+                fetch('/api/stages', { cache: 'no-store' })
             ]);
 
-            console.log('[Profile] Subjects result:', subjectsResult.error ? 'ERROR' : `${subjectsResult.data?.length || 0} items`);
-            console.log('[Profile] Stages result:', stagesResult.error ? 'ERROR' : `${stagesResult.data?.length || 0} items`);
-            console.log('[Profile] Profile result:', profileResult.error ? 'ERROR' : 'OK');
+            // Process subjects
+            if (subjectsRes.ok) {
+                const subjectsData = await subjectsRes.json();
+                console.log('[Profile] Subjects loaded:', subjectsData.data?.length || 0);
+                setAvailableSubjects(subjectsData.data || []);
+            } else {
+                console.error('[Profile] Subjects API failed');
+            }
 
-            // Set subjects and stages
-            setAvailableSubjects((subjectsResult.data as any[]) || []);
-            setAvailableStages((stagesResult.data as any[]) || []);
+            // Process stages
+            if (stagesRes.ok) {
+                const stagesData = await stagesRes.json();
+                console.log('[Profile] Stages loaded:', stagesData.data?.length || 0);
+                setAvailableStages(stagesData.data || []);
+            } else {
+                console.error('[Profile] Stages API failed');
+            }
 
-            // Set profile data
-            const profileData = profileResult.data;
-            if (profileData) {
-                console.log('[Profile] Profile loaded. Name:', profileData.name);
-                setFormData({
-                    name: profileData.name || "",
-                    bio: profileData.bio || "",
-                    avatar_url: profileData.avatar_url || "",
-                    cover_image_url: (profileData as any).cover_image_url || "",
-                    specialization: (profileData as any).specialization || "",
-                    teacher_title: (profileData as any).teacher_title || "",
-                    years_of_experience: (profileData as any).years_of_experience || 0,
-                    education: (profileData as any).education || "",
-                    phone: profileData.phone || "",
-                    whatsapp: (profileData as any).social_links?.whatsapp || (profileData as any).whatsapp || "",
-                    website: (profileData as any).website || "",
-                    teaching_style: (profileData as any).teaching_style || "",
-                    subjects: (profileData as any).subjects || [],
-                    stages: (profileData as any).stages || [],
-                    is_teacher_profile_public: (profileData as any).is_teacher_profile_public || false,
-                    social_links: ((profileData as any).social_links as TeacherProfileData['social_links']) || {},
-                });
-            } else if (profileResult.error) {
-                console.error('[Profile] Profile fetch error:', profileResult.error);
+            // Process session/profile
+            if (sessionRes.ok) {
+                const sessionData = await sessionRes.json();
+                console.log('[Profile] Session loaded, user:', sessionData.user?.email);
+
+                const profileData = sessionData.profile;
+                if (profileData) {
+                    console.log('[Profile] Profile loaded. Name:', profileData.name);
+                    setFormData({
+                        name: profileData.name || "",
+                        bio: profileData.bio || "",
+                        avatar_url: profileData.avatar_url || "",
+                        cover_image_url: profileData.cover_image_url || "",
+                        specialization: profileData.specialization || "",
+                        teacher_title: profileData.teacher_title || "",
+                        years_of_experience: profileData.years_of_experience || 0,
+                        education: profileData.education || "",
+                        phone: profileData.phone || "",
+                        whatsapp: profileData.social_links?.whatsapp || profileData.whatsapp || "",
+                        website: profileData.website || "",
+                        teaching_style: profileData.teaching_style || "",
+                        subjects: profileData.subjects || [],
+                        stages: profileData.stages || [],
+                        is_teacher_profile_public: profileData.is_teacher_profile_public || false,
+                        social_links: (profileData.social_links as TeacherProfileData['social_links']) || {},
+                    });
+                } else {
+                    console.warn('[Profile] No profile data in session response');
+                }
+            } else {
+                console.error('[Profile] Session API failed');
             }
 
         } catch (error) {

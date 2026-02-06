@@ -82,89 +82,36 @@ export default function TeacherDashboard() {
     }, [mounted]);
 
     const fetchTeacherData = async () => {
-        console.log('[TeacherDashboard] STARTED fetchTeacherData');
-
-        // Helper function to wrap promises with timeout
-        const withTimeout = <T,>(promiseFn: () => Promise<T>, ms: number, fallback: T): Promise<T> => {
-            return Promise.race([
-                promiseFn(),
-                new Promise<T>((resolve) => setTimeout(() => {
-                    console.warn(`[TeacherDashboard] Query timed out after ${ms}ms`);
-                    resolve(fallback);
-                }, ms))
-            ]);
-        };
+        console.log('[TeacherDashboard] STARTED fetchTeacherData - Using API');
 
         try {
-            // Get user ID - try multiple sources
-            let userId: string | null = user?.id || null;
+            // Fetch all data via API route (server-side Supabase is more reliable on Vercel)
+            const res = await fetch('/api/teacher/dashboard', { cache: 'no-store' });
 
-            if (!userId) {
-                console.log('[TeacherDashboard] Trying API session...');
-                try {
-                    const sessionRes = await withTimeout(
-                        () => fetch('/api/auth/session', { cache: 'no-store' }),
-                        5000,
-                        null as any
-                    );
-                    if (sessionRes?.ok) {
-                        const data = await sessionRes.json();
-                        userId = data.user?.id || null;
-                    }
-                } catch (e) {
-                    console.error('[TeacherDashboard] API session failed:', e);
-                }
-            }
-
-            if (!userId) {
-                console.log('[TeacherDashboard] Trying Supabase getUser...');
-                const supabase = createClient();
-                const authResult = await withTimeout(
-                    async () => await supabase.auth.getUser(),
-                    5000,
-                    { data: { user: null }, error: null } as any
-                );
-                userId = authResult.data?.user?.id || null;
-            }
-
-            if (!userId) {
-                console.log('[TeacherDashboard] No user found');
+            if (!res.ok) {
+                console.error('[TeacherDashboard] API failed:', res.status);
                 setIsLoading(false);
                 return;
             }
 
-            console.log('[TeacherDashboard] User ID:', userId);
-            const supabase = createClient();
+            const data = await res.json();
+            console.log('[TeacherDashboard] API response:', data.success ? 'OK' : 'FAILED');
 
-            // Fetch all data with timeouts
-            const [examsResult, profileResult] = await Promise.all([
-                withTimeout(
-                    async () => await supabase.from('comprehensive_exams')
-                        .select('id, exam_title, language, is_published, created_at, sections')
-                        .eq('created_by', userId)
-                        .order('created_at', { ascending: false }),
-                    5000,
-                    { data: [], error: null } as any
-                ),
-                withTimeout(
-                    async () => await supabase.from('profiles')
-                        .select('subscriber_count, rating_average, rating_count')
-                        .eq('id', userId)
-                        .single(),
-                    5000,
-                    { data: null, error: null } as any
-                )
-            ]);
+            if (!data.success) {
+                console.error('[TeacherDashboard] API error:', data.error);
+                setIsLoading(false);
+                return;
+            }
 
-            console.log('[TeacherDashboard] Exams:', examsResult.data?.length || 0);
-            console.log('[TeacherDashboard] Profile:', profileResult.data ? 'OK' : 'null');
+            const examsList = data.exams || [];
+            const profile = data.profile;
+            const attempts = data.attempts || [];
 
-            const examsList = (examsResult.data || []) as any[];
-            const profile = profileResult.data as any;
+            console.log('[TeacherDashboard] Exams:', examsList.length, 'Attempts:', attempts.length);
 
             setStats({
                 totalExams: examsList.length,
-                publishedExams: examsList.filter(e => e.is_published).length,
+                publishedExams: examsList.filter((e: any) => e.is_published).length,
                 totalStudents: profile?.subscriber_count || 0,
                 totalViews: 0,
                 avgRating: profile?.rating_average || 0,
@@ -182,43 +129,31 @@ export default function TeacherDashboard() {
             }));
             setRecentExams(mappedExams as RecentExam[]);
 
-            // جلب بيانات التحليلات
-            const examIds = examsList.map(e => e.id);
-            if (examIds.length > 0) {
-                const attemptsResult = await withTimeout(
-                    async () => await supabase.from('comprehensive_exam_attempts')
-                        .select('exam_id, total_score, max_score')
-                        .in('exam_id', examIds)
-                        .in('status', ['completed', 'graded']),
-                    5000,
-                    { data: [], error: null } as any
-                );
+            // Performance data from attempts
+            const performanceData: ExamPerformance[] = examsList
+                .filter((e: any) => e.is_published)
+                .map((exam: any) => {
+                    const examAttempts = attempts.filter((a: any) => a.exam_id === exam.id);
+                    const attemptsCount = examAttempts.length;
+                    const avgScore = attemptsCount > 0
+                        ? examAttempts.reduce((sum: number, a: any) => {
+                            const score = a.max_score > 0 ? (a.total_score / a.max_score) * 100 : 0;
+                            return sum + score;
+                        }, 0) / attemptsCount
+                        : 0;
 
-                const attempts = attemptsResult.data || [];
-                const performanceData: ExamPerformance[] = examsList
-                    .filter(e => e.is_published)
-                    .map(exam => {
-                        const examAttempts = attempts.filter((a: any) => a.exam_id === exam.id);
-                        const attemptsCount = examAttempts.length;
-                        const avgScore = attemptsCount > 0
-                            ? examAttempts.reduce((sum: number, a: any) => {
-                                const score = a.max_score > 0 ? (a.total_score / a.max_score) * 100 : 0;
-                                return sum + score;
-                            }, 0) / attemptsCount
-                            : 0;
+                    return {
+                        id: exam.id,
+                        title: exam.exam_title || 'امتحان',
+                        attempts: attemptsCount,
+                        avgScore,
+                    };
+                })
+                .filter((e: any) => e.attempts > 0)
+                .sort((a: any, b: any) => b.attempts - a.attempts);
 
-                        return {
-                            id: exam.id,
-                            title: exam.exam_title || 'امتحان',
-                            attempts: attemptsCount,
-                            avgScore,
-                        };
-                    })
-                    .filter(e => e.attempts > 0)
-                    .sort((a, b) => b.attempts - a.attempts);
+            setExamPerformance(performanceData);
 
-                setExamPerformance(performanceData);
-            }
         } catch (error) {
             console.error('[TeacherDashboard] Error:', error);
         } finally {
