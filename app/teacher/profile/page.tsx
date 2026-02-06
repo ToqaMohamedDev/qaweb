@@ -101,133 +101,102 @@ export default function TeacherProfilePage() {
     useEffect(() => {
         if (authLoading && !authTimedOut) {
             const timeoutId = setTimeout(() => {
-                console.warn('[Profile] Auth loading timeout after 5s - proceeding anyway');
+                console.warn('[Profile] Auth loading timeout after 4s - forcing proceed');
                 setAuthTimedOut(true);
-            }, 5000);
+            }, 4000);
             return () => clearTimeout(timeoutId);
         }
     }, [authLoading, authTimedOut]);
 
+    // Main Data Fetching Trigger
     useEffect(() => {
-        console.log('[Profile] useEffect triggered - mounted:', mounted, 'authLoading:', authLoading, 'authTimedOut:', authTimedOut, 'user:', user?.id);
+        if (!mounted) return;
 
-        // Don't do anything until component is mounted (hydrated)
-        if (!mounted) {
-            console.log('[Profile] Waiting for mount...');
+        // If still loading auth and haven't timed out, wait (unless we already have user in store)
+        if (authLoading && !authTimedOut && !user) {
+            console.log('[Profile] Waiting for auth...');
             return;
         }
 
-        // If authLoading is true, wait for it to finish
-        // But only if we don't have a user cached AND auth hasn't timed out
-        if (authLoading && !user && !authTimedOut) {
-            console.log('[Profile] Waiting for auth to finish...');
-            return;
-        }
-
-        // Call fetchAllData - it will verify auth via Supabase directly
-        console.log('[Profile] Calling fetchAllData...');
+        console.log('[Profile] Triggering data fetch. User:', user?.id);
         fetchAllData();
-    }, [mounted, authLoading, authTimedOut]);
+    }, [mounted, authLoading, authTimedOut, user?.id]);
 
     const fetchAllData = async () => {
-        console.log('[Profile] fetchAllData started');
-        console.log('[Profile] mounted:', mounted, 'authLoading:', authLoading, 'user:', user?.id);
-
-        // Safety timeout - 8 seconds (increased for Vercel cold starts)
-        const timeoutId = setTimeout(() => {
-            console.log('[Profile] TIMEOUT - 8 seconds passed!');
-            setIsLoading(false);
-        }, 8000);
-
+        setIsLoading(true);
+        console.log('[Profile] STARTED fetchAllData');
         const supabase = createClient();
 
         try {
-            console.log('[Profile] Fetching subjects and stages...');
-
-            // FIRST: Fetch subjects and stages (they don't need authentication)
+            // 1. Fetch Public Data (Subjects & Stages)
+            // We do this first so at least dropdowns populate even if auth fails
+            console.log('[Profile] Fetching public reference data...');
             const [subjectsResult, stagesResult] = await Promise.all([
                 supabase.from('subjects').select('id, name').eq('is_active', true).order('order_index'),
                 supabase.from('educational_stages').select('id, name').order('order_index'),
             ]);
 
-            console.log('[Profile] Subjects result:', subjectsResult.error ? subjectsResult.error : subjectsResult.data?.length + ' items');
-            console.log('[Profile] Stages result:', stagesResult.error ? stagesResult.error : stagesResult.data?.length + ' items');
+            if (subjectsResult.error) console.error('[Profile] Error fetching subjects:', subjectsResult.error);
+            else console.log(`[Profile] Subjects loaded: ${subjectsResult.data?.length || 0}`);
 
-            // Set subjects and stages immediately
+            if (stagesResult.error) console.error('[Profile] Error fetching stages:', stagesResult.error);
+            else console.log(`[Profile] Stages loaded: ${stagesResult.data?.length || 0}`);
+
             setAvailableSubjects(subjectsResult.data || []);
             setAvailableStages(stagesResult.data || []);
 
-            // THEN: Get user from session for profile data
-            console.log('[Profile] Getting user from Supabase...');
+            // 2. Identify User
+            let userId = user?.id;
 
-            let userId: string | null = null;
-
-            const { data: userData, error: userError } = await supabase.auth.getUser();
-            console.log('[Profile] getUser result:', userError ? userError.message : userData?.user?.id);
-
-            if (!userError && userData.user) {
-                userId = userData.user.id;
-            } else {
-                // Fallback to Zustand user if getUser fails
-                console.log('[Profile] Falling back to Zustand user:', user?.id);
-                if (user?.id) {
-                    userId = user.id;
-                }
+            // If Zustand is empty, try manual check (rare but possible on hard refresh)
+            if (!userId) {
+                const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser();
+                if (supabaseUser) userId = supabaseUser.id;
+                if (authError) console.error('[Profile] Supabase auth check failed:', authError.message);
             }
 
             if (!userId) {
-                console.log('[Profile] No user found - stopping');
-                clearTimeout(timeoutId);
+                console.warn('[Profile] No user ID found. Aborting profile fetch.');
                 setIsLoading(false);
                 return;
             }
 
-            console.log('[Profile] Fetching profile for user:', userId);
-
-            // Fetch profile data
+            // 3. Fetch Profile
+            console.log('[Profile] Fetching profile for:', userId);
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            console.log('[Profile] Profile result:', profileError ? profileError.message : 'Success');
-
             if (profileError) {
                 console.error('[Profile] Profile fetch error:', profileError);
-            }
-
-            // Set profile data
-            if (profileData) {
-                console.log('[Profile] Setting form data with profile:', profileData.name);
-                const data = profileData;
+            } else if (profileData) {
+                console.log('[Profile] Profile loaded successfully. Name:', profileData.name);
                 setFormData({
-                    name: data.name || "",
-                    bio: data.bio || "",
-                    avatar_url: data.avatar_url || "",
-                    cover_image_url: (data as any).cover_image_url || "",
-                    specialization: (data as any).specialization || "",
-                    teacher_title: (data as any).teacher_title || "",
-                    years_of_experience: (data as any).years_of_experience || 0,
-                    education: (data as any).education || "",
-                    phone: data.phone || "",
-                    whatsapp: (data as any).social_links?.whatsapp || (data as any).whatsapp || "",
-                    website: (data as any).website || "",
-                    teaching_style: (data as any).teaching_style || "",
-                    subjects: (data as any).subjects || [],
-                    stages: (data as any).stages || [],
-                    is_teacher_profile_public: (data as any).is_teacher_profile_public || false,
-                    social_links: ((data as any).social_links as TeacherProfileData['social_links']) || {},
+                    name: profileData.name || "",
+                    bio: profileData.bio || "",
+                    avatar_url: profileData.avatar_url || "",
+                    cover_image_url: (profileData as any).cover_image_url || "",
+                    specialization: (profileData as any).specialization || "",
+                    teacher_title: (profileData as any).teacher_title || "",
+                    years_of_experience: (profileData as any).years_of_experience || 0,
+                    education: (profileData as any).education || "",
+                    phone: profileData.phone || "",
+                    whatsapp: (profileData as any).social_links?.whatsapp || (profileData as any).whatsapp || "",
+                    website: (profileData as any).website || "",
+                    teaching_style: (profileData as any).teaching_style || "",
+                    subjects: (profileData as any).subjects || [],
+                    stages: (profileData as any).stages || [],
+                    is_teacher_profile_public: (profileData as any).is_teacher_profile_public || false,
+                    social_links: ((profileData as any).social_links as TeacherProfileData['social_links']) || {},
                 });
             }
 
-            console.log('[Profile] fetchAllData completed successfully');
         } catch (error) {
-            console.error('[Profile] Error in fetchAllData:', error);
+            console.error('[Profile] Unhandled error in fetchAllData:', error);
         } finally {
-            clearTimeout(timeoutId);
             setIsLoading(false);
-            console.log('[Profile] Loading set to false');
         }
     };
 
@@ -346,7 +315,7 @@ export default function TeacherProfilePage() {
 
     // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
     const shouldShowLoading = !mounted || isLoading || (authLoading && !authTimedOut && !user);
-    
+
     if (shouldShowLoading) {
         return (
             <>
