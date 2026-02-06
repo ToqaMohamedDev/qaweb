@@ -138,6 +138,21 @@ export {
     useAdminDashboard as useAdminDashboardData,
 } from '@/lib/data/hooks';
 
-
-
-
+// =============================================
+// Unified Data Hooks (API Routes - Vercel Safe)
+// =============================================
+export {
+    useSession,
+    useStages as useStagesAPI,
+    useSubjects as useSubjectsAPI2,
+    useTeacherDashboard,
+    useTeacherProfile,
+    useReferenceData,
+    type SessionData,
+    type Stage,
+    type Subject,
+    type TeacherDashboardData,
+    type TeacherProfileData,
+    type ReferenceData,
+    type DataState,
+} from './useData';

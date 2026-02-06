@@ -27,7 +27,6 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuthStore, selectIsApprovedTeacher } from "@/lib/stores/useAuthStore";
-import { createClient } from "@/lib/supabase";
 
 interface TeacherExam {
     id: string;
@@ -68,91 +67,51 @@ export default function TeacherExamsPage() {
     }, [mounted]);
 
     const fetchExams = async () => {
-        // Safety timeout - 8 seconds (increased for Vercel cold starts)
-        const timeoutId = setTimeout(() => setIsLoading(false), 8000);
-
-        const supabase = createClient();
+        console.log('[TeacherExams] Fetching via API...');
 
         try {
-            // Get user ID - try getUser() first, fallback to Zustand
-            let userId: string | null = null;
+            const res = await fetch('/api/teacher/exams', { cache: 'no-store' });
 
-            const { data: userData, error: userError } = await supabase.auth.getUser();
-            if (!userError && userData.user) {
-                userId = userData.user.id;
-            } else if (user?.id) {
-                userId = user.id;
-            }
-
-            if (!userId) {
-                console.log('No user found');
-                clearTimeout(timeoutId);
+            if (!res.ok) {
+                console.error('[TeacherExams] API failed:', res.status);
                 setIsLoading(false);
                 return;
             }
 
-            const { data, error } = await supabase
-                .from('teacher_exams')
-                .select('*')
-                .eq('created_by', userId) // Use session user ID!
-                .order('created_at', { ascending: false });
+            const data = await res.json();
 
-            if (error) {
-                console.error('Supabase Error:', JSON.stringify(error, null, 2));
-                throw error;
+            if (!data.success) {
+                console.error('[TeacherExams] API error:', data.error);
+                setIsLoading(false);
+                return;
             }
 
-            // Helper function to count questions from sections
-            const countQuestions = (sections: any): number => {
-                if (!sections || !Array.isArray(sections)) return 0;
-                return sections.reduce((total: number, section: any) => {
-                    if (section.questions && Array.isArray(section.questions)) {
-                        return total + section.questions.length;
-                    }
-                    return total;
-                }, 0);
-            };
+            console.log('[TeacherExams] Loaded exams:', data.data?.length || 0);
+            setExams(data.data || []);
 
-            // Map the data to match our interface
-            const mappedExams = (data || []).map((exam: any) => ({
-                id: exam.id,
-                title: exam.exam_title || exam.title || 'امتحان بدون عنوان',
-                language: exam.language || 'arabic',
-                is_published: exam.is_published ?? false,
-                created_at: exam.created_at,
-                updated_at: exam.updated_at,
-                duration_minutes: exam.duration_minutes || 30,
-                questions_count: countQuestions(exam.sections),
-                attempts_count: 0,
-            }));
-
-            setExams(mappedExams as TeacherExam[]);
-        } catch (error: any) {
-            console.error('Error fetching exams:', error);
+        } catch (error) {
+            console.error('[TeacherExams] Error:', error);
         } finally {
-            clearTimeout(timeoutId);
             setIsLoading(false);
         }
     };
 
-    const handleDelete = async (examId: string) => {
+    const handleDelete = async (examId: string, source?: string) => {
         setIsDeleting(true);
-        const supabase = createClient();
 
         try {
-            // Refresh session before write operation (critical for Vercel)
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session) {
-                alert('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
-                return;
+            const params = new URLSearchParams({ examId });
+            if (source) params.set('source', source);
+
+            const res = await fetch(`/api/teacher/exams?${params}`, {
+                method: 'DELETE',
+                cache: 'no-store',
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Delete failed');
             }
-
-            const { error } = await supabase
-                .from('teacher_exams')
-                .delete()
-                .eq('id', examId);
-
-            if (error) throw error;
 
             setExams(exams.filter(e => e.id !== examId));
             setDeleteConfirm(null);
@@ -164,23 +123,22 @@ export default function TeacherExamsPage() {
         }
     };
 
-    const handlePublishToggle = async (examId: string, currentStatus: boolean) => {
-        const supabase = createClient();
-
+    const handlePublishToggle = async (examId: string, currentStatus: boolean, source?: string) => {
         try {
-            // Refresh session before write operation (critical for Vercel)
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !sessionData.session) {
-                alert('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
-                return;
+            const res = await fetch('/api/teacher/exams', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    examId,
+                    source: source || 'teacher_exams',
+                    is_published: !currentStatus,
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Update failed');
             }
-
-            const { error } = await supabase
-                .from('teacher_exams')
-                .update({ is_published: !currentStatus })
-                .eq('id', examId);
-
-            if (error) throw error;
 
             // تحديث الحالة المحلية
             const updatedExams = exams.map(e =>

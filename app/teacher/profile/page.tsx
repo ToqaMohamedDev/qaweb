@@ -28,7 +28,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Avatar, ImageCropper } from "@/components/common";
 import { useAuthStore, selectIsApprovedTeacher } from "@/lib/stores/useAuthStore";
-import { createClient } from "@/lib/supabase";
 
 interface TeacherProfileData {
     name: string;
@@ -236,26 +235,12 @@ export default function TeacherProfilePage() {
 
     const handleSave = async () => {
         setIsSaving(true);
-        const supabase = createClient();
 
         try {
-            // Get user ID - try getUser() first, fallback to Zustand
-            let userId: string | null = null;
-
-            const { data: userData, error: userError } = await supabase.auth.getUser();
-            if (!userError && userData.user) {
-                userId = userData.user.id;
-            } else if (user?.id) {
-                userId = user.id;
-            }
-
-            if (!userId) {
-                throw new Error('الجلسة منتهية - يرجى تسجيل الدخول مرة أخرى');
-            }
-
-            const { error } = await supabase
-                .from('profiles')
-                .update({
+            const res = await fetch('/api/teacher/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     name: formData.name,
                     bio: formData.bio,
                     avatar_url: formData.avatar_url,
@@ -271,13 +256,12 @@ export default function TeacherProfilePage() {
                     stages: formData.stages,
                     is_teacher_profile_public: formData.is_teacher_profile_public,
                     social_links: { ...formData.social_links, whatsapp: formData.whatsapp },
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', userId); // Use session user ID!
+                }),
+            });
 
-            if (error) {
-                console.error('Supabase update error:', error);
-                throw new Error(error.message || 'فشل في تحديث البيانات');
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to update profile');
             }
 
             setSaveSuccess(true);

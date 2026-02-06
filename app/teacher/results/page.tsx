@@ -29,7 +29,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Avatar } from "@/components/common";
 import { useAuthStore, selectIsApprovedTeacher } from "@/lib/stores/useAuthStore";
-import { createClient } from "@/lib/supabase";
 
 interface ExamResult {
     id: string;
@@ -188,58 +187,31 @@ export default function TeacherResultsPage() {
     }, [user, authLoading, authTimedOut, isApprovedTeacher]);
 
     const fetchResults = async () => {
-        if (!user) return;
-
-        const supabase = createClient();
+        console.log('[TeacherResults] Fetching via API...');
 
         try {
-            // جلب الامتحانات الخاصة بالمدرس
-            const { data: exams } = await (supabase
-                .from('teacher_exams' as any) as any)
-                .select('id, exam_title, language, attempts_count')
-                .eq('created_by', user.id);
+            const res = await fetch('/api/teacher/results', { cache: 'no-store' });
 
-            // جلب نتائج الطلاب
-            const examIds = (exams || []).map((e: any) => e.id);
-
-            if (examIds.length > 0) {
-                const { data: attempts } = await (supabase
-                    .from('teacher_exam_attempts' as any) as any)
-                    .select('*')
-                    .in('exam_id', examIds)
-                    .in('status', ['completed', 'graded'])
-                    .order('completed_at', { ascending: false });
-
-                // تجميع النتائج مع اسم الامتحان
-                const resultsWithExamTitle = (attempts || []).map((attempt: any) => {
-                    const exam = exams?.find((e: any) => e.id === attempt.exam_id);
-                    return {
-                        ...attempt,
-                        exam_title: exam?.exam_title || 'امتحان',
-                    };
-                });
-
-                setResults(resultsWithExamTitle);
-
-                // حساب ملخص كل امتحان
-                const summaries = (exams || []).map((exam: any) => {
-                    const examAttempts = resultsWithExamTitle.filter((r: any) => r.exam_id === exam.id);
-                    const avgScore = examAttempts.length > 0
-                        ? examAttempts.reduce((sum: number, r: any) => sum + (r.total_score || 0), 0) / examAttempts.length
-                        : 0;
-                    return {
-                        id: exam.id,
-                        title: exam.exam_title,
-                        attempts_count: examAttempts.length,
-                        avg_score: avgScore,
-                        language: exam.language,
-                    };
-                });
-
-                setExamSummaries(summaries);
+            if (!res.ok) {
+                console.error('[TeacherResults] API failed:', res.status);
+                setIsLoading(false);
+                return;
             }
+
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error('[TeacherResults] API error:', data.error);
+                setIsLoading(false);
+                return;
+            }
+
+            console.log('[TeacherResults] Loaded:', data.data?.results?.length || 0, 'results');
+            setResults(data.data.results || []);
+            setExamSummaries(data.data.summaries || []);
+
         } catch (error) {
-            console.error('Error fetching results:', error);
+            console.error('[TeacherResults] Error:', error);
         } finally {
             setIsLoading(false);
         }
@@ -255,7 +227,7 @@ export default function TeacherResultsPage() {
 
     // ✅ FIX: Don't block forever on authLoading - use authTimedOut as fallback
     const shouldShowLoading = isLoading || (authLoading && !authTimedOut);
-    
+
     if (shouldShowLoading) {
         return (
             <>

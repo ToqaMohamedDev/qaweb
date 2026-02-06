@@ -21,35 +21,53 @@ export function getBaseUrl(): string {
 // =============================================
 
 export const API_ENDPOINTS = {
-    // Public Data
-    PUBLIC_DATA: '/api/public/data',
-
-    // Authentication
+    // =============================================
+    // Core Authentication
+    // =============================================
+    AUTH_SESSION: '/api/auth/session',
     AUTH_USER: '/api/auth/user',
     AUTH_CALLBACK: '/api/auth/callback',
+    AUTH_LOGOUT: '/api/auth/logout',
 
-    // Subscriptions
+    // =============================================
+    // Reference Data (Public)
+    // =============================================
+    STAGES: '/api/stages',
+    SUBJECTS: '/api/subjects',
+    PUBLIC_DATA: '/api/public/data',
+
+    // =============================================
+    // Teacher APIs
+    // =============================================
+    TEACHER_DASHBOARD: '/api/teacher/dashboard',
+    TEACHER_EXAMS: '/api/exams',
+    TEACHER_PROFILE: '/api/profile',
+
+    // =============================================
+    // User APIs
+    // =============================================
+    PROFILE: '/api/profile',
     SUBSCRIPTIONS: '/api/subscriptions',
+    MY_WORDS: '/api/my-words',
 
+    // =============================================
     // Exams
+    // =============================================
     EXAM: '/api/exam',
+    EXAMS: '/api/exams',
 
-    // Notifications
+    // =============================================
+    // Other
+    // =============================================
     NOTIFICATIONS: '/api/notifications',
     EXAM_PUBLISHED: '/api/notifications/exam-published',
-
-    // Admin
     ADMIN_STATS: '/api/admin/stats',
-
-    // Support
     SUPPORT_CHAT: '/api/support/chat',
-
-    // Upload
     UPLOAD_TEACHER_IMAGE: '/api/upload/teacher-image',
-
-    // Game
     GAME_CREATE: '/api/game/create',
     GAME_JOIN: '/api/game/join',
+    RATINGS: '/api/ratings',
+    TESTIMONIALS: '/api/testimonials',
 } as const;
 
 // =============================================
