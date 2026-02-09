@@ -2,10 +2,11 @@
 
 /**
  * ============================================================================
- * USE NOTIFICATIONS HOOK - Real-time Notifications with Supabase
+ * USE NOTIFICATIONS HOOK - Via API Route (Vercel-compatible)
  * ============================================================================
  *
  * Ready-to-use React hook for real-time notifications
+ * Uses API route to avoid direct Supabase calls from browser
  *
  * Usage:
  * const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
@@ -17,7 +18,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { logger } from "@/lib/utils/logger";
-import NotificationClient, {
+import {
     type Notification as NotificationRecord,
     type NotificationType,
     getNotificationStyle,
@@ -65,8 +66,9 @@ export function useNotifications(
     const [error, setError] = useState<Error | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const clientRef = useRef<NotificationClient | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const lastNotificationIdRef = useRef<string | null>(null);
+    const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize notification sound
     useEffect(() => {
@@ -86,9 +88,8 @@ export function useNotifications(
         }
     }, [playSound]);
 
-    // Fetch notifications
-    const fetchNotifications = useCallback(async () => {
-        const supabase = createClient();
+    // Fetch notifications via API
+    const fetchNotifications = useCallback(async (isPolling = false) => {
         const authUser = useAuthStore.getState().user;
 
         if (!authUser) {
@@ -101,105 +102,105 @@ export function useNotifications(
 
         setIsAuthenticated(true);
 
+        // Don't show loading spinner for polling refreshes
+        if (!isPolling) {
+            setLoading(true);
+        }
+
         try {
-            if (!clientRef.current) {
-                clientRef.current = new NotificationClient(supabase);
+            const response = await fetch(`/api/notifications?limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    setIsAuthenticated(false);
+                    setNotifications([]);
+                    setUnreadCount(0);
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const { notifications: data } = await clientRef.current.getNotifications({
-                limit,
-            });
-            const count = await clientRef.current.getUnreadCount();
+            const data = await response.json();
 
-            setNotifications(data);
-            setUnreadCount(count);
+            // Check for new notifications (for sound)
+            if (isPolling && data.notifications.length > 0) {
+                const newestId = data.notifications[0]?.id;
+                if (lastNotificationIdRef.current && newestId !== lastNotificationIdRef.current) {
+                    // New notification arrived
+                    playNotificationSound();
+
+                    // Show browser notification
+                    const newNotification = data.notifications[0];
+                    if (typeof window !== "undefined" && "Notification" in window && window.Notification.permission === "granted") {
+                        new window.Notification(newNotification.title, {
+                            body: newNotification.body,
+                            icon: "/icons/notification-icon.png",
+                        });
+                    }
+                }
+                lastNotificationIdRef.current = newestId;
+            } else if (data.notifications.length > 0) {
+                lastNotificationIdRef.current = data.notifications[0]?.id;
+            }
+
+            setNotifications(data.notifications || []);
+            setUnreadCount(data.unreadCount || 0);
             setError(null);
         } catch (err: unknown) {
-            // Properly extract error details from Supabase PostgrestError
-            const errorObj = err as { message?: string; code?: string; details?: string; hint?: string };
-            const errorMessage = errorObj?.message || 'Unknown error';
-            const errorCode = errorObj?.code || '';
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
 
-            // Known non-critical errors - handle gracefully without logging as error
-            const isTableMissing = errorCode === '42P01' || errorMessage.includes('does not exist');
-            const isFunctionMissing = errorCode === '42883' || errorMessage.includes('function') && errorMessage.includes('does not exist');
-            const isRLSError = errorCode === '42501' || errorMessage.includes('permission denied');
-            const isNotSetup = isTableMissing || isFunctionMissing || isRLSError;
-
-            if (isNotSetup) {
-                // Only log once as debug, not error - this is expected if notifications aren't set up
-                logger.debug('Notifications not configured', {
-                    context: 'useNotifications',
-                    data: { code: errorCode, reason: errorMessage.substring(0, 100) }
-                });
-                // Set empty state gracefully - don't treat as fatal error
-                setNotifications([]);
-                setUnreadCount(0);
-                setError(null);
-            } else {
-                // Unexpected error - log it
+            // Only log unexpected errors
+            if (!errorMessage.includes('401')) {
                 logger.warn("Error fetching notifications", {
                     context: 'useNotifications',
-                    data: { message: errorMessage, code: errorCode }
+                    data: { message: errorMessage }
                 });
+            }
+
+            // Don't overwrite existing data on polling errors
+            if (!isPolling) {
                 setError(err as Error);
             }
         } finally {
-            setLoading(false);
+            if (!isPolling) {
+                setLoading(false);
+            }
         }
-    }, [limit]);
+    }, [limit, playNotificationSound]);
 
-    // Subscribe to real-time updates
+    // Initial fetch and polling setup
     useEffect(() => {
         let mounted = true;
-        const supabase = createClient();
 
         const init = async () => {
             const authUser = useAuthStore.getState().user;
 
-            if (!authUser || !mounted) return;
-
-            clientRef.current = new NotificationClient(supabase);
+            if (!authUser || !mounted) {
+                setLoading(false);
+                return;
+            }
 
             // Fetch initial data
             await fetchNotifications();
 
-            // Subscribe to real-time
-            await clientRef.current.subscribe(
-                // On new notification
-                (notification: NotificationRecord) => {
-                    if (!mounted) return;
-                    setNotifications((prev) => [notification, ...prev].slice(0, limit));
-                    setUnreadCount((prev) => prev + 1);
-                    playNotificationSound();
-
-                    // Show browser notification
-                    if (typeof window !== "undefined" && "Notification" in window && window.Notification.permission === "granted") {
-                        new window.Notification(notification.title, {
-                            body: notification.body,
-                            icon: "/icons/notification-icon.png",
-                            badge: "/icons/badge-icon.png",
-                        });
-                    }
-                },
-                // On notification update
-                (updatedNotification: NotificationRecord) => {
-                    if (!mounted) return;
-                    setNotifications((prev) =>
-                        prev.map((n) =>
-                            n.id === updatedNotification.id ? updatedNotification : n
-                        )
-                    );
-                    if (updatedNotification.is_read) {
-                        setUnreadCount((prev) => Math.max(0, prev - 1));
-                    }
+            // Set up polling for real-time updates (every 30 seconds)
+            pollingIntervalRef.current = setInterval(() => {
+                if (mounted) {
+                    fetchNotifications(true);
                 }
-            );
+            }, 30000);
         };
 
         init();
 
-        // Auth state listener
+        // Listen for auth changes
+        const supabase = createClient();
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -215,67 +216,94 @@ export function useNotifications(
 
         return () => {
             mounted = false;
-            clientRef.current?.unsubscribe();
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+            }
             subscription.unsubscribe();
         };
-    }, [fetchNotifications, limit, playNotificationSound]);
+    }, [fetchNotifications]);
 
-    // Auto-refresh interval
+    // Auto-refresh interval (custom interval)
     useEffect(() => {
         if (autoRefreshInterval > 0 && isAuthenticated) {
-            const interval = setInterval(fetchNotifications, autoRefreshInterval);
+            const interval = setInterval(() => fetchNotifications(true), autoRefreshInterval);
             return () => clearInterval(interval);
         }
     }, [autoRefreshInterval, isAuthenticated, fetchNotifications]);
 
-    // Mark as read
+    // Mark as read via API
     const markAsRead = useCallback(async (notificationId: string) => {
-        if (!clientRef.current) return;
-
         try {
-            await clientRef.current.markAsRead(notificationId);
-            setNotifications((prev) =>
-                prev.map((n) =>
-                    n.id === notificationId
-                        ? { ...n, is_read: true, read_at: new Date().toISOString() }
-                        : n
-                )
-            );
-            setUnreadCount((prev) => Math.max(0, prev - 1));
+            const response = await fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    action: 'markAsRead',
+                    notificationId,
+                }),
+            });
+
+            if (response.ok) {
+                setNotifications((prev) =>
+                    prev.map((n) =>
+                        n.id === notificationId
+                            ? { ...n, is_read: true, read_at: new Date().toISOString() }
+                            : n
+                    )
+                );
+                setUnreadCount((prev) => Math.max(0, prev - 1));
+            }
         } catch (err) {
             logger.error("Error marking notification as read", { context: 'useNotifications', data: err });
         }
     }, []);
 
-    // Mark all as read
+    // Mark all as read via API
     const markAllAsRead = useCallback(async () => {
-        if (!clientRef.current) return;
-
         try {
-            await clientRef.current.markAllAsRead();
-            setNotifications((prev) =>
-                prev.map((n) => ({
-                    ...n,
-                    is_read: true,
-                    read_at: new Date().toISOString(),
-                }))
-            );
-            setUnreadCount(0);
+            const response = await fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ action: 'markAllAsRead' }),
+            });
+
+            if (response.ok) {
+                setNotifications((prev) =>
+                    prev.map((n) => ({
+                        ...n,
+                        is_read: true,
+                        read_at: new Date().toISOString(),
+                    }))
+                );
+                setUnreadCount(0);
+            }
         } catch (err) {
             logger.error("Error marking all notifications as read", { context: 'useNotifications', data: err });
         }
     }, []);
 
-    // Delete notification
+    // Delete notification via API
     const deleteNotification = useCallback(async (notificationId: string) => {
-        if (!clientRef.current) return;
-
         try {
-            await clientRef.current.deleteNotification(notificationId);
             const notification = notifications.find((n) => n.id === notificationId);
-            setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-            if (notification && !notification.is_read) {
-                setUnreadCount((prev) => Math.max(0, prev - 1));
+
+            const response = await fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    action: 'delete',
+                    notificationId,
+                }),
+            });
+
+            if (response.ok) {
+                setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+                if (notification && !notification.is_read) {
+                    setUnreadCount((prev) => Math.max(0, prev - 1));
+                }
             }
         } catch (err) {
             logger.error("Error deleting notification", { context: 'useNotifications', data: err });
@@ -290,7 +318,7 @@ export function useNotifications(
         markAsRead,
         markAllAsRead,
         deleteNotification,
-        refetch: fetchNotifications,
+        refetch: () => fetchNotifications(),
         isAuthenticated,
     };
 }
