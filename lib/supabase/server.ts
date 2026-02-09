@@ -90,8 +90,10 @@ export async function createReadOnlyServerClient() {
  */
 export function createAdminClient() {
     if (!SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('[createAdminClient] SUPABASE_SERVICE_ROLE_KEY is not defined!');
         throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined');
     }
+    console.log('[createAdminClient] Creating admin client with service role key');
 
     return createSupabaseServerClient<Database>(
         SUPABASE_URL,

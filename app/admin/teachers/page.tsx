@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     GraduationCap,
@@ -157,6 +157,13 @@ export default function TeachersPage() {
     const { data: teachers = [], isLoading, error: queryError, refetch } = useTeachersAPI();
     const updateMutation = useUpdateUserAPI();
     const deleteMutation = useDeleteUserAPI();
+
+    // Auto-refetch after successful mutations
+    useEffect(() => {
+        if (updateMutation.onSuccess) {
+            updateMutation.onSuccess(() => refetch());
+        }
+    }, [updateMutation, refetch]);
 
     // Local State
     const [search, setSearch] = useState("");

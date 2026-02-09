@@ -38,14 +38,30 @@ export async function adminQuery<T>(options: QueryOptions): Promise<QueryResult<
             params.set('filterValue', options.filterValue);
         }
 
-        const res = await fetch(`/api/admin/query?${params}`, { cache: 'no-store' });
+        console.log(`[adminQuery] Fetching table: ${options.table}`);
+        
+        const res = await fetch(`/api/admin/query?${params}`, {
+            cache: 'no-store',
+            credentials: 'include',
+        });
+
+        console.log(`[adminQuery] Response status: ${res.status}`);
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP ${res.status}`);
+            const errorMsg = errorData.error || `HTTP ${res.status}`;
+            console.error(`[adminQuery] Error for ${options.table}:`, errorMsg);
+            
+            // إذا كان الخطأ Unauthorized، أضف رسالة واضحة
+            if (res.status === 401 || res.status === 403) {
+                return { data: [], count: null, error: 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.' };
+            }
+            
+            throw new Error(errorMsg);
         }
 
         const result = await res.json();
+        console.log(`[adminQuery] Success for ${options.table}, count:`, result.data?.length || 0);
         return { data: result.data || [], count: result.count, error: null };
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Query failed';
@@ -62,6 +78,7 @@ export async function adminInsert<T>(table: string, data: Partial<T>): Promise<{
         const res = await fetch('/api/admin/query', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ table, data }),
         });
 
@@ -86,6 +103,7 @@ export async function adminUpdate<T>(table: string, id: string, updates: Partial
         const res = await fetch('/api/admin/query', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ table, id, updates }),
         });
 
@@ -108,7 +126,7 @@ export async function adminUpdate<T>(table: string, id: string, updates: Partial
 export async function adminDelete(table: string, id: string): Promise<{ success: boolean; error: string | null }> {
     try {
         const params = new URLSearchParams({ table, id });
-        const res = await fetch(`/api/admin/query?${params}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/query?${params}`, { method: 'DELETE', credentials: 'include' });
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));

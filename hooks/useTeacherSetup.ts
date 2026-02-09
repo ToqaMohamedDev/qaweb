@@ -136,7 +136,7 @@ export function useTeacherSetup() {
         setIsLoading(true);
         try {
             // Use API instead of direct supabase.auth.getUser() for Vercel compatibility
-            const authRes = await fetch('/api/auth/user');
+            const authRes = await fetch('/api/auth/user', { credentials: 'include' });
             const authResult = await authRes.json();
 
             if (!authResult.success || !authResult.data?.user) {

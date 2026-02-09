@@ -44,7 +44,7 @@ export function useAdminDashboard() {
         console.log('[useAdminDashboard] Fetching from API...');
 
         try {
-            const res = await fetch('/api/admin/dashboard', { cache: 'no-store' });
+            const res = await fetch('/api/admin/dashboard', { cache: 'no-store', credentials: 'include' });
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));

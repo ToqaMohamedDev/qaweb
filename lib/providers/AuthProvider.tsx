@@ -30,7 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             try {
                 // 1. Try fetching session from our custom API (Works with HttpOnly cookies)
                 console.log('[AuthProvider] Fetching session from /api/auth/session...');
-                const res = await fetch('/api/auth/session', { cache: 'no-store' });
+                const res = await fetch('/api/auth/session', { cache: 'no-store', credentials: 'include' });
 
                 if (res.ok) {
                     const data = await res.json();

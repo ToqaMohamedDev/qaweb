@@ -522,12 +522,22 @@ export default function CreateExamPage() {
     // SAVE HANDLER
     // ═══════════════════════════════════════════════════════════════════════════
 
+    // Local state to prevent double-click submissions
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSave = async () => {
+        // Prevent double submissions
+        if (isSubmitting || isSaving) {
+            return;
+        }
+        
         const title = lang === 'ar' ? examTitleAr : examTitleEn;
         if (!title.trim()) {
             addToast({ type: 'error', message: labels.writeExamTitle });
             return;
         }
+
+        setIsSubmitting(true);
 
         const payload = {
             type: lang === 'ar' ? 'arabic_comprehensive_exam' : 'english_comprehensive_exam',
@@ -569,6 +579,7 @@ export default function CreateExamPage() {
         } catch (err: any) {
             logger.error('Error saving exam', { context: 'CreateExam', data: err });
             addToast({ type: 'error', message: err?.message || labels.errorSaving });
+            setIsSubmitting(false);
         }
     };
 
@@ -622,9 +633,9 @@ export default function CreateExamPage() {
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1c1c24] hover:bg-gray-50 text-sm font-medium">
                         <X className="h-4 w-4" />{labels.cancel}
                     </button>
-                    <button onClick={handleSave} disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg disabled:opacity-70 text-sm font-semibold">
-                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    <button onClick={handleSave} disabled={isSaving || isSubmitting}
+                        className="flex items-center gap-2 px-6 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg disabled:opacity-70 disabled:cursor-not-allowed text-sm font-semibold">
+                        {(isSaving || isSubmitting) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         {labels.save}
                     </button>
                 </div>

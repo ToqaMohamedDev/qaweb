@@ -491,10 +491,14 @@ export default function NotificationsPage() {
                                                         </div>
 
                                                         {/* Actions */}
-                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity relative z-20">
                                                             {!notification.is_read && (
                                                                 <button
-                                                                    onClick={() => markAsRead(notification.id)}
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        markAsRead(notification.id);
+                                                                    }}
                                                                     className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252530] transition-colors"
                                                                     title="تعيين كمقروء"
                                                                 >
@@ -502,7 +506,11 @@ export default function NotificationsPage() {
                                                                 </button>
                                                             )}
                                                             <button
-                                                                onClick={() => deleteNotification(notification.id)}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    deleteNotification(notification.id);
+                                                                }}
                                                                 className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                                 title="حذف"
                                                             >

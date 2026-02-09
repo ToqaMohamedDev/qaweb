@@ -35,7 +35,13 @@ const MAX_LIMIT = 1000;
 const DEFAULT_LIMIT = 100;
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createServerClient>>) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log('[Admin API] Auth check:', {
+        hasUser: !!user,
+        userId: user?.id?.substring(0, 8),
+        authError: authError?.message
+    });
 
     if (!user) {
         return { authorized: false, error: 'Unauthorized', status: 401 };
@@ -46,6 +52,11 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createServerClien
         .select('role')
         .eq('id', user.id)
         .single();
+
+    console.log('[Admin API] Profile check:', {
+        hasProfile: !!profile,
+        role: profile?.role
+    });
 
     if (profile?.role !== 'admin') {
         return { authorized: false, error: 'Forbidden - Admin access required', status: 403 };
@@ -93,9 +104,12 @@ export async function GET(request: NextRequest) {
         const filterColumn = searchParams.get('filterColumn');
         const filterValue = searchParams.get('filterValue');
 
+        console.log('[Admin API GET] Request for table:', table);
+
         // Validate table
         const tableValidation = validateTable(table);
         if (!tableValidation.valid) {
+            console.log('[Admin API GET] Table validation failed:', tableValidation.error);
             return NextResponse.json(
                 { error: tableValidation.error },
                 { status: 400, headers: securityHeaders }
@@ -103,9 +117,11 @@ export async function GET(request: NextRequest) {
         }
 
         const authClient = await createServerClient();
+        console.log('[Admin API GET] Auth client created');
 
         // Verify admin access
         const authResult = await verifyAdmin(authClient);
+        console.log('[Admin API GET] Auth result:', authResult.authorized ? 'authorized' : authResult.error);
         if (!authResult.authorized) {
             return NextResponse.json(
                 { error: authResult.error },

@@ -93,7 +93,7 @@ export async function waitForAuth(timeoutMs: number = 5000): Promise<AuthUser | 
  */
 export async function fetchAuthUser(): Promise<AuthUser | null> {
     try {
-        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        const res = await fetch('/api/auth/session', { cache: 'no-store', credentials: 'include' });
         if (!res.ok) return null;
 
         const data = await res.json();

@@ -45,17 +45,13 @@ export function useApiQuery<T>(config: QueryConfig): UseQueryResult<T> {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const isMounted = useRef(true);
-    const hasFetched = useRef(false);
 
     const { table, orderBy, ascending, limit, filterColumn, filterValue, enabled = true } = config;
 
-    // Store config in ref to avoid dependency issues
-    const configRef = useRef(config);
-    configRef.current = config;
-
     const refetch = useCallback(async () => {
-        const cfg = configRef.current;
-        if (!cfg.enabled) {
+        console.log(`[useApiQuery] refetch called for table: ${table}, enabled: ${enabled}`);
+        
+        if (!enabled) {
             setIsLoading(false);
             return;
         }
@@ -64,37 +60,38 @@ export function useApiQuery<T>(config: QueryConfig): UseQueryResult<T> {
         setError(null);
 
         const result = await adminQuery<T>({
-            table: cfg.table,
-            orderBy: cfg.orderBy,
-            ascending: cfg.ascending,
-            limit: cfg.limit,
-            filterColumn: cfg.filterColumn,
-            filterValue: cfg.filterValue,
+            table,
+            orderBy,
+            ascending,
+            limit,
+            filterColumn,
+            filterValue,
         });
+
+        console.log(`[useApiQuery] Result for ${table}:`, result.data?.length || 0, 'items, error:', result.error);
 
         if (isMounted.current) {
             setData(result.data);
             setError(result.error);
             setIsLoading(false);
         }
-    }, []); // No dependencies - uses ref
+    }, [table, orderBy, ascending, limit, filterColumn, filterValue, enabled]);
 
+    // Fetch data on mount and when config changes
     useEffect(() => {
         isMounted.current = true;
+        console.log(`[useApiQuery] useEffect triggered for table: ${table}, enabled: ${enabled}`);
         
-        if (enabled && !hasFetched.current) {
-            hasFetched.current = true;
+        if (enabled) {
             refetch();
-        } else if (enabled && hasFetched.current) {
-            // Refetch when deps change after initial fetch
-            refetch();
+        } else {
+            setIsLoading(false);
         }
         
         return () => {
             isMounted.current = false;
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [table, orderBy, ascending, limit, filterColumn, filterValue, enabled]);
+    }, [table, enabled, refetch]);
 
     return { data, isLoading, error, refetch };
 }
@@ -130,7 +127,7 @@ export function useApiCreate<T>(table: string): UseMutationResult<Partial<T>, T 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GENERIC UPDATE MUTATION HOOK
+// GENERIC UPDATE MUTATION HOOK (with optional callback for UI refresh)
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface UpdateInput<T> {
@@ -138,9 +135,14 @@ interface UpdateInput<T> {
     updates: Partial<T>;
 }
 
-export function useApiUpdate<T>(table: string): UseMutationResult<UpdateInput<T>, T | null> {
+export interface UseMutationResultWithRefetch<TInput = any, TOutput = any> extends UseMutationResult<TInput, TOutput> {
+    onSuccess: (callback: () => void) => void;
+}
+
+export function useApiUpdate<T>(table: string): UseMutationResultWithRefetch<UpdateInput<T>, T | null> {
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const successCallbackRef = useRef<(() => void) | null>(null);
 
     const mutateAsync = async (input: UpdateInput<T>): Promise<T | null> => {
         setIsPending(true);
@@ -153,6 +155,12 @@ export function useApiUpdate<T>(table: string): UseMutationResult<UpdateInput<T>
             setError(result.error);
             throw new Error(result.error);
         }
+        
+        // Call success callback to trigger UI refresh
+        if (successCallbackRef.current) {
+            successCallbackRef.current();
+        }
+        
         return result.data;
     };
 
@@ -161,7 +169,11 @@ export function useApiUpdate<T>(table: string): UseMutationResult<UpdateInput<T>
         setIsPending(false);
     };
 
-    return { mutateAsync, isPending, error, reset };
+    const onSuccess = (callback: () => void) => {
+        successCallbackRef.current = callback;
+    };
+
+    return { mutateAsync, isPending, error, reset, onSuccess };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

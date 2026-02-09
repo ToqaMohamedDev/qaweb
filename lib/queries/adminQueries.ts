@@ -218,9 +218,9 @@ export function useSubjectStagesAPI(subjectId?: string): UseSubjectStagesResult 
         setError(null);
 
         try {
-            const response = await fetch(`/api/admin/subject-stages${subjectId ? `?subject_id=${subjectId}` : ''}`);
+            const response = await fetch(`/api/admin/subject-stages${subjectId ? `?subject_id=${subjectId}` : ''}`, { credentials: 'include' });
             const result = await response.json();
-            
+
             if (result.error) {
                 setError(result.error);
                 setData([]);
@@ -231,7 +231,7 @@ export function useSubjectStagesAPI(subjectId?: string): UseSubjectStagesResult 
             setError('Failed to fetch subject stages');
             setData([]);
         }
-        
+
         setIsLoading(false);
     }, [subjectId]);
 
@@ -260,16 +260,17 @@ export function useUpdateSubjectStagesAPI(): UpdateSubjectStagesResult {
             const response = await fetch('/api/admin/subject-stages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(input),
             });
-            
+
             const result = await response.json();
-            
+
             if (result.error) {
                 setError(result.error);
                 throw new Error(result.error);
             }
-            
+
             setIsPending(false);
             return result.data;
         } catch (err: any) {

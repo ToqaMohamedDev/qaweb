@@ -48,26 +48,14 @@ export function DashboardProtection({ children, config }: DashboardProtectionPro
             console.log(`[${config.role}Protection] Zustand user:`, user?.email, 'role:', user?.role);
             console.log(`[${config.role}Protection] authLoading:`, authLoading);
 
-            // 1. Check Zustand store first (fastest)
-            if (user && config.allowedRoles.includes(user.role)) {
-                console.log(`[${config.role}Protection] ✅ User in Zustand store is valid`);
-                clearTimeout(safetyTimeout);
-                setAuthState('authenticated');
-                return;
-            }
-
-            // 2. If auth is still loading and no user, wait a bit but not forever
-            if (authLoading && !user) {
-                console.log(`[${config.role}Protection] Auth still loading, waiting...`);
-                return; // Will be re-triggered when authLoading becomes false
-            }
-
-            // 3. AuthLoading is false but no user in store - try API
-            console.log(`[${config.role}Protection] No user in store, trying API...`);
+            // IMPORTANT: Always verify session via API to ensure cookies are valid
+            // Don't trust Zustand store alone as session may have expired
+            console.log(`[${config.role}Protection] Verifying session via API...`);
 
             try {
                 const sessionRes = await fetch('/api/auth/session', {
                     cache: 'no-store',
+                    credentials: 'include',
                     headers: { 'Cache-Control': 'no-cache' }
                 });
 

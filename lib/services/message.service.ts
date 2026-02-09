@@ -19,7 +19,7 @@ import type { Message, TablesInsert, TablesUpdate } from '../database.types';
  */
 export async function getMessages(): Promise<Message[]> {
     try {
-        const res = await fetch('/api/admin/query?table=messages&orderBy=created_at&ascending=false&limit=500');
+        const res = await fetch('/api/admin/query?table=messages&orderBy=created_at&ascending=false&limit=500', { credentials: 'include' });
         const result = await res.json();
 
         if (!res.ok) {

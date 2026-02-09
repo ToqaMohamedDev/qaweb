@@ -261,7 +261,7 @@ export function OneSignalProvider({
 
         const syncAuthenticatedUser = async () => {
             try {
-                const res = await fetch('/api/auth/user?includeProfile=true');
+                const res = await fetch('/api/auth/user?includeProfile=true', { credentials: 'include' });
                 const result = await res.json();
 
                 if (result.success && result.data?.user) {

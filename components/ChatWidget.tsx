@@ -36,15 +36,26 @@ const aiResponses: Record<string, string[]> = {
     نتيجة: ["يمكنك الاطلاع على نتائجك من صفحة الملف الشخصي بعد تسجيل الدخول."],
     حساب: ["لإنشاء حساب جديد، اضغط على 'إنشاء حساب' في الأعلى وأدخل بياناتك."],
     شكرا: ["على الرحب والسعة! هل هناك شيء آخر يمكنني مساعدتك به؟ 😊"],
+    // Support & Complaint keywords
+    دعم: ["تم تحويل طلبك للدعم الفني 📩 سيتواصل معك أحد أعضاء الفريق في أقرب وقت. هل هناك تفاصيل إضافية تود إضافتها؟"],
+    شكوى: ["نأسف لأي إزعاج! تم تسجيل شكواك وسيتم التواصل معك قريباً 📝 يرجى وصف المشكلة بالتفصيل."],
+    تواصل: ["يمكنك التواصل مع الدعم الفني بكتابة 'دعم' أو 'شكوى' وسيتم تحويل رسالتك مباشرة للفريق المختص."],
+    مساعدة: ["أنا هنا لمساعدتك! يمكنني الإجابة على أسئلتك أو تحويلك للدعم الفني. ما الذي تحتاجه؟"],
+    رسالة: ["لإرسال رسالة للدعم الفني، اكتب 'دعم' ثم اكتب رسالتك وسيتم تحويلها مباشرة للفريق المختص."],
     default: ["شكراً لتواصلك! سأقوم بتحويل سؤالك للدعم الفني وسيتم الرد عليك قريباً. هل هناك شيء آخر يمكنني مساعدتك به؟"],
 };
+
+// Keywords that require human support
+const humanSupportKeywords = ['دعم', 'شكوى', 'مشكلة', 'رسالة', 'تواصل'];
 
 const getAIResponse = (message: string): { response: string; needsHuman: boolean } => {
     const lowerMsg = message.toLowerCase();
 
     for (const [key, responses] of Object.entries(aiResponses)) {
         if (key !== "default" && lowerMsg.includes(key)) {
-            return { response: responses[Math.floor(Math.random() * responses.length)], needsHuman: false };
+            // Check if this keyword requires human support
+            const needsHuman = humanSupportKeywords.includes(key);
+            return { response: responses[Math.floor(Math.random() * responses.length)], needsHuman };
         }
     }
 
@@ -105,7 +116,7 @@ export default function ChatWidget() {
         const initializeChat = async () => {
             try {
                 // Use API for auth instead of direct supabase.auth.getUser() for Vercel compatibility
-                const authRes = await fetch('/api/auth/user?includeProfile=true');
+                const authRes = await fetch('/api/auth/user?includeProfile=true', { credentials: 'include' });
                 const authResult = await authRes.json();
 
                 if (authResult.success && authResult.data?.user) {
@@ -217,7 +228,7 @@ export default function ChatWidget() {
         localStorage.setItem("chat_welcome_dismissed", "true");
     };
 
-    // بدء محادثة جديدة
+    // بدء محادثة جديدة (via API for Vercel compatibility)
     const createNewChat = useCallback(async (name: string, email?: string) => {
         if (chatStarted) return chatId;
 
@@ -225,25 +236,31 @@ export default function ChatWidget() {
         setChatStarted(true);
 
         try {
-            const supabase = createClient();
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    action: 'createChat',
+                    userId,
+                    userName: name,
+                    userEmail: email || `${name.replace(/\s/g, '_')}@guest.local`,
+                }),
+            });
 
-            const { data, error } = await supabase.from("support_chats").insert({
-                user_id: userId,
-                user_name: name,
-                user_email: email || `${name.replace(/\s/g, '_')}@guest.local`,
-            }).select().single();
+            const result = await response.json();
 
-            if (error) {
-                logger.debug('Using local mode', { context: 'ChatWidget', data: { reason: error.message } });
+            if (!response.ok || !result.success) {
+                logger.debug('Using local mode', { context: 'ChatWidget', data: { reason: result.error } });
                 setUseLocalMode(true);
                 const localId = "local-" + Date.now();
                 setChatId(localId);
                 return localId;
             } else {
-                setChatId(data.id);
+                setChatId(result.chat.id);
                 // حفظ الـ chat ID في localStorage
-                localStorage.setItem(CHAT_STORAGE_KEY, data.id);
-                return data.id;
+                localStorage.setItem(CHAT_STORAGE_KEY, result.chat.id);
+                return result.chat.id;
             }
 
         } catch (err) {
@@ -267,19 +284,24 @@ export default function ChatWidget() {
         const welcomeMsg: Message = {
             id: Date.now().toString(),
             sender_type: "ai",
-            message: `مرحباً ${userName}! 👋\nأنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟\n\nيمكنني مساعدتك في:\n• التسجيل وتسجيل الدخول\n• الامتحانات والدروس\n• المعلمين والمحتوى\n• أي استفسار آخر`,
+            message: `مرحباً ${userName}! 👋\nأنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟\n\nيمكنني مساعدتك في:\n• التسجيل وتسجيل الدخول\n• الامتحانات والدروس\n• المعلمين والمحتوى\n• التواصل مع الدعم الفني (اكتب "دعم" أو "شكوى")\n• أي استفسار آخر`,
             created_at: new Date().toISOString(),
         };
         setMessages([welcomeMsg]);
 
-        // حفظ رسالة الترحيب في قاعدة البيانات
+        // حفظ رسالة الترحيب في قاعدة البيانات via API
         if (newChatId && !newChatId.startsWith('local-')) {
-            const supabase = createClient();
-            await supabase.from("chat_messages").insert({
-                chat_id: newChatId,
-                sender_type: "system" as any, // 'ai' mapped to 'system' in DB
-                message: welcomeMsg.message,
-                is_ai_response: true,
+            await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    action: 'sendMessage',
+                    chatId: newChatId,
+                    senderType: 'system',
+                    message: welcomeMsg.message,
+                    isAiResponse: true,
+                }),
             });
         }
     };
@@ -317,12 +339,18 @@ export default function ChatWidget() {
         setIsLoading(true);
 
         try {
+            // Send user message via API for Vercel compatibility
             if (!useLocalMode && currentChatId && !currentChatId.startsWith('local-')) {
-                const supabase = createClient();
-                await supabase.from("chat_messages").insert({
-                    chat_id: currentChatId,
-                    sender_type: "user",
-                    message: userMessage.message,
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'sendMessage',
+                        chatId: currentChatId,
+                        senderType: 'user',
+                        message: userMessage.message,
+                    }),
                 });
             }
 
@@ -339,20 +367,36 @@ export default function ChatWidget() {
 
             setMessages(prev => [...prev, aiMessage]);
 
+            // Send AI response via API
             if (!useLocalMode && currentChatId && !currentChatId.startsWith('local-')) {
-                const supabase = createClient();
-                await supabase.from("chat_messages").insert({
-                    chat_id: currentChatId,
-                    sender_type: "system" as any, // 'ai' mapped to 'system' in DB
-                    message: response,
-                    is_ai_response: true,
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'sendMessage',
+                        chatId: currentChatId,
+                        senderType: 'system',
+                        message: response,
+                        isAiResponse: true,
+                    }),
                 });
 
+                // If needs human support, update status and send support request
                 if (needsHuman) {
-                    await supabase.from("support_chats").update({
-                        status: "pending",
-                        updated_at: new Date().toISOString()
-                    }).eq("id", currentChatId);
+                    await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            action: 'sendSupportRequest',
+                            chatId: currentChatId,
+                            userName,
+                            userEmail,
+                            subject: 'طلب دعم من المساعد الذكي',
+                            message: userMessage.message,
+                        }),
+                    });
                 }
             }
 

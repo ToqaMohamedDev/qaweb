@@ -47,17 +47,17 @@ function useQuery<T>(
     const [isError, setIsError] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const isMounted = useRef(true);
-    
+
     // Store queryFn in a ref to avoid dependency issues
     const queryFnRef = useRef(queryFn);
     queryFnRef.current = queryFn;
-    
+
     // Track if initial fetch has been done
     const hasFetched = useRef(false);
 
     const fetch = useCallback(async () => {
         if (!enabled) return;
-        
+
         setIsLoading(true);
         setIsError(false);
         setError(null);
@@ -94,13 +94,13 @@ function useQuery<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         isMounted.current = true;
-        
+
         // Only fetch if enabled and (refetchOnMount or first time)
         if (enabled && (refetchOnMount || !hasFetched.current)) {
             hasFetched.current = true;
             fetch();
         }
-        
+
         return () => {
             isMounted.current = false;
         };
@@ -267,7 +267,7 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
     });
     const [recentUsers, setRecentUsers] = useState<Profile[]>([]);
     const [recentExams, setRecentExams] = useState<Array<{ id: string; examTitle: string; is_published: boolean; type: string; language: string; created_at: string }>>([]);
-    const [activities] = useState<Array<{ id: string; type: string; action: string; description: string; time: string }>>([]); 
+    const [activities] = useState<Array<{ id: string; type: string; action: string; description: string; time: string }>>([]);
     const [chartData] = useState({ users: [], exams: [], lessons: [] });
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
@@ -284,7 +284,7 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
             setStats(adminStats);
 
             // Fetch recent data directly (not cached)
-            const response = await window.fetch('/api/admin/dashboard');
+            const response = await window.fetch('/api/admin/dashboard', { credentials: 'include' });
             if (response.ok) {
                 const data = await response.json();
                 setRecentUsers(data.recentUsers || []);

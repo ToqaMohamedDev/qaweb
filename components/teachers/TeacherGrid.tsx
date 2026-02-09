@@ -30,11 +30,14 @@ export function TeacherGrid({
 
     return (
         <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 [&>*]:min-w-[280px]"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             layout // Enable layout animations for the grid itself
+            style={{ 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
+            }}
         >
             <AnimatePresence mode="popLayout">
                 {teachers.map((teacher, index) => (

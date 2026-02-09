@@ -70,10 +70,10 @@ export function useProfile(): UseProfileReturn {
     // Calculate level based on total points (gamification)
     const totalPoints = stats.completedLessons + stats.examsTaken * 2;
     const userLevel = totalPoints > 0 ? Math.floor(totalPoints / 5) + 1 : 1;
-    
+
     // Calculate overall learning progress (lesson completion percentage)
-    const levelProgress = stats.totalLessons > 0 
-        ? Math.round((stats.completedLessons / stats.totalLessons) * 100) 
+    const levelProgress = stats.totalLessons > 0
+        ? Math.round((stats.completedLessons / stats.totalLessons) * 100)
         : 0;
 
     // Format relative date
@@ -174,7 +174,7 @@ export function useProfile(): UseProfileReturn {
             try {
                 console.log('[useProfile] Fetching profile data from API...');
 
-                const res = await fetch('/api/profile');
+                const res = await fetch('/api/profile', { credentials: 'include' });
                 const result = await res.json();
 
                 if (!result.success || !result.data?.user) {
@@ -246,6 +246,7 @@ export function useProfile(): UseProfileReturn {
             const res = await fetch('/api/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     name: formData.name,
                     avatar_url: formData.avatar_url,
