@@ -262,6 +262,25 @@ export default function TeachersPage() {
                     userId: teacherId,
                     updates: { is_teacher_approved: approved },
                 });
+
+                // 🔔 إرسال إشعار للمدرس عند الاعتماد
+                if (approved) {
+                    try {
+                        const teacher = teachers.find(t => t.id === teacherId);
+                        await fetch('/api/notifications/teacher-approved', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                teacherId,
+                                teacherName: teacher?.name || 'المدرس',
+                            }),
+                        });
+                    } catch (notifyError) {
+                        console.error('Failed to send teacher approval notification:', notifyError);
+                        // لا نوقف العملية إذا فشل الإشعار
+                    }
+                }
+
                 addToast({
                     type: "success",
                     message: approved
@@ -272,7 +291,7 @@ export default function TeachersPage() {
                 addToast({ type: "error", message: err.message || "حدث خطأ" });
             }
         },
-        [updateMutation, addToast]
+        [updateMutation, addToast, teachers]
     );
 
     const openDeleteModal = useCallback((teacher: Profile) => {
